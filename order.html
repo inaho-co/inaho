@@ -38,7 +38,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .filter-row::-webkit-scrollbar{display:none;}
 .filter-btn{padding:5px 13px;font-size:12px;border:1px solid #d0d0d0;border-radius:20px;background:none;color:#666;cursor:pointer;white-space:nowrap;}
 .filter-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
-.product-list{padding:0 14px;}
+.product-list{padding:0 14px;padding-bottom:140px;}
 .product-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #efefef;}
 .product-info{flex:1;min-width:0;}
 .product-name{font-size:13px;line-height:1.4;word-break:break-all;}
@@ -59,7 +59,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .sum-item{font-size:12px;color:#666;}
 .sum-item b{color:#1a1a1a;}
 .sum-item .money{color:#1565C0;font-weight:600;}
-.sum-all-row{display:flex;gap:10px;padding-top:4px;border-top:1px solid #efefef;margin-top:2px;}
+.sum-all-row{display:flex;flex-direction:column;gap:2px;padding-top:4px;border-top:1px solid #efefef;margin-top:2px;}
 .sum-all-item{font-size:11px;color:#888;}
 .sum-all-item b{color:#555;}
 .empty{text-align:center;padding:40px 14px;color:#aaa;font-size:13px;}
@@ -78,7 +78,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .action-btn{width:100%;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;}
 .save-btn{background:#1a1a1a;color:#fff;}
 .save-btn:disabled{background:#ccc;}
-.mail-btn{background:#1565C0;color:#fff;display:none;}
+.mail-btn{background:#1565C0;color:#fff;}
 .history-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #efefef;}
 .h-store{font-size:13px;font-weight:500;}
 .h-meta{font-size:11px;color:#aaa;margin-top:2px;}
@@ -97,11 +97,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;z-index:500;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 #tab-history{display:none;padding:0 14px;}
-#tab-confirm{display:none;padding:0 14px;}
+#tab-input{display:block;}
+#tab-confirm{display:block;padding:0;}
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 1.4</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 2.4</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -110,11 +111,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
       <button onclick="clearAll()" style="width:100%;padding:7px;font-size:12px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">全クリア</button>
     </div>
   </div>
-</div>
-
-<div class="supplier-tabs">
-  <button class="sup-tab active" id="sup-inaho" onclick="switchSupplier('inaho')">稲穂<span class="sup-cnt" id="sup-cnt-inaho">0品目</span></button>
-  <button class="sup-tab" id="sup-sankyo" onclick="switchSupplier('sankyo')">三共<span class="sup-cnt" id="sup-cnt-sankyo">0品目</span></button>
 </div>
 
 <div class="store-section">
@@ -136,15 +132,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
     <div class="mf"><label>配送区分</label><select id="delivery-2"><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
   </div>
   <div class="btn-row">
-    <button class="clear-store-btn" onclick="clearCurrentStore()">この店舗をクリア</button>
-    <button class="clear-all-btn2" onclick="clearAll()">全クリア</button>
+    <button class="clear-all-btn2" onclick="clearAllQty()">数量クリア</button>
   </div>
 </div>
 
-<div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('input')">商品入力</button>
-  <button class="tab-btn" onclick="switchTab('confirm')">確認<span id="confirm-cnt"></span></button>
-  <button class="tab-btn" onclick="switchTab('history')">履歴</button>
+<div class="supplier-tabs">
+  <button class="sup-tab active" id="sup-inaho" onclick="switchSupplier('inaho')">稲穂<span class="sup-cnt" id="sup-cnt-inaho">0品目</span></button>
+  <button class="sup-tab" id="sup-sankyo" onclick="switchSupplier('sankyo')">三共<span class="sup-cnt" id="sup-cnt-sankyo">0品目</span></button>
 </div>
 
 <div id="tab-input">
@@ -153,21 +147,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
   <div class="product-list" id="product-list"></div>
 </div>
 
+
 <div id="tab-confirm">
-  <div id="order-list" style="margin-bottom:4px;"></div>
-  <div style="padding:10px 0 14px;">
-    <button class="action-btn save-btn" id="save-btn" onclick="saveOrder()">保存 → Excelダウンロード</button>
+  <div id="confirm-toggle-btn" onclick="toggleConfirm()" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f5f5f5;border-top:2px solid #1a1a1a;cursor:pointer;">
+    <span style="font-size:13px;font-weight:600;color:#1a1a1a;">確認内容</span>
+    <span id="confirm-arrow" style="font-size:13px;color:#666;">▶ 見る</span>
+  </div>
+  <div id="confirm-body" style="display:none;">
+    <div id="order-list" style="margin-bottom:4px;padding:0 14px;"></div>
+  </div>
+  <div style="padding:10px 14px 24px;">
     <button class="action-btn mail-btn" id="mail-btn" onclick="sendMail()">メールで送信</button>
   </div>
 </div>
 
-<div id="tab-history">
-  <div id="history-list" style="padding-top:4px;"></div>
+<!-- フローティングボタン -->
+<div style="position:fixed;bottom:90px;right:16px;z-index:150;">
+  <button onclick="window.scrollTo({top:0,behavior:'smooth'})" style="width:40px;height:40px;border-radius:50%;background:#555;color:#fff;border:none;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;">↑</button>
 </div>
+
 
 <div class="summary">
   <div class="sum-row">
-    <div class="sum-store-name" id="sum-store-name">店舗1（稲穂）</div>
+    <div class="sum-store-name" id="sum-store-name">店舗1</div>
     <div class="sum-vals">
       <div class="sum-item"><b id="s-items">0</b>品目</div>
       <div class="sum-item"><b id="s-qty">0</b>個</div>
@@ -175,11 +177,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
       <div class="sum-item">600均:<span class="money" id="s-600">¥0</span></div>
     </div>
   </div>
-  <div class="sum-all-row">
-    <div class="sum-all-item">全体:<b id="sa-qty">0</b>個</div>
-    <div class="sum-all-item">稲穂計:<b id="sa-inaho">¥0</b></div>
-    <div class="sum-all-item">三共計:<b id="sa-sankyo">¥0</b></div>
-  </div>
+  <div class="sum-all-row" id="sum-all-row"></div>
 </div>
 
 <div class="overlay" id="modal-overlay">
@@ -299,7 +297,7 @@ function chg(code, d) {
   const nxt = Math.max(0, cur+d);
   if(nxt===0) delete qty[supplier][storeIdx][code];
   else qty[supplier][storeIdx][code]=nxt;
-  renderList(); updateSummary(); refreshHasData(); resetSaveBtn();
+  renderList(); updateSummary(); refreshHasData(); resetSaveBtn(); renderConfirm();
 }
 
 function openModal(code) {
@@ -319,7 +317,7 @@ function confirmModal(){
     if(!v||v<=0) delete qty[supplier][storeIdx][modalCode];
     else qty[supplier][storeIdx][modalCode]=v;
   }
-  closeModal(); renderList(); updateSummary(); refreshHasData(); resetSaveBtn();
+  closeModal(); renderList(); updateSummary(); refreshHasData(); resetSaveBtn(); renderConfirm();
 }
 document.getElementById('modal-qty').addEventListener('keydown',function(e){if(e.key==='Enter')confirmModal();});
 document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===document.getElementById('modal-overlay'))closeModal();});
@@ -330,14 +328,25 @@ function clearCurrentStore(){
   showToast('この店舗をクリアしました');
 }
 function clearAll(){document.getElementById('clear-overlay').classList.add('open');}
+function clearAllQty(){
+  qty.inaho[storeIdx]={}; qty.sankyo[storeIdx]={};
+  renderList(); updateSummary(); refreshHasData(); resetSaveBtn(); renderConfirm();
+  showToast('数量をクリアしました');
+}
 function doClear(){
-  for(let i=0;i<3;i++){qty.inaho[i]={};qty.sankyo[i]={};}
+  for(let i=0;i<3;i++){
+    qty.inaho[i]={};qty.sankyo[i]={};
+    document.getElementById('store-'+i).value='';
+    document.getElementById('delivery-'+i).selectedIndex=0;
+    updateStoreTab(i);
+  }
   document.getElementById('clear-overlay').classList.remove('open');
   renderList(); updateSummary(); refreshHasData(); resetSaveBtn();
   showToast('全クリアしました');
 }
 
 function updateSummary(){
+  // 現在の取引先・店舗の上段サマリー（品目・個数・金額）
   const products=PRODUCTS[supplier]||[];
   let items=0,totalQty=0,amt1000=0,amt600=0;
   const curQty=qty[supplier][storeIdx];
@@ -350,48 +359,54 @@ function updateSummary(){
     else if(p.kubun==='600均') amt600+=q*390;
   }
   const storeName=document.getElementById('store-'+storeIdx).value.trim()||('店舗'+(storeIdx+1));
-  const supName=supplier==='inaho'?'稲穂':'三共';
-  document.getElementById('sum-store-name').textContent=storeName+'（'+supName+'）';
+  document.getElementById('sum-store-name').textContent=storeName;
   document.getElementById('s-items').textContent=items;
   document.getElementById('s-qty').textContent=totalQty;
   document.getElementById('s-1000').textContent='¥'+amt1000.toLocaleString();
   document.getElementById('s-600').textContent='¥'+amt600.toLocaleString();
 
-  let allQty=0,allInaho=0,allSankyo=0;
-  ['inaho','sankyo'].forEach(function(sup){
-    const prods=PRODUCTS[sup]||[];
-    for(let i=0;i<3;i++){
-      for(const code in qty[sup][i]){
-        const q=qty[sup][i][code];
-        const p=prods.find(function(x){return x.code===code;});
-        if(!p) continue;
-        allQty+=q;
-        const amt=q*(PRICES[p.kubun]||0);
-        if(sup==='inaho') allInaho+=amt; else allSankyo+=amt;
+  // 下段：店舗ごとの稲穂・三共合計
+  const storeRows=[];
+  for(let si=0;si<3;si++){
+    let inahoAmt=0, sankyoAmt=0, hasData=false;
+    ['inaho','sankyo'].forEach(function(sup){
+      const prods=PRODUCTS[sup]||[];
+      for(const code in qty[sup][si]){
+        const q=qty[sup][si][code];
+        const p2=prods.find(function(x){return x.code===code;});
+        if(!p2) continue;
+        hasData=true;
+        const a=q*(PRICES[p2.kubun]||0);
+        if(sup==='inaho') inahoAmt+=a; else sankyoAmt+=a;
       }
+    });
+    if(hasData){
+      const sn=document.getElementById('store-'+si).value.trim()||('店舗'+(si+1));
+      storeRows.push('<div class="sum-all-item"><b>'+sn+'</b>　稲穂:<b>¥'+inahoAmt.toLocaleString()+'</b>　三共:<b>¥'+sankyoAmt.toLocaleString()+'</b></div>');
     }
-  });
-  document.getElementById('sa-qty').textContent=allQty;
-  document.getElementById('sa-inaho').textContent='¥'+allInaho.toLocaleString();
-  document.getElementById('sa-sankyo').textContent='¥'+allSankyo.toLocaleString();
+  }
+  document.getElementById('sum-all-row').innerHTML=storeRows.join('')||'<div class="sum-all-item" style="color:#ccc;">入力データなし</div>';
 
+  // タブの品目数（現在の店舗ベース）
   ['inaho','sankyo'].forEach(function(sup){
-    const s=new Set();
-    for(let i=0;i<3;i++) Object.keys(qty[sup][i]).forEach(function(c){s.add(c);});
-    document.getElementById('sup-cnt-'+sup).textContent=s.size+'品目';
+    const cnt=Object.keys(qty[sup][storeIdx]).length;
+    document.getElementById('sup-cnt-'+sup).textContent=cnt+'品目';
   });
 }
 
-function switchTab(tab){
-  ['input','confirm','history'].forEach(function(t,i){
-    document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
-    document.querySelectorAll('.tab-btn')[i].classList.toggle('active',t===tab);
-  });
-  if(tab==='confirm') renderConfirm();
-  if(tab==='history') loadHistory();
+function toggleConfirm(){
+  const body=document.getElementById('confirm-body');
+  const arrow=document.getElementById('confirm-arrow');
+  const open=body.style.display==='none';
+  body.style.display=open?'block':'none';
+  arrow.textContent=open?'▼ 閉じる':'▶ 見る';
+  if(open) renderConfirm();
 }
+
+function switchTab(tab){} // 未使用（常時表示）
 
 function renderConfirm(){
+  if(document.getElementById('confirm-body').style.display==='none') return;
   const date=document.getElementById('order-date').value;
   let html='';
   ['inaho','sankyo'].forEach(function(sup){
@@ -441,16 +456,14 @@ function renderConfirm(){
 }
 
 function resetSaveBtn(){
-  const btn=document.getElementById('save-btn');
-  btn.disabled=false; btn.textContent='保存 → Excelダウンロード';
-  btn.onclick=saveOrder;
-  document.getElementById('mail-btn').style.display='none';
+  const btn=document.getElementById('mail-btn');
+  btn.textContent='メールで送信'; btn.disabled=false;
 }
 
 async function saveOrder(){
   const hasData=['inaho','sankyo'].some(function(s){return [0,1,2].some(function(i){return Object.keys(qty[s][i]).length>0;});});
   if(!hasData){showToast('数量を入力してください');return;}
-  const btn=document.getElementById('save-btn');
+  const btn=document.getElementById('mail-btn');
   btn.disabled=true; btn.textContent='保存中...';
   const payload={
     date:document.getElementById('order-date').value,
@@ -461,12 +474,10 @@ async function saveOrder(){
     const res=await fetch(SERVER+'/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await res.json();
     window._lastId=data.id;
+    btn.disabled=false; btn.textContent='メールで送信';
     showToast('保存しました！');
-    btn.disabled=false; btn.textContent='Excelダウンロード';
-    btn.onclick=function(){downloadExcel(data.id);};
-    document.getElementById('mail-btn').style.display='block';
-    downloadExcel(data.id);
-  }catch(e){showToast('保存失敗');btn.disabled=false;btn.textContent='保存 → Excelダウンロード';btn.onclick=saveOrder;}
+    await sendMailById(data.id);
+  }catch(e){showToast('保存失敗');btn.disabled=false;btn.textContent='メールで送信';}
 }
 
 function downloadExcel(id){
@@ -476,49 +487,21 @@ function downloadExcel(id){
   showToast('Excelをダウンロード中...');
 }
 
-async function sendMail(){
-  if(!window._lastId){showToast('先に保存してください');return;}
+async function sendMailById(id){
   const btn=document.getElementById('mail-btn');
   btn.textContent='送信中...'; btn.disabled=true;
   try{
-    const res=await fetch(SERVER+'/orders/'+window._lastId+'/mail',{method:'POST'});
+    const res=await fetch(SERVER+'/orders/'+(id||window._lastId)+'/mail',{method:'POST'});
     const data=await res.json();
     showToast(data.success?'メールを送信しました！':'送信失敗');
   }catch(e){showToast('送信エラー');}
   btn.textContent='メールで送信'; btn.disabled=false;
 }
 
-async function loadHistory(){
-  const el=document.getElementById('history-list');
-  el.innerHTML='<div class="empty">読み込み中...</div>';
-  try{
-    const orders=await(await fetch(SERVER+'/orders')).json();
-    if(!orders.length){el.innerHTML='<div class="empty">履歴なし</div>';return;}
-    orders.sort(function(a,b){return b.created_at.localeCompare(a.created_at);});
-    el.innerHTML=orders.map(function(o){
-      const d=new Date(o.created_at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-      const names=(o.stores||[]).filter(function(s){return s.name;}).map(function(s){return s.name;}).join('・')||'(未入力)';
-      return '<div class="history-item">'
-        +'<div><div class="h-store">'+names+'</div><div class="h-meta">'+(o.date||'')+' '+d+'</div></div>'
-        +'<div>'
-        +'<button class="h-dl-btn" data-id="'+o.id+'">DL</button>'
-        +'<button class="h-del-btn" data-id="'+o.id+'">削除</button>'
-        +'</div></div>';
-    }).join('');
-  }catch(e){el.innerHTML='<div class="empty">読み込みエラー</div>';}
-}
-
-document.getElementById('history-list').addEventListener('click',function(e){
-  const dl=e.target.closest('.h-dl-btn');
-  const del=e.target.closest('.h-del-btn');
-  if(dl) downloadExcel(dl.dataset.id);
-  else if(del) delHistory(del.dataset.id);
-});
-
-async function delHistory(id){
-  if(!confirm('削除しますか？')) return;
-  try{await fetch(SERVER+'/orders/'+id,{method:'DELETE'});loadHistory();showToast('削除しました');}
-  catch(e){showToast('削除エラー');}
+async function sendMail(){
+  const hasData=['inaho','sankyo'].some(function(s){return [0,1,2].some(function(i){return Object.keys(qty[s][i]).length>0;});});
+  if(!hasData){showToast('数量を入力してください');return;}
+  await saveOrder();
 }
 
 function showToast(msg){
@@ -527,7 +510,7 @@ function showToast(msg){
   setTimeout(function(){t.classList.remove('show');},2500);
 }
 
-renderFilters(); renderList(); updateSummary();
+renderFilters(); renderList(); updateSummary(); renderConfirm();
 </script>
 </body>
 </html>
