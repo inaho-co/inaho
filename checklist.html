@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>持ち物チェックリスト</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; min-height: 100vh; }
+
+.header {
+  background: linear-gradient(135deg, #1a73e8, #0d47a1);
+  color: white; padding: 18px 16px 0;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.header-top { display: flex; align-items: center; margin-bottom: 12px; gap: 8px; }
+.header h1 { font-size: 18px; font-weight: 700; flex: 1; }
+.header-edit-btn {
+  background: rgba(255,255,255,0.2); border: none; color: white;
+  border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.sync-status {
+  font-size: 11px; color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.15); border-radius: 6px;
+  padding: 4px 8px; white-space: nowrap;
+}
+.sync-status.ok { color: #86efac; }
+.sync-status.err { color: #fca5a5; }
+.sync-status.loading { color: #fde68a; }
+
+.tabs { display: flex; gap: 4px; overflow-x: auto; }
+.tab-btn {
+  flex-shrink: 0; padding: 10px 14px; border: none;
+  background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8);
+  border-radius: 8px 8px 0 0; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.tab-btn.active { background: white; color: #1a73e8; }
+.tab-add-btn {
+  flex-shrink: 0; padding: 10px 14px; border: none;
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7);
+  border-radius: 8px 8px 0 0; font-size: 18px; cursor: pointer;
+}
+
+.content { padding: 12px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.progress-bar-wrap {
+  background: white; border-radius: 12px; padding: 12px 16px;
+  margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-bottom: 6px; }
+.progress-label span:last-child { font-weight: 700; color: #1a73e8; }
+.progress-bar { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #1a73e8, #42a5f5); border-radius: 4px; transition: width 0.3s; }
+
+.action-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.action-btn {
+  flex: 1; min-width: 70px; padding: 9px 6px; border: none; border-radius: 8px;
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+}
+.action-btn:active { opacity: 0.7; }
+.btn-reset { background: #fee2e2; color: #dc2626; }
+.btn-check-all { background: #dcfce7; color: #16a34a; }
+.btn-del-all { background: #f3e8ff; color: #7c3aed; }
+
+.section {
+  background: white; border-radius: 12px;
+  margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden;
+}
+.section-header {
+  padding: 12px 16px; font-weight: 700; font-size: 13px; color: white;
+  display: flex; align-items: center; gap: 6px; user-select: none;
+}
+.section-title { flex: 1; cursor: pointer; }
+.toggle-icon { font-size: 11px; transition: transform 0.2s; cursor: pointer; }
+.section-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+.section-body { padding: 4px 0; }
+.section-body.collapsed { display: none; }
+
+.section-edit-btns { display: none; gap: 4px; }
+.edit-mode .section-edit-btns { display: flex; }
+.sec-btn {
+  background: rgba(255,255,255,0.25); border: none; color: white;
+  border-radius: 6px; padding: 3px 8px; font-size: 13px; cursor: pointer;
+}
+
+.add-item-row {
+  display: flex; gap: 8px; padding: 8px 12px;
+  border-top: 1px solid #f0f0f0;
+}
+.add-item-input {
+  flex: 1; border: 1.5px solid #ddd; border-radius: 8px;
+  padding: 8px 10px; font-size: 14px; outline: none;
+}
+.add-item-input:focus { border-color: #1a73e8; }
+.add-item-btn {
+  background: #1a73e8; color: white; border: none;
+  border-radius: 8px; padding: 8px 14px; font-size: 20px; line-height: 1; cursor: pointer;
+}
+
+.item {
+  display: flex; align-items: center;
+  padding: 10px 16px; border-bottom: 1px solid #f5f5f5;
+  gap: 10px; transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.checkbox {
+  width: 22px; height: 22px; border-radius: 6px; border: 2px solid #ccc;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.15s; font-size: 13px; color: white; cursor: pointer;
+}
+.item.checked .checkbox { background: #1a73e8; border-color: #1a73e8; }
+.item-text { flex: 1; font-size: 15px; color: #333; line-height: 1.3; cursor: pointer; }
+.item.checked .item-text { color: #aaa; text-decoration: line-through; }
+
+.item-edit-btns { display: none; gap: 4px; }
+.edit-mode .item-edit-btns { display: flex; }
+.edit-mode .item { background: #fffbf0; }
+
+.item-btn {
+  border: none; border-radius: 6px; width: 30px; height: 30px;
+  cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.btn-move { background: #e0f2fe; color: #0369a1; }
+.btn-edit-item { background: #fef3c7; color: #b45309; }
+.btn-del-item { background: #fee2e2; color: #dc2626; }
+
+.add-section-btn {
+  width: 100%; padding: 12px; border: 2px dashed #1a73e8;
+  background: white; border-radius: 12px; color: #1a73e8;
+  font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 16px;
+}
+
+.s-blue .section-header   { background: #1a73e8; }
+.s-teal .section-header   { background: #0097a7; }
+.s-purple .section-header { background: #7b1fa2; }
+.s-orange .section-header { background: #e65100; }
+.s-green .section-header  { background: #2e7d32; }
+.s-red .section-header    { background: #c62828; }
+.s-indigo .section-header { background: #283593; }
+.s-pink .section-header   { background: #ad1457; }
+
+.loading-screen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 60vh; gap: 16px; color: #555;
+}
+.spinner {
+  width: 40px; height: 40px; border: 4px solid #e0e0e0;
+  border-top-color: #1a73e8; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 200;
+  align-items: center; justify-content: center; padding: 16px;
+}
+.modal-overlay.open { display: flex; }
+.modal { background: white; border-radius: 16px; padding: 24px 20px; width: 100%; max-width: 360px; }
+.modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+.modal input, .modal select {
+  width: 100%; border: 1.5px solid #ddd; border-radius: 8px;
+  padding: 10px 12px; font-size: 15px; margin-bottom: 12px; outline: none;
+}
+.modal input:focus, .modal select:focus { border-color: #1a73e8; }
+.modal-btns { display: flex; gap: 8px; }
+.modal-btns button { flex: 1; padding: 11px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.modal-cancel { background: #f0f0f0; color: #555; }
+.modal-ok { background: #1a73e8; color: white; }
+.modal-danger { background: #dc2626; color: white; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>🧳 持ち物チェックリスト</h1>
+    <span class="sync-status" id="sync-status">⏳ 読込中</span>
+    <button class="header-edit-btn" id="global-edit-btn" onclick="toggleGlobalEdit()">✏️ 編集</button>
+  </div>
+  <div class="tabs" id="tabs-container"></div>
+</div>
+<div class="content" id="main-content">
+  <div class="loading-screen">
+    <div class="spinner"></div>
+    <p>データを読み込んでいます...</p>
+  </div>
+</div>
+
+<!-- モーダル群 -->
+<div class="modal-overlay" id="modal-section">
+  <div class="modal">
+    <h3 id="modal-section-title">📂 セクション追加</h3>
+    <input id="section-name-input" placeholder="セクション名" maxlength="30">
+    <select id="section-color-select">
+      <option value="s-blue">🔵 青</option>
+      <option value="s-teal">🟦 ティール</option>
+      <option value="s-green">🟢 緑</option>
+      <option value="s-orange">🟠 オレンジ</option>
+      <option value="s-purple">🟣 紫</option>
+      <option value="s-red">🔴 赤</option>
+      <option value="s-indigo">🔷 インディゴ</option>
+      <option value="s-pink">🌸 ピンク</option>
+    </select>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('modal-section')">キャンセル</button>
+      <button class="modal-ok" id="modal-section-ok" onclick="confirmSection()">追加</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-tab">
+  <div class="modal">
+    <h3 id="modal-tab-title">➕ タブ追加</h3>
+    <input id="tab-name-input" placeholder="タブ名" maxlength="20">
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('modal-tab')">キャンセル</button>
+      <button class="modal-ok" onclick="confirmTab()">追加</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-move">
+  <div class="modal">
+    <h3>📦 移動先を選択</h3>
+    <select id="move-tab-select" onchange="updateMoveSections()"></select>
+    <select id="move-section-select"></select>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('modal-move')">キャンセル</button>
+      <button class="modal-ok" onclick="confirmMove()">移動</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-item-edit">
+  <div class="modal">
+    <h3>✏️ アイテム名を編集</h3>
+    <input id="item-edit-input" placeholder="アイテム名" maxlength="50">
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('modal-item-edit')">キャンセル</button>
+      <button class="modal-ok" onclick="confirmItemEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-del-all">
+  <div class="modal">
+    <h3 id="modal-del-all-title">🗑️ 削除確認</h3>
+    <p id="modal-del-all-msg" style="font-size:14px;color:#555;margin-bottom:16px;line-height:1.6;"></p>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('modal-del-all')">キャンセル</button>
+      <button class="modal-danger" onclick="confirmDelAll()">削除する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'https://checklist-app-4daj.onrender.com/api/data';
+
+const INITIAL = {
+  tabs: [
+    { id:'tab-travel', name:'✈️ 旅行' },
+    { id:'tab-golf',   name:'⛳ ゴルフ' },
+  ],
+  data: {
+    'tab-travel': [
+      { id:'ts1', color:'s-blue', name:'💊 健康・ケア用品', items:[
+        {id:'t1',text:'マッサージクッション',checked:false},
+        {id:'t2',text:'手持ち電動マッサージ',checked:false},
+        {id:'t3',text:'休足時間',checked:false},
+        {id:'t4',text:'足リラックスシート',checked:false},
+        {id:'t5',text:'ナステント',checked:false},
+        {id:'t6',text:'サプリ',checked:false},
+        {id:'t7',text:'睡眠サプリ',checked:false},
+        {id:'t8',text:'マスク（乾燥対策）',checked:false},
+        {id:'t9',text:'メディヒール（上下）リカバリーウェア',checked:false},
+      ]},
+      { id:'ts2', color:'s-teal', name:'🌞 暑さ・快適グッズ', items:[
+        {id:'t10',text:'手持ち扇風機',checked:false},
+        {id:'t11',text:'サラサラボディシート',checked:false},
+        {id:'t12',text:'保冷剤',checked:false},
+        {id:'t13',text:'冷感タオル',checked:false},
+        {id:'t14',text:'帽子',checked:false},
+        {id:'t15',text:'サングラス',checked:false},
+        {id:'t16',text:'日傘',checked:false},
+        {id:'t17',text:'水筒',checked:false},
+        {id:'t18',text:'温湿度計',checked:false},
+      ]},
+      { id:'ts3', color:'s-purple', name:'😴 睡眠・機内グッズ', items:[
+        {id:'t19',text:'抱き枕',checked:false},
+        {id:'t20',text:'アイマスク / ホットアイマスク',checked:false},
+        {id:'t21',text:'耳栓',checked:false},
+        {id:'t22',text:'空気枕',checked:false},
+        {id:'t23',text:'空気入れ座布団',checked:false},
+        {id:'t24',text:'空気入れ足置きクッション',checked:false},
+      ]},
+      { id:'ts4', color:'s-orange', name:'🔌 電子機器・ケーブル類', items:[
+        {id:'t25',text:'ノートパソコン',checked:false},
+        {id:'t26',text:'iPad',checked:false},
+        {id:'t27',text:'コントローラー',checked:false},
+        {id:'t28',text:'モバイルバッテリー',checked:false},
+        {id:'t29',text:'AirPods Pro 2',checked:false},
+        {id:'t30',text:'変換プラグ',checked:false},
+        {id:'t31',text:'コンセントタップ',checked:false},
+        {id:'t32',text:'smart cony dual のメスケーブル',checked:false},
+        {id:'t33',text:'TYPE-A の三叉ケーブル',checked:false},
+        {id:'t34',text:'オフラインデータ（動画など）',checked:false},
+      ]},
+      { id:'ts5', color:'s-green', name:'🎒 バッグ・収納', items:[
+        {id:'t35',text:'圧縮袋',checked:false},
+        {id:'t36',text:'防水バッグ',checked:false},
+        {id:'t37',text:'スマホドライバッグ',checked:false},
+        {id:'t38',text:'フリーザーパック',checked:false},
+        {id:'t39',text:'ワークマン ジョイントバッグ + サコッシュバッグ',checked:false},
+        {id:'t40',text:'メッシュバッグ（お風呂入れ）',checked:false},
+        {id:'t41',text:'ドリンクホルダーフック',checked:false},
+        {id:'t42',text:'敷物',checked:false},
+        {id:'t43',text:'折りたたみ椅子（コンパクト）',checked:false},
+      ]},
+      { id:'ts6', color:'s-red', name:'🧴 洗面・衛生用品', items:[
+        {id:'t44',text:'シャンプー / 化粧水',checked:false},
+        {id:'t45',text:'歯ブラシ',checked:false},
+        {id:'t46',text:'髭剃り',checked:false},
+        {id:'t47',text:'日焼け止め',checked:false},
+        {id:'t48',text:'靴ズレ防水テープ',checked:false},
+      ]},
+      { id:'ts7', color:'s-indigo', name:'🗂️ 必需品・その他', items:[
+        {id:'t49',text:'パスポート',checked:false},
+        {id:'t50',text:'財布',checked:false},
+        {id:'t51',text:'ボールペン',checked:false},
+        {id:'t52',text:'着替え',checked:false},
+        {id:'t53',text:'水着',checked:false},
+        {id:'t54',text:'雨具（ワークマン イナレムシリーズ）',checked:false},
+        {id:'t55',text:'疲れにくい靴（アスレシューズ ハイバウンス）',checked:false},
+        {id:'t56',text:'冷蔵庫',checked:false},
+        {id:'t57',text:'サウナセット（スマートウォッチ含む）',checked:false},
+        {id:'t58',text:'頭痛薬 / 酔い止め / 胃薬 / 下痢止め',checked:false},
+        {id:'t59',text:'耳かき / 糸ようじ',checked:false},
+      ]},
+      { id:'ts8', color:'s-teal', name:'❄️ ミニバッグの中身', items:[
+        {id:'t60',text:'ピーコック アイスパック',checked:false},
+        {id:'t61',text:'ハンディファン',checked:false},
+        {id:'t62',text:'腰付け扇風機',checked:false},
+        {id:'t63',text:'冷感タオル（ミニバッグ用）',checked:false},
+      ]},
+    ],
+    'tab-golf': [
+      { id:'gs1', color:'s-blue', name:'⛳ ゴルフ基本装備', items:[
+        {id:'g1',text:'ゴルフボール',checked:false},
+        {id:'g2',text:'ゴルフウェア',checked:false},
+        {id:'g3',text:'ゴルフシューズ',checked:false},
+        {id:'g4',text:'ゴルフ帽子',checked:false},
+        {id:'g5',text:'サングラス',checked:false},
+        {id:'g6',text:'リストバンド',checked:false},
+        {id:'g7',text:'レインウェア（イナレム半袖など）',checked:false},
+      ]},
+      { id:'gs2', color:'s-orange', name:'❄️ クーラーボックス（2人:真空ハイブリッド / 4人:タフクーラーバッグ）', items:[
+        {id:'g8',text:'ネックリング × 2（前日凍らす）',checked:false},
+        {id:'g9',text:'ドリンク 500ml × 2本（1本コンビニアイス）',checked:false},
+        {id:'g10',text:'ダイソー保冷剤（1kg）（前日凍らす）',checked:false},
+        {id:'g11',text:'パウチアイス（前日凍らす）',checked:false},
+        {id:'g12',text:'ピーコック アイスパック L 予備（前日凍らす）',checked:false},
+      ]},
+      { id:'gs3', color:'s-teal', name:'💧 防水バッグ', items:[
+        {id:'g13',text:'氷嚢',checked:false},
+        {id:'g14',text:'ザムスト 冷感ベスト',checked:false},
+      ]},
+      { id:'gs4', color:'s-green', name:'👜 ゴルフトートバッグ', items:[
+        {id:'g15',text:'水筒（円柱氷入り）+ ダイソー保冷バッグ',checked:false},
+        {id:'g16',text:'ベルトファン',checked:false},
+        {id:'g17',text:'ビオレ 冷タオル × 2枚',checked:false},
+        {id:'g18',text:'ピーコック アイスパック L',checked:false},
+        {id:'g19',text:'日焼け止め',checked:false},
+        {id:'g20',text:'薬',checked:false},
+        {id:'g21',text:'モバイルバッテリー 5k',checked:false},
+        {id:'g22',text:'CIO Dual',checked:false},
+        {id:'g23',text:'塩タブレット',checked:false},
+        {id:'g24',text:'CtoC ケーブル',checked:false},
+      ]},
+      { id:'gs5', color:'s-purple', name:'🏨 泊まりゴルフ追加品', items:[
+        {id:'g25',text:'タフクーラーバッグ 5L',checked:false},
+        {id:'g26',text:'サーモス 保冷ロールバッグ',checked:false},
+        {id:'g27',text:'コンビニ凍結ドリンク 2〜3本',checked:false},
+        {id:'g28',text:'パソコン',checked:false},
+      ]},
+    ],
+  }
+};
+
+let state = {};
+let globalEdit = false;
+let currentTab = null;
+let saveTimer = null;
+let pendingSection = null;
+let pendingTab = null;
+let pendingMove = null;
+let pendingItemEdit = null;
+let pendingDelAll = null;
+let _uid = Date.now();
+const uid = () => 'u' + (_uid++);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+// ===== API =====
+function setSyncStatus(type, msg) {
+  const el = document.getElementById('sync-status');
+  el.textContent = msg;
+  el.className = 'sync-status ' + type;
+}
+
+async function loadFromServer() {
+  try {
+    setSyncStatus('loading', '⏳ 読込中');
+    const res = await fetch(API);
+    const json = await res.json();
+    if (json.exists) {
+      state = json.data;
+    } else {
+      state = JSON.parse(JSON.stringify(INITIAL));
+      await saveToServer();
+    }
+    setSyncStatus('ok', '✅ 同期済み');
+  } catch(e) {
+    setSyncStatus('err', '⚠️ オフライン');
+    const local = localStorage.getItem('checklist_offline');
+    state = local ? JSON.parse(local) : JSON.parse(JSON.stringify(INITIAL));
+  }
+  currentTab = state.tabs[0]?.id || null;
+  rerender();
+}
+
+async function saveToServer() {
+  try {
+    setSyncStatus('loading', '💾 保存中');
+    localStorage.setItem('checklist_offline', JSON.stringify(state));
+    await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+    setSyncStatus('ok', '✅ 同期済み');
+  } catch(e) {
+    setSyncStatus('err', '⚠️ 保存失敗');
+    localStorage.setItem('checklist_offline', JSON.stringify(state));
+  }
+}
+
+function scheduleSave() {
+  localStorage.setItem('checklist_offline', JSON.stringify(state));
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveToServer, 1000);
+}
+
+// ===== Render =====
+function renderTabs() {
+  const c = document.getElementById('tabs-container');
+  let h = state.tabs.map(t =>
+    `<button class="tab-btn${t.id===currentTab?' active':''}" onclick="switchTab('${t.id}')">${esc(t.name)}</button>`
+  ).join('');
+  if (globalEdit) h += `<button class="tab-add-btn" onclick="openAddTab()">＋</button>`;
+  c.innerHTML = h;
+}
+
+function renderContent() {
+  const c = document.getElementById('main-content');
+  c.innerHTML = state.tabs.map(t =>
+    `<div id="${t.id}" class="tab-panel${t.id===currentTab?' active':''}">${renderTab(t.id)}</div>`
+  ).join('');
+}
+
+function renderTab(tabId) {
+  const secs = state.data[tabId] || [];
+  const all = secs.flatMap(s=>s.items);
+  const done = all.filter(i=>i.checked).length;
+  const total = all.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+
+  let h = `
+    <div class="progress-bar-wrap">
+      <div class="progress-label"><span>準備完了</span><span>${done} / ${total}</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="action-bar">
+      <button class="action-btn btn-reset" onclick="resetAll('${tabId}')">🔄 リセット</button>
+      <button class="action-btn btn-check-all" onclick="checkAll('${tabId}')">✅ 全チェック</button>
+      <button class="action-btn btn-del-all" onclick="openDelAll('content','${tabId}')">🗑 全削除</button>
+    </div>
+    <div${globalEdit?' class="edit-mode"':''}>`;
+
+  secs.forEach(sec => {
+    h += `<div class="section ${sec.color}">
+      <div class="section-header" id="sh-${sec.id}">
+        <span class="section-title" onclick="toggleSec('${sec.id}')">${esc(sec.name)}</span>
+        <div class="section-edit-btns">
+          <button class="sec-btn" onclick="openEditSection('${tabId}','${sec.id}')">✏️</button>
+          <button class="sec-btn" onclick="delSection('${tabId}','${sec.id}')">🗑</button>
+        </div>
+        <span class="toggle-icon" onclick="toggleSec('${sec.id}')">▼</span>
+      </div>
+      <div class="section-body" id="sb-${sec.id}">`;
+    sec.items.forEach(item => {
+      h += `<div class="item${item.checked?' checked':''}">
+        <div class="checkbox" onclick="toggleItem('${tabId}','${sec.id}','${item.id}')">${item.checked?'✓':''}</div>
+        <div class="item-text" onclick="toggleItem('${tabId}','${sec.id}','${item.id}')">${esc(item.text)}</div>
+        <div class="item-edit-btns">
+          <button class="item-btn btn-move" onclick="openMove('${tabId}','${sec.id}','${item.id}')">↗</button>
+          <button class="item-btn btn-edit-item" onclick="openItemEdit('${tabId}','${sec.id}','${item.id}')">✏️</button>
+          <button class="item-btn btn-del-item" onclick="delItem('${tabId}','${sec.id}','${item.id}')">✕</button>
+        </div>
+      </div>`;
+    });
+    h += `<div class="add-item-row">
+        <input class="add-item-input" placeholder="アイテムを追加..." id="inp-${sec.id}"
+          onkeydown="if(event.key==='Enter')addItem('${tabId}','${sec.id}')">
+        <button class="add-item-btn" onclick="addItem('${tabId}','${sec.id}')">＋</button>
+      </div></div></div>`;
+  });
+
+  h += `</div><button class="add-section-btn" onclick="openAddSection('${tabId}')">＋ セクションを追加</button>`;
+
+  if (globalEdit) {
+    h += `<div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button class="action-btn" style="background:#e0f2fe;color:#0369a1;" onclick="openEditTab('${tabId}')">✏️ タブ名変更</button>
+      <button class="action-btn" style="background:#fee2e2;color:#dc2626;" onclick="openDelAll('tab','${tabId}')">🗑 タブ削除</button>
+    </div>`;
+  }
+  return h;
+}
+
+function rerender() { renderTabs(); renderContent(); }
+
+// ===== Actions =====
+function switchTab(tabId) {
+  currentTab = tabId; rerender();
+}
+function toggleGlobalEdit() {
+  globalEdit = !globalEdit;
+  document.getElementById('global-edit-btn').textContent = globalEdit ? '✔️ 完了' : '✏️ 編集';
+  rerender();
+}
+function toggleSec(secId) {
+  document.getElementById('sh-'+secId)?.classList.toggle('collapsed');
+  document.getElementById('sb-'+secId)?.classList.toggle('collapsed');
+}
+function toggleItem(tabId, secId, itemId) {
+  const item = state.data[tabId].find(s=>s.id===secId).items.find(i=>i.id===itemId);
+  item.checked = !item.checked;
+  scheduleSave(); rerender();
+}
+function addItem(tabId, secId) {
+  const inp = document.getElementById('inp-'+secId);
+  const text = inp?.value.trim();
+  if (!text) return;
+  state.data[tabId].find(s=>s.id===secId).items.push({id:uid(),text,checked:false});
+  scheduleSave(); rerender();
+  setTimeout(()=>document.getElementById('inp-'+secId)?.focus(), 50);
+}
+function delItem(tabId, secId, itemId) {
+  const sec = state.data[tabId].find(s=>s.id===secId);
+  sec.items = sec.items.filter(i=>i.id!==itemId);
+  scheduleSave(); rerender();
+}
+function resetAll(tabId) {
+  if (!confirm('全てのチェックをリセットしますか？')) return;
+  (state.data[tabId]||[]).forEach(s=>s.items.forEach(i=>i.checked=false));
+  scheduleSave(); rerender();
+}
+function checkAll(tabId) {
+  (state.data[tabId]||[]).forEach(s=>s.items.forEach(i=>i.checked=true));
+  scheduleSave(); rerender();
+}
+
+// ===== Item edit =====
+function openItemEdit(tabId, secId, itemId) {
+  pendingItemEdit = {tabId,secId,itemId};
+  const item = state.data[tabId].find(s=>s.id===secId).items.find(i=>i.id===itemId);
+  document.getElementById('item-edit-input').value = item.text;
+  openModal('modal-item-edit');
+  setTimeout(()=>document.getElementById('item-edit-input').focus(),100);
+}
+function confirmItemEdit() {
+  const text = document.getElementById('item-edit-input').value.trim();
+  if (!text||!pendingItemEdit) return;
+  const {tabId,secId,itemId} = pendingItemEdit;
+  state.data[tabId].find(s=>s.id===secId).items.find(i=>i.id===itemId).text = text;
+  scheduleSave(); rerender(); closeModal('modal-item-edit');
+}
+document.getElementById('item-edit-input').addEventListener('keydown',e=>{ if(e.key==='Enter') confirmItemEdit(); });
+
+// ===== Move =====
+function openMove(tabId, secId, itemId) {
+  pendingMove = {tabId,secId,itemId};
+  const tabSel = document.getElementById('move-tab-select');
+  tabSel.innerHTML = state.tabs.map(t=>`<option value="${t.id}"${t.id===tabId?' selected':''}>${esc(t.name)}</option>`).join('');
+  updateMoveSections();
+  openModal('modal-move');
+}
+function updateMoveSections() {
+  const tabId = document.getElementById('move-tab-select').value;
+  const secs = state.data[tabId]||[];
+  document.getElementById('move-section-select').innerHTML = secs.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+function confirmMove() {
+  if (!pendingMove) return;
+  const {tabId,secId,itemId} = pendingMove;
+  const toTab = document.getElementById('move-tab-select').value;
+  const toSec = document.getElementById('move-section-select').value;
+  if (secId===toSec) { closeModal('modal-move'); return; }
+  const fromSec = state.data[tabId].find(s=>s.id===secId);
+  const idx = fromSec.items.findIndex(i=>i.id===itemId);
+  const [item] = fromSec.items.splice(idx,1);
+  state.data[toTab].find(s=>s.id===toSec).items.push(item);
+  scheduleSave(); rerender(); closeModal('modal-move');
+}
+
+// ===== Section =====
+function openAddSection(tabId) {
+  pendingSection = {tabId,mode:'add'};
+  document.getElementById('modal-section-title').textContent = '📂 セクション追加';
+  document.getElementById('modal-section-ok').textContent = '追加';
+  document.getElementById('section-name-input').value = '';
+  openModal('modal-section');
+  setTimeout(()=>document.getElementById('section-name-input').focus(),100);
+}
+function openEditSection(tabId, secId) {
+  pendingSection = {tabId,mode:'edit',secId};
+  const sec = state.data[tabId].find(s=>s.id===secId);
+  document.getElementById('modal-section-title').textContent = '✏️ セクション編集';
+  document.getElementById('modal-section-ok').textContent = '保存';
+  document.getElementById('section-name-input').value = sec.name;
+  document.getElementById('section-color-select').value = sec.color;
+  openModal('modal-section');
+  setTimeout(()=>document.getElementById('section-name-input').focus(),100);
+}
+function confirmSection() {
+  const name = document.getElementById('section-name-input').value.trim();
+  if (!name||!pendingSection) return;
+  const color = document.getElementById('section-color-select').value;
+  const {tabId,mode,secId} = pendingSection;
+  if (mode==='add') {
+    if (!state.data[tabId]) state.data[tabId]=[];
+    state.data[tabId].push({id:uid(),color,name,items:[]});
+  } else {
+    const sec = state.data[tabId].find(s=>s.id===secId);
+    sec.name=name; sec.color=color;
+  }
+  scheduleSave(); rerender(); closeModal('modal-section');
+}
+document.getElementById('section-name-input').addEventListener('keydown',e=>{ if(e.key==='Enter') confirmSection(); });
+
+function delSection(tabId, secId) {
+  const sec = state.data[tabId].find(s=>s.id===secId);
+  if (!confirm(`「${sec.name}」を削除しますか？`)) return;
+  state.data[tabId] = state.data[tabId].filter(s=>s.id!==secId);
+  scheduleSave(); rerender();
+}
+
+// ===== Tab =====
+function openAddTab() {
+  pendingTab = {mode:'add'};
+  document.getElementById('modal-tab-title').textContent = '➕ タブ追加';
+  document.getElementById('tab-name-input').value = '';
+  openModal('modal-tab');
+  setTimeout(()=>document.getElementById('tab-name-input').focus(),100);
+}
+function openEditTab(tabId) {
+  pendingTab = {mode:'edit',tabId};
+  document.getElementById('modal-tab-title').textContent = '✏️ タブ名変更';
+  document.getElementById('tab-name-input').value = state.tabs.find(t=>t.id===tabId).name;
+  openModal('modal-tab');
+  setTimeout(()=>document.getElementById('tab-name-input').focus(),100);
+}
+function confirmTab() {
+  const name = document.getElementById('tab-name-input').value.trim();
+  if (!name||!pendingTab) return;
+  if (pendingTab.mode==='add') {
+    const newId = uid();
+    state.tabs.push({id:newId,name});
+    state.data[newId]=[];
+    currentTab=newId;
+  } else {
+    state.tabs.find(t=>t.id===pendingTab.tabId).name=name;
+  }
+  scheduleSave(); rerender(); closeModal('modal-tab');
+}
+document.getElementById('tab-name-input').addEventListener('keydown',e=>{ if(e.key==='Enter') confirmTab(); });
+
+// ===== Del All =====
+function openDelAll(type, tabId) {
+  if (type==='tab' && state.tabs.length<=1) { alert('最低1つのタブが必要です'); return; }
+  pendingDelAll = {type,tabId};
+  const tab = state.tabs.find(t=>t.id===tabId);
+  if (type==='tab') {
+    document.getElementById('modal-del-all-title').textContent = '🗑️ タブを削除';
+    document.getElementById('modal-del-all-msg').textContent = `「${tab.name}」タブと中の全データを削除します。元に戻せません。`;
+  } else {
+    document.getElementById('modal-del-all-title').textContent = '🗑️ 全削除';
+    document.getElementById('modal-del-all-msg').textContent = `「${tab.name}」の全セクションと全アイテムを削除します。元に戻せません。`;
+  }
+  openModal('modal-del-all');
+}
+function confirmDelAll() {
+  if (!pendingDelAll) return;
+  const {type,tabId} = pendingDelAll;
+  if (type==='tab') {
+    delete state.data[tabId];
+    state.tabs = state.tabs.filter(t=>t.id!==tabId);
+    currentTab = state.tabs[0]?.id||null;
+  } else {
+    state.data[tabId]=[];
+  }
+  scheduleSave(); rerender(); closeModal('modal-del-all');
+}
+
+// ===== Modal =====
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ===== Init =====
+loadFromServer();
+</script>
+</body>
+</html>
