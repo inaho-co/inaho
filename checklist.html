@@ -47,15 +47,6 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; mi
 .tab-panel { display: none; }
 .tab-panel.active { display: block; }
 
-.progress-bar-wrap {
-  background: white; border-radius: 12px; padding: 12px 16px;
-  margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-.progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #555; margin-bottom: 6px; }
-.progress-label span:last-child { font-weight: 700; color: #1a73e8; }
-.progress-bar { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; }
-.progress-fill { height: 100%; background: linear-gradient(90deg, #1a73e8, #42a5f5); border-radius: 4px; transition: width 0.3s; }
-
 .action-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
 .action-btn {
   flex: 1; min-width: 70px; padding: 9px 6px; border: none; border-radius: 8px;
@@ -65,6 +56,16 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; mi
 .btn-reset { background: #fee2e2; color: #dc2626; }
 .btn-check-all { background: #dcfce7; color: #16a34a; }
 .btn-del-all { background: #f3e8ff; color: #7c3aed; }
+
+/* tab order buttons in edit mode */
+.tab-order-bar {
+  display: none; gap: 4px; margin-bottom: 8px;
+}
+.edit-tab-mode .tab-order-bar { display: flex; }
+.tab-order-btn {
+  background: rgba(255,255,255,0.2); border: none; color: white;
+  border-radius: 6px; padding: 4px 10px; font-size: 14px; cursor: pointer;
+}
 
 .section {
   background: white; border-radius: 12px;
@@ -80,11 +81,11 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; mi
 .section-body { padding: 4px 0; }
 .section-body.collapsed { display: none; }
 
-.section-edit-btns { display: none; gap: 4px; }
+.section-edit-btns { display: none; gap: 3px; }
 .edit-mode .section-edit-btns { display: flex; }
 .sec-btn {
   background: rgba(255,255,255,0.25); border: none; color: white;
-  border-radius: 6px; padding: 3px 8px; font-size: 13px; cursor: pointer;
+  border-radius: 6px; padding: 3px 7px; font-size: 12px; cursor: pointer;
 }
 
 .add-item-row {
@@ -116,17 +117,19 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; mi
 .item-text { flex: 1; font-size: 15px; color: #333; line-height: 1.3; cursor: pointer; }
 .item.checked .item-text { color: #aaa; text-decoration: line-through; }
 
-.item-edit-btns { display: none; gap: 4px; }
+.item-edit-btns { display: none; gap: 3px; }
 .edit-mode .item-edit-btns { display: flex; }
 .edit-mode .item { background: #fffbf0; }
 
 .item-btn {
-  border: none; border-radius: 6px; width: 30px; height: 30px;
+  border: none; border-radius: 6px; width: 28px; height: 28px;
   cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
 }
-.btn-move { background: #e0f2fe; color: #0369a1; }
-.btn-edit-item { background: #fef3c7; color: #b45309; }
+.btn-up   { background: #e0f2fe; color: #0369a1; }
+.btn-down { background: #e0f2fe; color: #0369a1; }
+.btn-move-sec { background: #fef3c7; color: #b45309; }
+.btn-edit-item { background: #f3e8ff; color: #7c3aed; }
 .btn-del-item { background: #fee2e2; color: #dc2626; }
 
 .add-section-btn {
@@ -186,10 +189,7 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; mi
   <div class="tabs" id="tabs-container"></div>
 </div>
 <div class="content" id="main-content">
-  <div class="loading-screen">
-    <div class="spinner"></div>
-    <p>データを読み込んでいます...</p>
-  </div>
+  <div class="loading-screen"><div class="spinner"></div><p>読み込み中...</p></div>
 </div>
 
 <!-- モーダル群 -->
@@ -455,12 +455,25 @@ function scheduleSave() {
   saveTimer = setTimeout(saveToServer, 1000);
 }
 
+// ===== Helpers =====
+function moveArr(arr, idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= arr.length) return;
+  [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
+}
+
 // ===== Render =====
 function renderTabs() {
   const c = document.getElementById('tabs-container');
-  let h = state.tabs.map(t =>
-    `<button class="tab-btn${t.id===currentTab?' active':''}" onclick="switchTab('${t.id}')">${esc(t.name)}</button>`
-  ).join('');
+  const tabIdx = state.tabs.findIndex(t => t.id === currentTab);
+  let h = state.tabs.map((t, i) => {
+    let orderBtns = '';
+    if (globalEdit) {
+      orderBtns = `<span onclick="moveTab(${i},-1)" style="font-size:11px;cursor:pointer;opacity:0.8;">◀</span>
+                   <span onclick="moveTab(${i},1)"  style="font-size:11px;cursor:pointer;opacity:0.8;">▶</span>`;
+    }
+    return `<button class="tab-btn${t.id===currentTab?' active':''}" onclick="switchTab('${t.id}')">${esc(t.name)}${globalEdit ? ' ' + orderBtns : ''}</button>`;
+  }).join('');
   if (globalEdit) h += `<button class="tab-add-btn" onclick="openAddTab()">＋</button>`;
   c.innerHTML = h;
 }
@@ -474,16 +487,8 @@ function renderContent() {
 
 function renderTab(tabId) {
   const secs = state.data[tabId] || [];
-  const all = secs.flatMap(s=>s.items);
-  const done = all.filter(i=>i.checked).length;
-  const total = all.length;
-  const pct = total ? Math.round(done/total*100) : 0;
 
   let h = `
-    <div class="progress-bar-wrap">
-      <div class="progress-label"><span>準備完了</span><span>${done} / ${total}</span></div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-    </div>
     <div class="action-bar">
       <button class="action-btn btn-reset" onclick="resetAll('${tabId}')">🔄 リセット</button>
       <button class="action-btn btn-check-all" onclick="checkAll('${tabId}')">✅ 全チェック</button>
@@ -491,28 +496,34 @@ function renderTab(tabId) {
     </div>
     <div${globalEdit?' class="edit-mode"':''}>`;
 
-  secs.forEach(sec => {
+  secs.forEach((sec, sIdx) => {
     h += `<div class="section ${sec.color}">
       <div class="section-header" id="sh-${sec.id}">
         <span class="section-title" onclick="toggleSec('${sec.id}')">${esc(sec.name)}</span>
         <div class="section-edit-btns">
+          <button class="sec-btn" onclick="moveSec('${tabId}',${sIdx},-1)">▲</button>
+          <button class="sec-btn" onclick="moveSec('${tabId}',${sIdx},1)">▼</button>
           <button class="sec-btn" onclick="openEditSection('${tabId}','${sec.id}')">✏️</button>
           <button class="sec-btn" onclick="delSection('${tabId}','${sec.id}')">🗑</button>
         </div>
         <span class="toggle-icon" onclick="toggleSec('${sec.id}')">▼</span>
       </div>
       <div class="section-body" id="sb-${sec.id}">`;
-    sec.items.forEach(item => {
+
+    sec.items.forEach((item, iIdx) => {
       h += `<div class="item${item.checked?' checked':''}">
         <div class="checkbox" onclick="toggleItem('${tabId}','${sec.id}','${item.id}')">${item.checked?'✓':''}</div>
         <div class="item-text" onclick="toggleItem('${tabId}','${sec.id}','${item.id}')">${esc(item.text)}</div>
         <div class="item-edit-btns">
-          <button class="item-btn btn-move" onclick="openMove('${tabId}','${sec.id}','${item.id}')">↗</button>
+          <button class="item-btn btn-up"   onclick="moveItem('${tabId}','${sec.id}',${iIdx},-1)">▲</button>
+          <button class="item-btn btn-down" onclick="moveItem('${tabId}','${sec.id}',${iIdx},1)">▼</button>
+          <button class="item-btn btn-move-sec" onclick="openMove('${tabId}','${sec.id}','${item.id}')">↗</button>
           <button class="item-btn btn-edit-item" onclick="openItemEdit('${tabId}','${sec.id}','${item.id}')">✏️</button>
           <button class="item-btn btn-del-item" onclick="delItem('${tabId}','${sec.id}','${item.id}')">✕</button>
         </div>
       </div>`;
     });
+
     h += `<div class="add-item-row">
         <input class="add-item-input" placeholder="アイテムを追加..." id="inp-${sec.id}"
           onkeydown="if(event.key==='Enter')addItem('${tabId}','${sec.id}')">
@@ -534,23 +545,25 @@ function renderTab(tabId) {
 function rerender() { renderTabs(); renderContent(); }
 
 // ===== Actions =====
-function switchTab(tabId) {
-  currentTab = tabId; rerender();
-}
+function switchTab(tabId) { currentTab = tabId; rerender(); }
+
 function toggleGlobalEdit() {
   globalEdit = !globalEdit;
   document.getElementById('global-edit-btn').textContent = globalEdit ? '✔️ 完了' : '✏️ 編集';
   rerender();
 }
+
 function toggleSec(secId) {
   document.getElementById('sh-'+secId)?.classList.toggle('collapsed');
   document.getElementById('sb-'+secId)?.classList.toggle('collapsed');
 }
+
 function toggleItem(tabId, secId, itemId) {
   const item = state.data[tabId].find(s=>s.id===secId).items.find(i=>i.id===itemId);
   item.checked = !item.checked;
   scheduleSave(); rerender();
 }
+
 function addItem(tabId, secId) {
   const inp = document.getElementById('inp-'+secId);
   const text = inp?.value.trim();
@@ -559,18 +572,38 @@ function addItem(tabId, secId) {
   scheduleSave(); rerender();
   setTimeout(()=>document.getElementById('inp-'+secId)?.focus(), 50);
 }
+
 function delItem(tabId, secId, itemId) {
   const sec = state.data[tabId].find(s=>s.id===secId);
   sec.items = sec.items.filter(i=>i.id!==itemId);
   scheduleSave(); rerender();
 }
+
 function resetAll(tabId) {
   if (!confirm('全てのチェックをリセットしますか？')) return;
   (state.data[tabId]||[]).forEach(s=>s.items.forEach(i=>i.checked=false));
   scheduleSave(); rerender();
 }
+
 function checkAll(tabId) {
   (state.data[tabId]||[]).forEach(s=>s.items.forEach(i=>i.checked=true));
+  scheduleSave(); rerender();
+}
+
+// ===== 順序移動 =====
+function moveTab(idx, dir) {
+  moveArr(state.tabs, idx, dir);
+  scheduleSave(); rerender();
+}
+
+function moveSec(tabId, idx, dir) {
+  moveArr(state.data[tabId], idx, dir);
+  scheduleSave(); rerender();
+}
+
+function moveItem(tabId, secId, idx, dir) {
+  const items = state.data[tabId].find(s=>s.id===secId).items;
+  moveArr(items, idx, dir);
   scheduleSave(); rerender();
 }
 
@@ -591,7 +624,7 @@ function confirmItemEdit() {
 }
 document.getElementById('item-edit-input').addEventListener('keydown',e=>{ if(e.key==='Enter') confirmItemEdit(); });
 
-// ===== Move =====
+// ===== Move item to section =====
 function openMove(tabId, secId, itemId) {
   pendingMove = {tabId,secId,itemId};
   const tabSel = document.getElementById('move-tab-select');
