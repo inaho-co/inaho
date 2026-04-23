@@ -17,17 +17,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .supplier-tabs{display:flex;gap:6px;padding:8px 14px;background:#fff;border-bottom:1px solid #e0e0e0;}
 .sup-tab{flex:1;padding:8px 4px;font-size:13px;font-weight:600;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;color:#666;cursor:pointer;text-align:center;}
 .sup-tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
-.sup-tab .sup-cnt{font-size:10px;display:block;margin-top:2px;opacity:0.8;}
+.sup-tab .sup-cnt{font-size:10px;display:block;margin-top:1px;opacity:0.8;}
 .store-section{background:#fff;border-bottom:1px solid #e0e0e0;padding:8px 14px;}
 .store-tabs{display:flex;gap:5px;margin-bottom:8px;}
-.store-tab{flex:1;padding:6px 2px;font-size:11px;font-weight:500;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;color:#666;cursor:pointer;text-align:center;}
+.store-tab{flex:1;padding:7px 4px;font-size:12px;font-weight:500;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;color:#666;cursor:pointer;text-align:center;transition:all 0.15s;}
 .store-tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
 .store-tab.has-data{border-color:#1565C0;color:#1565C0;}
 .store-tab.active.has-data{background:#1565C0;color:#fff;border-color:#1565C0;}
 .store-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .btn-row{display:flex;gap:8px;margin-top:6px;}
 .clear-store-btn{flex:1;padding:6px;font-size:11px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;}
-.clear-all-btn{flex:1;padding:6px;font-size:11px;color:#666;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;}
+.clear-all-btn2{flex:1;padding:6px;font-size:11px;color:#666;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;}
 .tab-bar{display:flex;background:#fff;border-bottom:1px solid #e0e0e0;}
 .tab-btn{flex:1;padding:10px 6px;font-size:13px;color:#888;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;}
 .tab-btn.active{color:#1a1a1a;border-bottom:2px solid #1a1a1a;font-weight:600;}
@@ -38,7 +38,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .filter-btn{padding:5px 13px;font-size:12px;border:1px solid #d0d0d0;border-radius:20px;background:none;color:#666;cursor:pointer;white-space:nowrap;}
 .filter-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
 .product-list{padding:0 14px;}
-.product-item{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #efefef;}
+.product-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #efefef;}
 .product-info{flex:1;min-width:0;}
 .product-name{font-size:13px;line-height:1.4;word-break:break-all;}
 .product-meta{font-size:11px;color:#999;margin-top:2px;}
@@ -46,22 +46,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .k1{background:#E3F2FD;color:#1565C0;}
 .k6{background:#E8F5E9;color:#2E7D32;}
 .ke{background:#FFF8E1;color:#E65100;}
-.qty-group{display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
-.qty-row{display:flex;align-items:center;gap:2px;}
-.qty-label{font-size:9px;color:#aaa;width:12px;text-align:center;font-weight:600;}
-.qbtn{width:28px;height:28px;border:1px solid #d0d0d0;border-radius:6px;background:#f8f8f8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.qty-ctrl{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.qbtn{width:34px;height:34px;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:300;}
 .qbtn:active{background:#e0e0e0;}
-.qdsp{width:28px;text-align:center;font-size:12px;font-weight:600;color:#bbb;cursor:pointer;}
+.qdsp{width:34px;text-align:center;font-size:15px;font-weight:500;color:#bbb;cursor:pointer;}
 .qdsp.hv{color:#1565C0;}
-.summary{position:sticky;bottom:0;background:#fff;border-top:1px solid #e0e0e0;padding:6px 14px;box-shadow:0 -2px 8px rgba(0,0,0,0.06);}
-.sum-sup{display:flex;gap:12px;margin-bottom:4px;}
-.sum-sup-label{font-size:10px;font-weight:600;color:#888;width:36px;}
-.sum-sup-vals{display:flex;gap:8px;flex:1;}
-.sum-item{font-size:11px;color:#1a1a1a;}
-.sum-item span{font-weight:600;}
-.sum-item .money{color:#1565C0;}
+.summary{position:sticky;bottom:0;background:#fff;border-top:1px solid #e0e0e0;padding:8px 14px;box-shadow:0 -2px 8px rgba(0,0,0,0.06);}
+.sum-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.sum-store-name{font-size:12px;font-weight:600;color:#1a1a1a;}
+.sum-vals{display:flex;gap:10px;}
+.sum-item{font-size:12px;color:#666;}
+.sum-item b{color:#1a1a1a;}
+.sum-item .money{color:#1565C0;font-weight:600;}
+.sum-all-row{display:flex;gap:10px;padding-top:4px;border-top:1px solid #efefef;margin-top:2px;}
+.sum-all-item{font-size:11px;color:#888;}
+.sum-all-item b{color:#666;}
 .empty{text-align:center;padding:40px 14px;color:#aaa;font-size:13px;}
-.conf-block{margin-bottom:16px;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;}
+.conf-block{margin-bottom:12px;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;}
 .conf-block-title{background:#f5f5f5;padding:8px 12px;font-size:12px;font-weight:600;}
 .conf-block-inner{padding:0 12px;}
 .order-section-title{padding:6px 0 2px;font-size:11px;font-weight:600;color:#888;}
@@ -84,18 +85,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .h-del-btn{padding:5px 8px;font-size:11px;color:#e53935;border:1px solid #e53935;border-radius:6px;background:none;cursor:pointer;margin-left:4px;}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;}
 .overlay.open{display:flex;}
-.modal{background:#fff;border-radius:14px;padding:20px;width:min(320px,92vw);}
+.modal{background:#fff;border-radius:14px;padding:20px;width:min(300px,90vw);}
 .modal h3{font-size:15px;font-weight:600;margin-bottom:4px;}
 .modal-sub{font-size:12px;color:#888;margin-bottom:12px;line-height:1.5;}
-.modal-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
-.modal-row{display:flex;align-items:center;gap:8px;}
-.modal-row-label{font-size:12px;color:#555;width:56px;flex-shrink:0;font-weight:500;}
-.modal-row input{flex:1;font-size:20px;text-align:center;padding:8px;border:1px solid #d0d0d0;border-radius:8px;}
+.modal input[type=number]{width:100%;font-size:22px;text-align:center;padding:10px;border:1px solid #d0d0d0;border-radius:8px;margin-bottom:12px;}
 .modal-btns{display:flex;gap:8px;}
 .modal-btns button{flex:1;padding:11px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;}
 .mbtn-cancel{border:1px solid #d0d0d0;background:none;color:#666;}
 .mbtn-ok{background:#1a1a1a;color:#fff;border:none;}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;z-index:500;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;z-index:500;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 #tab-history{display:none;padding:0 14px;}
 #tab-confirm{display:none;padding:0 14px;}
@@ -148,7 +146,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
     </div>
   </div>
   <div class="btn-row">
-    <button class="clear-store-btn" onclick="clearStore()">この店舗をクリア</button>
+    <button class="clear-store-btn" onclick="clearCurrentStore()">この店舗をクリア</button>
+    <button class="clear-all-btn2" onclick="clearAll()">全クリア</button>
   </div>
 </div>
 
@@ -177,23 +176,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </div>
 
 <div class="summary">
-  <div class="sum-sup">
-    <div class="sum-sup-label">稲穂</div>
-    <div class="sum-sup-vals">
-      <div class="sum-item"><span id="si-inaho-items">0</span>品目</div>
-      <div class="sum-item"><span id="si-inaho-qty">0</span>個</div>
-      <div class="sum-item">1000均:<span class="money" id="si-inaho-1000">¥0</span></div>
-      <div class="sum-item">600均:<span class="money" id="si-inaho-600">¥0</span></div>
+  <div class="sum-row">
+    <div class="sum-store-name" id="sum-store-name">店舗1</div>
+    <div class="sum-vals">
+      <div class="sum-item"><b id="s-items">0</b>品目</div>
+      <div class="sum-item"><b id="s-qty">0</b>個</div>
+      <div class="sum-item">1000均:<span class="money" id="s-1000">¥0</span></div>
+      <div class="sum-item">600均:<span class="money" id="s-600">¥0</span></div>
     </div>
   </div>
-  <div class="sum-sup">
-    <div class="sum-sup-label">三共</div>
-    <div class="sum-sup-vals">
-      <div class="sum-item"><span id="si-sankyo-items">0</span>品目</div>
-      <div class="sum-item"><span id="si-sankyo-qty">0</span>個</div>
-      <div class="sum-item">1000均:<span class="money" id="si-sankyo-1000">¥0</span></div>
-      <div class="sum-item">600均:<span class="money" id="si-sankyo-600">¥0</span></div>
-    </div>
+  <div class="sum-all-row">
+    <div class="sum-all-item">全店舗合計: <b id="sa-qty">0</b>個</div>
+    <div class="sum-all-item">稲穂:<b id="sa-inaho">¥0</b></div>
+    <div class="sum-all-item">三共:<b id="sa-sankyo">¥0</b></div>
   </div>
 </div>
 
@@ -201,11 +196,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
   <div class="modal">
     <h3>数量を入力</h3>
     <div class="modal-sub" id="modal-pname"></div>
-    <div class="modal-rows">
-      <div class="modal-row"><div class="modal-row-label" id="ml-0">店舗1</div><input type="number" id="mi-0" min="0" inputmode="numeric"></div>
-      <div class="modal-row"><div class="modal-row-label" id="ml-1">店舗2</div><input type="number" id="mi-1" min="0" inputmode="numeric"></div>
-      <div class="modal-row"><div class="modal-row-label" id="ml-2">店舗3</div><input type="number" id="mi-2" min="0" inputmode="numeric"></div>
-    </div>
+    <input type="number" id="modal-qty" min="0" inputmode="numeric" pattern="[0-9]*">
     <div class="modal-btns">
       <button class="mbtn-cancel" onclick="closeModal()">キャンセル</button>
       <button class="mbtn-ok" onclick="confirmModal()">決定</button>
@@ -229,11 +220,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 <script>
 const SERVER = 'https://order-app-c15s.onrender.com';
 const PRICES = {'1000均':700,'600均':390,'EDLP':0,'季節':0};
-const COLS = ['E','F','G'];
 const PRODUCTS = {"inaho": [{"kubun": "1000均", "code": "100008", "name": "HEIZO ﾀﾞｲﾔﾓﾝﾄﾞﾔｽﾘｾｯﾄ 5PCS", "hiban": "KUM-5"}, {"kubun": "1000均", "code": "100012", "name": "HEIZO ｽｰﾊﾟｰﾚﾝﾁ", "hiban": "NAT-8"}, {"kubun": "1000均", "code": "100022", "name": "HEIZO ｲﾝﾊﾟｸﾄﾄﾞﾗｲﾊﾞｰ", "hiban": "TS-U6"}, {"kubun": "1000均", "code": "100026", "name": "HEIZO 高速巻取り尺30M", "hiban": "KSG-30M"}, {"kubun": "1000均", "code": "100028", "name": "HEIZO ﾀﾞｲﾔﾓﾝﾄﾞ両刀ﾔｽﾘ 2本組  75㎜/100㎜", "hiban": "HDY-02P"}, {"kubun": "1000均", "code": "101002", "name": "INAHO 強力型刈込鋏", "hiban": "KW-919"}, {"kubun": "1000均", "code": "101007", "name": "黒猿 鉈330", "hiban": "KZN-330"}, {"kubun": "1000均", "code": "102000", "name": "八兵衛ﾁｯﾌﾟｿｰ2枚入 230mm × 36P", "hiban": "HKT-230"}, {"kubun": "1000均", "code": "102001", "name": "八兵衛ﾁｯﾌﾟｿｰ2枚入 255mm × 40P", "hiban": "HKT-255"}, {"kubun": "1000均", "code": "102007", "name": "INAHO 万能Rｹﾝﾏ", "hiban": "DBK-100"}, {"kubun": "1000均", "code": "105000", "name": "HEIZO ﾗﾁｪｯﾄ式ﾍﾞﾙﾄ荷締機 2ﾊﾟｯｸ 25mm*3.7M", "hiban": "HRN-2537"}, {"kubun": "1000均", "code": "105001", "name": "HEIZO ｽﾊﾟｲﾗﾙ型ﾁﾀﾝｺｰﾃｨﾝｸﾞｽﾃｯﾌﾟﾄﾞﾘﾙ10段 4-22mm", "hiban": "SI-N422"}, {"kubun": "1000均", "code": "105002", "name": "HEIZOｽﾊﾟｲﾗﾙ型ﾁﾀﾝｺｰﾃｨﾝｸﾞｽﾃｯﾌﾟﾄﾞﾘﾙ14段 4-30mm", "hiban": "SI-N430"}, {"kubun": "1000均", "code": "105003", "name": "HEIZO ｿｹｯﾄﾚﾝﾁｾｯﾄ12本ｾｯﾄ差込角9.5㎜ / 3/8\"", "hiban": "WA-D12"}, {"kubun": "1000均", "code": "105005", "name": "HEIZO 常圧用 PVCｴｱﾎｰｽ 10m", "hiban": "HAH-P10"}, {"kubun": "1000均", "code": "105006", "name": "HEIZO ﾎﾞﾙﾄｸﾘｯﾊﾟｰ 450mm", "hiban": "HBC-450"}, {"kubun": "1000均", "code": "105008", "name": "黒猿 刈払鎌 長尺 刃長180ﾐﾘ 全長450ﾐﾘ", "hiban": "KKN-450"}, {"kubun": "1000均", "code": "105009", "name": "HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ30㎜×3M", "hiban": "SB-303"}, {"kubun": "1000均", "code": "105010", "name": "HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ30㎜×4M", "hiban": "SB-304"}, {"kubun": "1000均", "code": "105011", "name": "HEIZO ｺﾝﾋﾞﾈｰｼｮﾝｽﾊﾟﾅｾｯﾄ 8本組  艶消しﾏｯﾄ仕上げ", "hiban": "HCS-8MT"}, {"kubun": "1000均", "code": "105012", "name": "HEIZO 鉄工用用ﾔｽﾘｾｯﾄ 5本組", "hiban": "YA-M5"}, {"kubun": "1000均", "code": "105013", "name": "HEIZO ﾃﾞｼﾞﾀﾙﾉｷﾞｽ 150mm", "hiban": "HDN-150"}, {"kubun": "1000均", "code": "105014", "name": "HEIZO ﾏｽﾀｰﾊﾞｰﾙﾌﾟﾛ 600mm", "hiban": "HMB-P60"}, {"kubun": "1000均", "code": "105015", "name": "HEIZO 鋼弾 両頭ﾋﾞｯﾄ+2*110 10本組 ﾏｸﾞﾈｯﾄ入り", "hiban": "HBG-110-10"}, {"kubun": "1000均", "code": "105016", "name": "HEIZO L式ｱﾝｸﾞﾙﾄﾞﾗｲﾊﾞｰ 100", "hiban": "HLA-100"}, {"kubun": "1000均", "code": "105017", "name": "HEIZO  鉄工用ﾄﾞﾘﾙ19本組", "hiban": "HDS-19P"}, {"kubun": "1000均", "code": "105018", "name": "HEIZO ﾊﾟｲﾌﾟﾚﾝﾁ 450mm（本体：黄色）", "hiban": "HPR-450"}, {"kubun": "1000均", "code": "105020", "name": "HEIZO　マルチツールグリーン12", "hiban": "HMT-G12"}, {"kubun": "1000均", "code": "105021", "name": "HEIZO　ワイヤーストリッパーマルチ12", "hiban": "HWS-M12"}, {"kubun": "1000均", "code": "105022", "name": "HEIZO　ワイヤーロープカッター200ｍｍ", "hiban": "HWC-200"}, {"kubun": "1000均", "code": "105023", "name": "INAHO　万能Fケンマ100", "hiban": "DFK-100"}, {"kubun": "1000均", "code": "105024", "name": "HEIZOクロスレンチフォールド350", "hiban": "HKR-F35"}, {"kubun": "1000均", "code": "200008", "name": "BASE ﾌﾟﾗｲﾊﾞｰｾｯﾄ 3本組", "hiban": "BPB-3PC"}, {"kubun": "1000均", "code": "200019", "name": "BASE ﾀｯﾌﾟﾀﾞｲｽ 12PCS", "hiban": "BTD-M12"}, {"kubun": "1000均", "code": "200021", "name": "BASE ﾀﾞｲﾔﾓﾝﾄﾞｼｬｰﾌﾟﾅｰ 270mm ﾁﾀﾝ#400", "hiban": "BDS-270"}, {"kubun": "1000均", "code": "205000", "name": "BASE ｴｱﾀｲﾔｹﾞｰｼﾞ350", "hiban": "BAG-350"}, {"kubun": "1000均", "code": "205001", "name": "BASE ﾛｯｷﾝｸﾞ C型ﾌﾟﾗｲﾔ350 ｽﾄﾛﾝｸﾞﾀｲﾌﾟ 黒仕上げ", "hiban": "BLC-350B"}, {"kubun": "1000均", "code": "205002", "name": "Kazi-Tu 剪定はさみ  200mm", "hiban": "KSH-200"}, {"kubun": "1000均", "code": "205003", "name": "Kazi-Tu 太枝切はさみ 600mm", "hiban": "KFH-600"}, {"kubun": "1000均", "code": "205004", "name": "Kazi-Tu 刈払鎌 刃長180mm", "hiban": "KKK-180"}, {"kubun": "1000均", "code": "205005", "name": "Kazi-Tu 斧 ｱｯｸｽ 335", "hiban": "KOA-335"}, {"kubun": "1000均", "code": "205007", "name": "Kazi-Tu 折込式鋸 240 中目", "hiban": "KON-240"}, {"kubun": "1000均", "code": "205008", "name": "Kazi-Tu 竹挽･樹脂鋸 270 細目", "hiban": "KTN-270"}, {"kubun": "1000均", "code": "205009", "name": "Kazi-Tu ｽﾄﾛﾝｸﾞｿｰ(硬太木挽)450 極粗目", "hiban": "KSS-450"}, {"kubun": "1000均", "code": "205010", "name": "BASE 水平器 600mm 強力ﾏｸﾞﾈｯﾄ付き", "hiban": "BLR-60M"}, {"kubun": "1000均", "code": "205011", "name": "BASE 水平器 400mm 強力ﾏｸﾞﾈｯﾄ付き", "hiban": "BLR-40M"}, {"kubun": "1000均", "code": "205012", "name": "BASE ﾊﾟｲﾌﾟｶｯﾀｰ428", "hiban": "BPC-428"}, {"kubun": "1000均", "code": "205014", "name": "BASE ﾀﾞｲﾔﾓﾝﾄﾞｶｯﾌﾟﾎｲｰﾙ 100㎜", "hiban": "BDC-CW4"}, {"kubun": "1000均", "code": "205016", "name": "Fieldo-Gu 剪定はさみ 195", "hiban": "FSH-195"}, {"kubun": "1000均", "code": "205017", "name": "Fieldo-Gu 剪定はさみ 215", "hiban": "FSH-215"}, {"kubun": "1000均", "code": "205019", "name": "BASE 金切りﾊｻﾐﾛﾝｸﾞ290 刃長80mm", "hiban": "BKH-L29"}, {"kubun": "1000均", "code": "205020", "name": "BASE 金切りﾊｻﾐ左曲り250", "hiban": "BKH-H25"}, {"kubun": "1000均", "code": "205021", "name": "Kazi-Tu 強力剪定はさみ ﾗﾁｪｯﾄ式200mm", "hiban": "KSH-R20"}, {"kubun": "1000均", "code": "205022", "name": "BASE 塩ﾋﾞｶｯﾀｰ420 黒仕上げ", "hiban": "BEC-420"}, {"kubun": "1000均", "code": "205023", "name": "BASE ﾋﾞｯﾄ10本ｾｯﾄ2*65mm5本 /2*110mm5本 ﾏｸﾞﾎﾙ 5本付", "hiban": "BDB-65110"}, {"kubun": "1000均", "code": "205024", "name": "BASE 銀軸ｿｹｯﾄｾｯﾄ 5本組", "hiban": "BGS-05P"}, {"kubun": "1000均", "code": "205025", "name": "BASE 鉄工用ﾄﾞﾘﾙｾｯﾄ 10PCS", "hiban": "BTD-10S"}, {"kubun": "1000均", "code": "205026", "name": "Kazi-Tu 剪定・仮枠用鋸350　鞘付", "hiban": "KSN-350S"}, {"kubun": "1000均", "code": "205027", "name": "BASE シャコ万力　100㎜*2", "hiban": "BC2-100"}, {"kubun": "1000均", "code": "205028", "name": "BASE エアホーススパイラル　5ｍ（ホース色：緑）", "hiban": "BAH-S5M"}, {"kubun": "1000均", "code": "205029", "name": "BASE 高耐久　エアダスター450 ロング", "hiban": "BAD-450"}, {"kubun": "1000均", "code": "205030", "name": "BASE バキュームリフター 115 　ダブル", "hiban": "BVR-115W"}, {"kubun": "1000均", "code": "205031", "name": "Kazi-Tu アウトドア マルチナタカマ 刃長240ｍｍ", "hiban": "KNK-240"}, {"kubun": "1000均", "code": "205032", "name": "BASE　ミニ卓上型バイス", "hiban": "BMB-V33"}, {"kubun": "1000均", "code": "205033", "name": "Kazi-Tu　ナイロンコード　27-35　ブレード角型", "hiban": "K27-35B"}, {"kubun": "1000均", "code": "205034", "name": "Kazi-Tu　HG剪定はさみ　ウッドSP　210ｍｍ", "hiban": "KHS-W210"}, {"kubun": "1000均", "code": "205035", "name": "Kazi-Tu　HG剪定はさみ　ゴールドSP　210ｍｍ", "hiban": "KHS-G210"}, {"kubun": "1000均", "code": "205037", "name": "Kazi-Tu　斧　ハチェット340", "hiban": "KOH-340"}, {"kubun": "1000均", "code": "205038", "name": "BASEダイヤモンドシャープナーPro260ｍｍ", "hiban": "BDS-P26"}, {"kubun": "1000均", "code": "205039", "name": "BASEダイヤモンドシャープナースリム200ｍｍ", "hiban": "BDS-S20"}, {"kubun": "1000均", "code": "205040", "name": "Kazi-Tuダイヤモンドシャープナーポータブル160ｍｍ", "hiban": "KDS-P16"}, {"kubun": "1000均", "code": "205041", "name": "BASEフルスペックピックアップツールPro620ｍｍ", "hiban": "BFP-P62"}, {"kubun": "1000均", "code": "708421", "name": "切断砥石　拳王", "hiban": "105X0.8"}, {"kubun": "1000均", "code": "708423", "name": "切断砥石　拳王", "hiban": "105X1.0"}, {"kubun": "1000均", "code": "708425", "name": "切断砥石　拳王", "hiban": "105X1.6"}, {"kubun": "1000均", "code": "708427", "name": "切断砥石　拳王", "hiban": "105X2.3"}, {"kubun": "1000均", "code": "708431", "name": "切断砥石　拳王マルチ", "hiban": "105X1.0"}, {"kubun": "1000均", "code": "708311", "name": "ﾌﾞﾗｯｸﾀｲｶﾞｰ125X28P", "hiban": "MAT-BT-125"}, {"kubun": "1000均", "code": "708312", "name": "ﾌﾞﾗｯｸﾀｲｶﾞｰ147X52P", "hiban": "MAT-BT-147"}, {"kubun": "1000均", "code": "708313", "name": "ﾌﾞﾗｯｸﾀｲｶﾞｰ165X52P", "hiban": "MAT-BT-165"}, {"kubun": "1000均", "code": "708314", "name": "ﾌﾞﾗｯｸﾀｲｶﾞｰ190X52P", "hiban": "MAT-BT-190"}, {"kubun": "1000均", "code": "708073", "name": "大魔神チップソー", "hiban": "147X60P"}, {"kubun": "1000均", "code": "708074", "name": "大魔神チップソー", "hiban": "165X60P"}, {"kubun": "1000均", "code": "708075", "name": "大魔神チップソー", "hiban": "190X60P"}, {"kubun": "1000均", "code": "107000", "name": "富士手袋　ウレタン手袋　5380　10P", "hiban": "S"}, {"kubun": "1000均", "code": "107001", "name": "富士手袋　ウレタン手袋　5380　10P", "hiban": "M"}, {"kubun": "1000均", "code": "107002", "name": "富士手袋　ウレタン手袋　5380　10P", "hiban": "L"}, {"kubun": "1000均", "code": "107003", "name": "富士手袋　ラバーダブルシェルパ8677", "hiban": "M"}, {"kubun": "1000均", "code": "107004", "name": "富士手袋　ラバーダブルシェルパ8677", "hiban": "L"}, {"kubun": "1000均", "code": "107005", "name": "富士手袋　ラバーダブルシェルパ8677", "hiban": "LL"}, {"kubun": "600均", "code": "100505", "name": "HEIZO ﾋﾟｯｸﾂｰﾙｾｯﾄ 4PC", "hiban": "KI-N4"}, {"kubun": "600均", "code": "100508", "name": "INAHO ｱﾙﾐﾚﾍﾞﾙ", "hiban": "MO-M200"}, {"kubun": "600均", "code": "100513", "name": "INAHO ﾛﾝｸﾞﾗｼﾞｵﾍﾟﾝﾁ", "hiban": "TA-M"}, {"kubun": "600均", "code": "100523", "name": "HEIZO ﾁﾀﾝｺｰﾃｨﾝｸﾞ ﾀﾞｲﾔﾓﾝﾄﾞｼｬｰﾌﾟﾅｰ 200mm", "hiban": "HDS-200"}, {"kubun": "600均", "code": "101501", "name": "黒猿 三角ﾎｰﾐﾆ140mm", "hiban": "BM-S"}, {"kubun": "600均", "code": "101502", "name": "INAHO 開閉式ｶﾞｰﾃﾞﾝﾚｰｷ ﾐﾆ", "hiban": "MS-29"}, {"kubun": "600均", "code": "101504", "name": "黒猿 首長ねじり鎌", "hiban": "KNK-100"}, {"kubun": "600均", "code": "105504", "name": "HEIZO 石頭ﾊﾝﾏｰ 黒ﾍｯﾄﾞ 1.0kg", "hiban": "HSH-280"}, {"kubun": "600均", "code": "105505", "name": "HEIZO 片手ﾊﾝﾏｰ 磨きﾍｯﾄﾞ 330mm", "hiban": "HKH-330"}, {"kubun": "600均", "code": "105506", "name": "HEIZO ﾈｲﾙﾊﾝﾏｰ 黒ﾍｯﾄﾞ 330mm", "hiban": "HNH-330"}, {"kubun": "600均", "code": "105508", "name": "HEIZO ﾀｯﾌﾟ必需8点ｾｯﾄ", "hiban": "HTM-8PC"}, {"kubun": "600均", "code": "105509", "name": "HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ30㎜×2M", "hiban": "SB-302"}, {"kubun": "600均", "code": "105510", "name": "HEIZO ﾄﾞﾗｲﾊﾞｰｾｯﾄ8本組ﾅﾝﾊﾞｰｴｲﾄ No.8", "hiban": "HDS-NO8"}, {"kubun": "600均", "code": "105511", "name": "HEIZO ｳｫｰﾀｰﾎﾟﾝﾌﾟﾌﾟﾗｲﾔ225", "hiban": "HWP-250"}, {"kubun": "600均", "code": "105515", "name": "HEIZO モンキーレンチ250mm", "hiban": "HMR-250"}, {"kubun": "600均", "code": "105516", "name": "HEIZO ゴムハンマーコンビ　1.5LB", "hiban": "HGH-150"}, {"kubun": "600均", "code": "105517", "name": "HEIZO ショックレスハンマー　1.5LB", "hiban": "HSR-150"}, {"kubun": "600均", "code": "105518", "name": "HEIZO クイックバークランプ300mm", "hiban": "KUW-300"}, {"kubun": "600均", "code": "105519", "name": "HEIZO　ミニワイヤーニッパー130ｍｍ", "hiban": "HMN-130"}, {"kubun": "600均", "code": "105520", "name": "HEIZO　スナップリングプライヤー130ｍｍ", "hiban": "HSW-130"}, {"kubun": "600均", "code": "105522", "name": "HEIZO　ミニワイヤーカッター200ｍｍ", "hiban": "HMC-200"}, {"kubun": "600均", "code": "105523", "name": "HEIZO　ケーブルカッター165ｍｍ", "hiban": "HCC-165"}, {"kubun": "600均", "code": "105524", "name": "HEIZO ウオーターポンププライヤー250ｍｍジョイスラロック", "hiban": "HWP-25L"}, {"kubun": "600均", "code": "105525", "name": "HEIZO　ウオーターポンププライヤー175ｍｍ", "hiban": "HWP-175"}, {"kubun": "600均", "code": "105526", "name": "HEIZO　ホットグルーガンミニ75", "hiban": "HGG-M75"}, {"kubun": "600均", "code": "105527", "name": "HEIZO　KABUロック5.0ｍ", "hiban": "25KL-50M"}, {"kubun": "600均", "code": "105528", "name": "HEIZO KABUロック7.5ｍ", "hiban": "25KL-75M"}, {"kubun": "600均", "code": "105529", "name": "HEIZO ギアロック5.0ｍ", "hiban": "25GL-50M"}, {"kubun": "600均", "code": "105530", "name": "HEIZO ギアロック7.5ｍ", "hiban": "25GL-75M"}, {"kubun": "600均", "code": "105531", "name": "HEIZO　ビットホルダー3PCカラビナセット", "hiban": "HBH-P3K"}, {"kubun": "600均", "code": "105532", "name": "HEIZO　ラチェット式ベルト荷締め機", "hiban": "HRN-2550"}, {"kubun": "600均", "code": "105533", "name": "HEIZO　マグネットトレイ丸型3PCS", "hiban": "HMT-M3T"}, {"kubun": "600均", "code": "105534", "name": "HEIZO　マグネットトレイ角型", "hiban": "HMT-K24"}, {"kubun": "600均", "code": "110500", "name": "ﾔﾏｼｮｳ ひざらくらくﾊﾟｯﾄﾞ", "hiban": "HP-01"}, {"kubun": "600均", "code": "200500", "name": "BASE ﾋﾟｯｸｱｯﾌﾟﾂｰﾙ 640mm", "hiban": "BMP-640"}, {"kubun": "600均", "code": "200501", "name": "BASE LED内臓ﾋﾟｯｸｱｯﾌﾟﾂｰﾙ 570mm", "hiban": "BMP-L57"}, {"kubun": "600均", "code": "200514", "name": "BASE ｼｮｰﾄﾊﾝﾏｰ 160mm", "hiban": "BSH-160"}, {"kubun": "600均", "code": "201500", "name": "BASE 片手鍬 平型 370mm", "hiban": "BKK-H37"}, {"kubun": "600均", "code": "201501", "name": "BASE 片手鍬 4本爪型 370mm", "hiban": "BKK-437"}, {"kubun": "600均", "code": "201505", "name": "BASE ﾏｸﾞﾈｯﾄﾊﾟｰﾂﾄﾚｲ 丸 2個ｾｯﾄ", "hiban": "BMT-2SM"}, {"kubun": "600均", "code": "205500", "name": "BASE ﾛｯｷﾝｸﾞ ﾛﾝｸﾞﾉｰｽﾞﾌﾟﾗｲﾔ225  黒仕上げ", "hiban": "BLL-225B"}, {"kubun": "600均", "code": "205501", "name": "BASE ﾛｯｷﾝｸﾞ ﾊﾞｲｽﾌﾟﾗｲﾔ225 黒仕上げ", "hiban": "BLP-225B"}, {"kubun": "600均", "code": "205503", "name": "Kazi-Tu 芽切りはさみ 200mm", "hiban": "KMH-200"}, {"kubun": "600均", "code": "205504", "name": "Kazi-Tu 摘果･芽切はさみ そり刃 190mm", "hiban": "KTＨ-S19"}, {"kubun": "600均", "code": "205505", "name": "Kazi-Tu 中厚鎌 刃長180mm", "hiban": "KCK-180"}, {"kubun": "600均", "code": "205506", "name": "BASE 強力ﾊﾟﾜｰﾆｯﾊﾟｰ Pro 175mm  平刃", "hiban": "BKN-175"}, {"kubun": "600均", "code": "205507", "name": "BASE 強力ﾊﾟﾜｰﾍﾟﾝﾁ Pro 200mm", "hiban": "BKP-200"}, {"kubun": "600均", "code": "205508", "name": "BASE ｴｱｶﾌﾟﾗ ﾀﾞﾌﾞﾙｿｹｯﾄ", "hiban": "BAC-WST"}, {"kubun": "600均", "code": "205509", "name": "BASE ﾓﾝｷｰﾚﾝﾁ軽量ｼｮｰﾄ200mm", "hiban": "BMW-S20"}, {"kubun": "600均", "code": "205512", "name": "BASE ﾛﾝｸﾞﾎﾞｰﾙﾎﾟｲﾝﾄ6角棒ﾚﾝﾁ 9本組", "hiban": "BB6-9PC"}, {"kubun": "600均", "code": "205513", "name": "BASE ﾛﾝｸﾞﾍｯｸｽﾛｰﾌﾞﾚﾝﾁ 9本組", "hiban": "BHR-9PC"}, {"kubun": "600均", "code": "205515", "name": "BASE 高耐久ｴｱﾀﾞｽﾀｰ115", "hiban": "BAD-115"}, {"kubun": "600均", "code": "205517", "name": "BASE ﾀﾞｲﾔﾓﾝﾄﾞｶｯﾀｰ ｾｸﾞﾒﾝﾄﾀｲﾌﾟ 105mm", "hiban": "BDS-105"}, {"kubun": "600均", "code": "205518", "name": "BASE ﾄﾞﾘﾙﾁｬｯｸ 10mm  6.35軸", "hiban": "BDC-10"}, {"kubun": "600均", "code": "205519", "name": "BASE ｷｰﾚｽﾄﾞﾘﾙﾁｬｯｸ 10mm 6.35軸", "hiban": "BDC-K10"}, {"kubun": "600均", "code": "205520", "name": "BASE 銀軸ｿｹｯﾄｱﾀﾞﾌﾟﾀｰﾏﾙﾁ3本ｾｯﾄ", "hiban": "BGS-AM3"}, {"kubun": "600均", "code": "205521", "name": "BASE 銀軸ﾎﾞｰﾙﾎﾟｲﾝﾄﾋﾞｯﾄｾｯﾄ ｼｮｰﾄﾀｲﾌﾟ 10本組", "hiban": "BGB-BS10"}, {"kubun": "600均", "code": "205522", "name": "BASE 銀軸ﾍｯｸｽﾛｰﾌﾞﾋﾞｯﾄｾｯﾄ ｼｮｰﾄﾀｲﾌﾟ 10本組", "hiban": "BGB-HS10"}, {"kubun": "600均", "code": "205523", "name": "BASE SDS-plusｺﾝｸﾘｰﾄ用ﾄﾞﾘﾙ 3.4mm3本組", "hiban": "BCS-343"}, {"kubun": "600均", "code": "205524", "name": "BASE 鉄工用ﾄﾞﾘﾙ13本組", "hiban": "BTD-13S"}, {"kubun": "600均", "code": "205525", "name": "BASE 木工用ﾄﾞﾘﾙｾｯﾄ 9/10/12 3PCS", "hiban": "BMD-03P"}, {"kubun": "600均", "code": "205526", "name": "BASE モンキーレンチPro　ショートワイド150ｍｍ", "hiban": "BPM-S15"}, {"kubun": "600均", "code": "205527", "name": "Kazi-Tu 剪定はさみ　210ｍｍ", "hiban": "KSH-210"}, {"kubun": "600均", "code": "205528", "name": "BASE バキュームリフター 115", "hiban": "BVR-115"}, {"kubun": "600均", "code": "205529", "name": "BASE 強力パワーラジオペンチPro　160㎜", "hiban": "BKR-160"}, {"kubun": "600均", "code": "205530", "name": "BASE　万能ユーティリティハサミ200ｍｍ", "hiban": "BUS-200"}, {"kubun": "600均", "code": "205531", "name": "BASE　万能ハサミ200ｍｍ", "hiban": "BBH-200"}, {"kubun": "600均", "code": "205532", "name": "BASE　強力ユーティリティハサミ210ｍｍ　M型", "hiban": "BUS-21S"}, {"kubun": "600均", "code": "205533", "name": "Kazi-Tu　植木ハサミ215mm　M型", "hiban": "KUH-215"}, {"kubun": "600均", "code": "205534", "name": "Kazi-Tu　植木ハサミ230mm　L型", "hiban": "KUH-230"}, {"kubun": "600均", "code": "205535", "name": "BASE ダイヤモンドカッターPro105ウェーブタイプ", "hiban": "BPD-105W"}, {"kubun": "600均", "code": "205538", "name": "BASE強力パワーマグネットピックアップツール", "hiban": "BMP-P77"}, {"kubun": "600均", "code": "205539", "name": "Kazi-Tu　ガーデンハンディレーキ250ｍｍ", "hiban": "KHR-S25"}, {"kubun": "600均", "code": "205540", "name": "Kazi-Tu　のこぎり鎌170ｍｍ", "hiban": "KNK-170"}, {"kubun": "600均", "code": "205541", "name": "Kazi-Tu　ねじり鎌120ｍｍ", "hiban": "KNK-120"}, {"kubun": "EDLP", "code": "100901", "name": "midoho ｺｰﾙﾄﾞﾁｾﾞﾙ SDS-puls", "hiban": "CSP-280"}, {"kubun": "EDLP", "code": "100902", "name": "midoho ｺｰﾙﾄﾞﾁｾﾞﾙ 17H×280㎜", "hiban": "C17-280"}, {"kubun": "EDLP", "code": "100903", "name": "midoho ﾌﾞﾙﾎﾟｲﾝﾄﾁｾﾞﾙ SDS-puls", "hiban": "BSP-280"}, {"kubun": "EDLP", "code": "100904", "name": "midoho ﾌﾞﾙﾎﾟｲﾝﾄﾁｾﾞﾙ 17H×280㎜", "hiban": "B17-280"}, {"kubun": "EDLP", "code": "103900", "name": "ポータブルパワーステーション1500", "hiban": "PEP-S1500"}, {"kubun": "EDLP", "code": "103901", "name": "ポータブルパワーステーション1800", "hiban": "PEP-S1800"}, {"kubun": "EDLP", "code": "103902", "name": "ソーラーパネル 100W", "hiban": "ISP-100"}, {"kubun": "EDLP", "code": "105900", "name": "リチウムイオンハイパースターター", "hiban": "CY-17"}, {"kubun": "EDLP", "code": "100905", "name": "自動遮光面", "hiban": "ZM-101"}, {"kubun": "EDLP", "code": "105907", "name": "INAHO ｽｰﾊﾟｰﾌﾟﾗｽﾞﾏⅡ切断機", "hiban": "SPC1000PRO-ZⅡ"}, {"kubun": "EDLP", "code": "102900", "name": "INAHO DWｹﾝﾏ", "hiban": "DWK-178"}, {"kubun": "EDLP", "code": "103903", "name": "低速グラインダー100", "hiban": "ITG-100"}, {"kubun": "EDLP", "code": "105901", "name": "HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ50㎜×3M", "hiban": "SB-503"}, {"kubun": "EDLP", "code": "105902", "name": "HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ50㎜×4M", "hiban": "SB-504"}, {"kubun": "EDLP", "code": "100906", "name": "INAHO ｽﾍﾟｼｬﾙ 草刈ﾁｯﾌﾟｿｰ 255mm(1枚)", "hiban": "ISK-255"}, {"kubun": "EDLP", "code": "105910", "name": "INAHO 平面・斜面兼用草刈チップソー 　ONTAKE230-36P", "hiban": "IO3-230"}, {"kubun": "EDLP", "code": "105903", "name": "INAHO 平面・斜面兼用草刈チップソー 　ONTAKE230-40P", "hiban": "IO4-255"}, {"kubun": "EDLP", "code": "105904", "name": "INAHO 竹･山林兼用草刈ﾁｯﾌﾟｿｰ  HIGOKUNI255-60P", "hiban": "IH6-255"}, {"kubun": "EDLP", "code": "105905", "name": "HEIZO 常圧用 PVCｴｱﾎｰｽ 20m", "hiban": "HAH-P20"}, {"kubun": "EDLP", "code": "105906", "name": "HEIZO ﾏｽﾀｰﾊﾞｰﾙﾌﾟﾛ 900mm", "hiban": "HMB-P90"}, {"kubun": "EDLP", "code": "105908", "name": "HEIZO L式ｱﾝｸﾞﾙﾄﾞﾗｲﾊﾞｰ 300 ﾌﾚｷｼﾌﾞﾙﾛﾝｸﾞﾀｲﾌﾟ", "hiban": "HLA-F30"}, {"kubun": "EDLP", "code": "105909", "name": "Fieldo-Gu 剪定はさみPROα 200mm", "hiban": "FSH-PA2"}, {"kubun": "EDLP", "code": "102003", "name": "鬼平 230mm × 32P", "hiban": "OKC-230"}, {"kubun": "EDLP", "code": "102004", "name": "鬼平 255mm × 36P", "hiban": "OKC-255"}], "sankyo": [{"kubun": "1000均", "code": "004049", "name": "I.Wしっかり安定板　2枚入り", "hiban": "＃90568"}, {"kubun": "1000均", "code": "181911", "name": "LEDヘッドライト", "hiban": "DT-HL-01"}, {"kubun": "1000均", "code": "315301", "name": "マイクロファイバーウエス", "hiban": "GA301"}, {"kubun": "1000均", "code": "330081", "name": "TRADワイヤーストリッパー", "hiban": "SR-WS28"}, {"kubun": "1000均", "code": "330318", "name": "DBLTACTビットホルダー", "hiban": "DBH-G2K"}, {"kubun": "1000均", "code": "330416", "name": "TRADロングビットホルダー", "hiban": "TLJ-300"}, {"kubun": "1000均", "code": "330417", "name": "TRADロングビットホルダー", "hiban": "TLJ-500"}, {"kubun": "1000均", "code": "331932", "name": "LEDランタン風ライト", "hiban": "DLB-002LTS"}, {"kubun": "1000均", "code": "350131", "name": "S-ROAD LED点検ﾐﾗｰ", "hiban": "SRO-18"}, {"kubun": "1000均", "code": "350511", "name": "DBLTACT大型収納バッグ", "hiban": "DT-CB-SM"}, {"kubun": "1000均", "code": "580002", "name": "DBLTACTサポーターベルト", "hiban": "DT-SBM-BC"}, {"kubun": "1000均", "code": "580003", "name": "DBLTACTサポーターベルト", "hiban": "DT-SBM-NC"}, {"kubun": "1000均", "code": "580004", "name": "DBLTACTサポーターベルト", "hiban": "DT-SBM-GC"}, {"kubun": "1000均", "code": "580006", "name": "DBLTACTサポーターベルトL", "hiban": "DT-SBL-BC"}, {"kubun": "1000均", "code": "580007", "name": "DBLTACTサポーターベルトL", "hiban": "DT-SBL-NC"}, {"kubun": "1000均", "code": "580008", "name": "DBLTACTサポーターベルトL", "hiban": "DT-SBL-GC"}, {"kubun": "1000均", "code": "580106", "name": "DBLTACT2段腰袋", "hiban": "DT-02S-BC"}, {"kubun": "1000均", "code": "580108", "name": "DBLTACT2段腰袋", "hiban": "DT-02S-GC"}, {"kubun": "1000均", "code": "581821", "name": "DBLTACT釘袋", "hiban": "DT07BK"}, {"kubun": "1000均", "code": "581822", "name": "DBLTACT釘袋", "hiban": "DT07BL"}, {"kubun": "1000均", "code": "581841", "name": "DBLTACT腰袋3点ｾｯﾄ", "hiban": "DT3SET"}, {"kubun": "1000均", "code": "581844", "name": "DBLTACT2段腰袋　大", "hiban": "DT-02W-KB"}, {"kubun": "1000均", "code": "581847", "name": "DBLTACT3段腰袋　大", "hiban": "DT-03W-KB"}, {"kubun": "1000均", "code": "581882", "name": "折りたたみﾊﾞｹﾂ", "hiban": "DTB-M"}, {"kubun": "1000均", "code": "581884", "name": "DT 防水ﾊﾞｹﾂ", "hiban": "DTB-WP-M"}, {"kubun": "1000均", "code": "581903", "name": "DBLTACT ｼﾞｬﾝﾋﾟﾝｸﾞﾊﾞｹﾂ", "hiban": "DTJ-M"}, {"kubun": "1000均", "code": "581945", "name": "DBLTACT 腰袋", "hiban": "DT-27-BK"}, {"kubun": "1000均", "code": "581946", "name": "DBLTACT 腰袋", "hiban": "DT-28-BK"}, {"kubun": "1000均", "code": "581947", "name": "DBLTACT 腰袋", "hiban": "DT-29-BK"}, {"kubun": "1000均", "code": "581948", "name": "DBLTACT 腰袋", "hiban": "DT-30-BK"}, {"kubun": "1000均", "code": "581982", "name": "DBLTACT 大口収納ﾊﾞｯｸ", "hiban": "DT-CB-S"}, {"kubun": "1000均", "code": "625939", "name": "H＆H木工用7枚刃ホールソー", "hiban": "MH-16"}, {"kubun": "1000均", "code": "820300", "name": "10PC 6角軸木工ﾄﾞﾘﾙ", "hiban": "13-721"}, {"kubun": "1000均", "code": "820301", "name": "CSK6角軸ﾁﾀﾝﾄﾞﾘﾙｾｯﾄ", "hiban": "13-722"}, {"kubun": "1000均", "code": "823111", "name": "TRADミニラチェットハンドルセット", "hiban": "TRS-23"}, {"kubun": "1000均", "code": "823112", "name": "TRAD2WAYラチェットハンドルセット", "hiban": "TOR-23"}, {"kubun": "1000均", "code": "823113", "name": "TRADラチェットドライバーセット", "hiban": "TRD-23"}, {"kubun": "1000均", "code": "823277", "name": "TRADパイプレンチ", "hiban": "TPW300"}, {"kubun": "1000均", "code": "823948", "name": "sita超軽量草刈りチップソー2枚組", "hiban": "2SC-230"}, {"kubun": "1000均", "code": "823949", "name": "sita超軽量草刈りチップソー2枚組", "hiban": "2SC-255"}, {"kubun": "1000均", "code": "823955", "name": "sita折込鋸", "hiban": "A255"}, {"kubun": "1000均", "code": "823956", "name": "sitaサヤ付木柄剪定鋸", "hiban": "A256"}, {"kubun": "1000均", "code": "905009", "name": "SITA ﾊｰﾄﾞｸﾛﾑﾛﾝｸﾞ植木鋏", "hiban": "A909"}, {"kubun": "600均", "code": "101611", "name": "リングスターすべりま専用", "hiban": "S-300"}, {"kubun": "600均", "code": "267118", "name": "FS ﾐｶﾞｷﾛﾝ(3PC)", "hiban": "MHLS-AF"}, {"kubun": "600均", "code": "330002", "name": "TRAD ｶﾞｽ抜きﾌﾟﾗｲﾔｰ TRD-CP", "hiban": "TRD-CP"}, {"kubun": "600均", "code": "331323", "name": "葛城山 改良鋸鎌", "hiban": "3353"}, {"kubun": "600均", "code": "350109", "name": "TRAD ﾎﾞｰﾙﾎﾟｲﾝﾄｾｯﾄ", "hiban": "TBM9"}, {"kubun": "600均", "code": "350110", "name": "TRAD ﾄﾙｸｽﾚﾝﾁｾｯﾄ", "hiban": "TTM9"}, {"kubun": "600均", "code": "350153", "name": "TRADラチェットハンドクランプ", "hiban": "TR-RHC225"}, {"kubun": "600均", "code": "350158", "name": "TRAD C型ﾊﾟﾜｰｸﾗﾝﾌﾟ", "hiban": "TRC-100"}, {"kubun": "600均", "code": "360052", "name": "TRAD ｿｹｯﾄｱﾀﾞﾌﾟﾀｰｾｯﾄ", "hiban": "TSA-3ST"}, {"kubun": "600均", "code": "360106", "name": "ｾﾌﾃｨｰｺﾞｰｸﾞﾙ", "hiban": "DT-SG-12C"}, {"kubun": "600均", "code": "360107", "name": "ｾﾌﾃｨｰｺﾞｰｸﾞﾙ", "hiban": "DT-SG-12SM"}, {"kubun": "600均", "code": "360108", "name": "ｾﾌﾃｨｰｺﾞｰｸﾞﾙ", "hiban": "DT-SG-12LG"}, {"kubun": "600均", "code": "360109", "name": "ｾﾌﾃｨｰｺﾞｰｸﾞﾙ", "hiban": "DT-SG-12BR"}, {"kubun": "600均", "code": "360277", "name": "DTマグキャリークリップホルダー", "hiban": "DMH-50BK"}, {"kubun": "600均", "code": "389013", "name": "H&H13PCﾐﾆﾐﾆｿｹｯﾄｾｯﾄ", "hiban": "13PC"}, {"kubun": "600均", "code": "580124", "name": "DBLTACTﾏﾙﾁｶｯﾌﾟ", "hiban": "DT-BCS-BC"}, {"kubun": "600均", "code": "580125", "name": "DBLTACTﾏﾙﾁｶｯﾌﾟ", "hiban": "DT-BCS-NC"}, {"kubun": "600均", "code": "580126", "name": "DBLTACTﾏﾙﾁｶｯﾌﾟ", "hiban": "DT-BCS-GC"}, {"kubun": "600均", "code": "581732", "name": "DBLTACT ﾍﾟﾝﾁｻｯｸ", "hiban": "DT-TS-02BK"}, {"kubun": "600均", "code": "581734", "name": "DBLTACT ﾍﾟﾝﾁ/ﾄﾞﾗｲﾊﾞｰ差", "hiban": "DT-TS-04BK"}, {"kubun": "600均", "code": "581735", "name": "DBLTACT ｶｯﾀｰｹｰｽ", "hiban": "DT-TS-05BK"}, {"kubun": "600均", "code": "581741", "name": "DBLTACT ﾍﾟﾝﾁｻｯｸ", "hiban": "DT-TS-11BK"}, {"kubun": "600均", "code": "581742", "name": "DBLTACT ﾏﾙﾁﾍﾟﾝﾁｹｰｽ", "hiban": "DT-TS-12BK"}, {"kubun": "600均", "code": "581743", "name": "DBLTACT ﾏﾙﾁﾍﾟﾝﾁｹｰｽ", "hiban": "DT-TS-13BK"}, {"kubun": "600均", "code": "581796", "name": "DBLTACT ﾌﾗｯﾄﾎﾟｹｯﾄ", "hiban": "DT-FP-S"}, {"kubun": "600均", "code": "581871", "name": "DBLTACTﾜﾝﾀｯﾁﾍﾞﾙﾄ", "hiban": "DT-OB-BK"}, {"kubun": "600均", "code": "581872", "name": "DBLTACTﾜﾝﾀｯﾁﾍﾞﾙﾄ", "hiban": "DT-OB-NE"}, {"kubun": "600均", "code": "581873", "name": "DBLTACTﾜﾝﾀｯﾁﾍﾞﾙﾄ", "hiban": "DT-OB-GL"}, {"kubun": "600均", "code": "581881", "name": "折りたたみﾊﾞｹﾂ", "hiban": "DTB-S"}, {"kubun": "600均", "code": "683261", "name": "CANARY剣先フッ素コートハサミ", "hiban": "RMF-170K"}, {"kubun": "600均", "code": "819801", "name": "TRADペン型差替式精密ドライバーセット", "hiban": "TPS-9B"}, {"kubun": "600均", "code": "820014", "name": "TRADﾊﾟﾜｰ万能ﾗｼﾞｵﾍﾟﾝﾁ", "hiban": "TPR150"}, {"kubun": "600均", "code": "820015", "name": "TRADﾊﾟﾜｰﾆｯﾊﾟｰ(圧着)", "hiban": "TPN150"}, {"kubun": "600均", "code": "820016", "name": "TRADﾊﾟﾜｰﾌﾟﾗｲﾔｰ", "hiban": "TPL200"}, {"kubun": "600均", "code": "820033", "name": "13-128インパクトコンベ", "hiban": "DM5525"}, {"kubun": "600均", "code": "820218", "name": "TRAD6PCドライバーセット", "hiban": "TCD-665"}, {"kubun": "600均", "code": "820219", "name": "TRAD6角ﾋﾞｯﾄｾｯﾄ", "hiban": "TCH-665"}, {"kubun": "600均", "code": "820220", "name": "TRADﾄﾙｸｽﾋﾞｯﾄｾｯﾄ", "hiban": "TCT-665"}, {"kubun": "600均", "code": "820233", "name": "TRADトーションビット", "hiban": "TRT655"}, {"kubun": "600均", "code": "820262", "name": "CSK金切鋸", "hiban": "CMS25"}, {"kubun": "600均", "code": "820317", "name": "TRADダイヤモンドカッターセグメント", "hiban": "TDC-4S"}, {"kubun": "600均", "code": "820318", "name": "TRADダイヤモンドカッターウエーブ", "hiban": "TDC-4W"}, {"kubun": "600均", "code": "820395", "name": "TRADマイクロヘクスレンチ", "hiban": "TMH-13"}, {"kubun": "600均", "code": "820887", "name": "SITA ｵｰﾙｱﾙﾐｽｺｯﾌﾟ", "hiban": "A887"}, {"kubun": "600均", "code": "823362", "name": "TRADﾜｲﾔｰﾌﾞﾗｼｾｯﾄ", "hiban": "TWB-3"}, {"kubun": "600均", "code": "823528", "name": "TRADバックルカラー荷締ベルト", "hiban": "TCB-2BK"}, {"kubun": "600均", "code": "823529", "name": "TRADバックルカラー荷締ベルト", "hiban": "TCB-4BK"}, {"kubun": "600均", "code": "823531", "name": "TRADSフック荷締ベルト", "hiban": "TNB-2S-BK"}, {"kubun": "600均", "code": "823552", "name": "H&H ﾊﾞｷｭｰﾑﾘﾌﾀｰ", "hiban": "VL2"}, {"kubun": "600均", "code": "823666", "name": "木柄ｺﾞﾑﾊﾝﾏｰ", "hiban": "CGK10B"}, {"kubun": "600均", "code": "823943", "name": "花の友ネジリ鎌", "hiban": "＃943"}, {"kubun": "600均", "code": "900768", "name": "SITAｽﾃﾝﾚｽ芽切鋏", "hiban": "A010"}, {"kubun": "600均", "code": "900769", "name": "SITAｽﾃﾝﾚｽ剪定万能鋏", "hiban": "A011"}, {"kubun": "600均", "code": "900810", "name": "SITAｽﾃﾝﾚｽ菜果鋏ｿﾘ刃", "hiban": "A020"}]};
 
 // qty[supplier][storeIdx][code] = 数量
-const qty = {inaho:{0:{},1:{},2:{}}, sankyo:{0:{},1:{},2:{}}};
+const qty = {
+  inaho:  {0:{}, 1:{}, 2:{}},
+  sankyo: {0:{}, 1:{}, 2:{}}
+};
 let supplier = 'inaho';
 let storeIdx = 0;
 let filter = '全て';
@@ -241,8 +234,7 @@ let modalCode = null;
 
 document.getElementById('order-date').value = new Date().toISOString().split('T')[0];
 
-function getProducts() { return PRODUCTS[supplier]||[]; }
-
+// ===== 取引先切替 =====
 function switchSupplier(s) {
   supplier = s;
   filter = '全て';
@@ -250,41 +242,46 @@ function switchSupplier(s) {
   renderFilters(); renderList(); updateSummary();
 }
 
+// ===== 店舗切替 =====
 function switchStore(i) {
   storeIdx = i;
   [0,1,2].forEach(j => {
     document.getElementById('stab-'+j).classList.toggle('active', j===i);
     document.getElementById('store-inputs-'+j).style.display = j===i ? 'grid' : 'none';
   });
-  renderList();
+  renderList();   // ← 商品リストの数字を選択店舗に切替
+  updateSummary(); // ← 合計も切替
 }
 
 function updateStoreTab(i) {
   const name = document.getElementById('store-'+i).value.trim();
   const tab = document.getElementById('stab-'+i);
-  tab.textContent = name || `店舗${i+1}`;
-  updateHasData(i);
+  tab.textContent = name || ('店舗'+(i+1));
+  refreshHasData();
+  updateSummary();
 }
 
-function updateHasData(i) {
-  const tab = document.getElementById('stab-'+i);
-  const hasInaho = Object.keys(qty.inaho[i]).length > 0;
-  const hasSankyo = Object.keys(qty.sankyo[i]).length > 0;
-  tab.classList.toggle('has-data', hasInaho || hasSankyo);
+function refreshHasData() {
+  [0,1,2].forEach(i => {
+    const hasInaho = Object.keys(qty.inaho[i]).length > 0;
+    const hasSankyo = Object.keys(qty.sankyo[i]).length > 0;
+    document.getElementById('stab-'+i).classList.toggle('has-data', hasInaho || hasSankyo);
+  });
 }
 
+// ===== フィルター =====
 function renderFilters() {
-  const kubuns = [...new Set(getProducts().map(p=>p.kubun))];
+  const kubuns = [...new Set((PRODUCTS[supplier]||[]).map(p=>p.kubun))];
   document.getElementById('filter-row').innerHTML = ['全て',...kubuns].map(k=>
     `<button class="filter-btn ${k===filter?'active':''}" onclick="setFilter('${k}')">${k}</button>`
   ).join('');
 }
-
 function setFilter(k) { filter=k; renderFilters(); renderList(); }
 
+// ===== 商品リスト（選択中の店舗・取引先の数字だけ表示）=====
 function renderList() {
   const q = document.getElementById('search').value.toLowerCase();
-  let list = getProducts();
+  let list = PRODUCTS[supplier]||[];
   if(filter!=='全て') list=list.filter(p=>p.kubun===filter);
   if(q) list=list.filter(p=>p.name.toLowerCase().includes(q)||p.hiban.toLowerCase().includes(q)||p.code.includes(q));
   const el = document.getElementById('product-list');
@@ -293,106 +290,115 @@ function renderList() {
   el.innerHTML = list.map(p=>{
     const price=PRICES[p.kubun]||0;
     const priceStr=price?` @${price.toLocaleString()}円`:'';
-    const vals=[0,1,2].map(i=>qty[supplier][i][p.code]||0);
+    const v = qty[supplier][storeIdx][p.code] || 0;  // 選択中の店舗の数量だけ
     return `<div class="product-item">
       <div class="product-info">
         <div class="product-name"><span class="kubun-badge ${kc[p.kubun]||'ke'}">${p.kubun}</span>${p.name}</div>
         <div class="product-meta">${p.code} / ${p.hiban}${priceStr}</div>
       </div>
-      <div class="qty-group">
-        ${[0,1,2].map(i=>`
-        <div class="qty-row">
-          <span class="qty-label">${COLS[i]}</span>
-          <button class="qbtn" onclick="chg('${p.code}',${i},-1)">−</button>
-          <div class="qdsp ${vals[i]?'hv':''}" onclick="openModal('${p.code}')">${vals[i]||'·'}</div>
-          <button class="qbtn" onclick="chg('${p.code}',${i},1)">＋</button>
-        </div>`).join('')}
+      <div class="qty-ctrl">
+        <button class="qbtn" onclick="chg('${p.code}',-1)">−</button>
+        <div class="qdsp ${v?'hv':''}" onclick="openModal('${p.code}')">${v||'−'}</div>
+        <button class="qbtn" onclick="chg('${p.code}',1)">＋</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function chg(code, si, d) {
-  const cur=qty[supplier][si][code]||0;
-  const nxt=Math.max(0,cur+d);
-  if(nxt===0) delete qty[supplier][si][code]; else qty[supplier][si][code]=nxt;
-  renderList(); updateSummary(); updateHasData(si); resetSaveBtn();
+// ===== 数量変更（選択中の店舗・取引先）=====
+function chg(code, d) {
+  const cur = qty[supplier][storeIdx][code]||0;
+  const nxt = Math.max(0, cur+d);
+  if(nxt===0) delete qty[supplier][storeIdx][code];
+  else qty[supplier][storeIdx][code]=nxt;
+  renderList(); updateSummary(); refreshHasData(); resetSaveBtn();
 }
 
+// ===== モーダル（選択中の店舗）=====
 function openModal(code) {
   modalCode=code;
-  const p=getProducts().find(x=>x.code===code);
-  document.getElementById('modal-pname').textContent=p?p.name:'';
-  [0,1,2].forEach(i=>{
-    const name=document.getElementById('store-'+i).value.trim()||`店舗${i+1}`;
-    document.getElementById('ml-'+i).textContent=name;
-    document.getElementById('mi-'+i).value=qty[supplier][i][code]||'';
-  });
+  const p=(PRODUCTS[supplier]||[]).find(x=>x.code===code);
+  const storeName=document.getElementById('store-'+storeIdx).value.trim()||('店舗'+(storeIdx+1));
+  document.getElementById('modal-pname').textContent=(p?p.name+'
+':'')+storeName+' に入力';
+  const inp=document.getElementById('modal-qty');
+  inp.value=qty[supplier][storeIdx][code]||'';
   document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(()=>document.getElementById('mi-'+storeIdx).focus(),100);
+  setTimeout(()=>inp.focus(),100);
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');modalCode=null;}
 function confirmModal(){
-  [0,1,2].forEach(i=>{
-    const v=parseInt(document.getElementById('mi-'+i).value);
-    if(!v||v<=0) delete qty[supplier][i][modalCode]; else qty[supplier][i][modalCode]=v;
-    updateHasData(i);
-  });
-  closeModal(); renderList(); updateSummary(); resetSaveBtn();
+  const v=parseInt(document.getElementById('modal-qty').value);
+  if(modalCode){
+    if(!v||v<=0) delete qty[supplier][storeIdx][modalCode];
+    else qty[supplier][storeIdx][modalCode]=v;
+  }
+  closeModal(); renderList(); updateSummary(); refreshHasData(); resetSaveBtn();
 }
+document.getElementById('modal-qty').onkeydown=e=>{if(e.key==='Enter')confirmModal();};
 document.getElementById('modal-overlay').onclick=e=>{if(e.target===document.getElementById('modal-overlay'))closeModal();};
 
-function clearStore() {
-  [0,1,2].forEach(s=>{
-    qty.inaho[s]={}; qty.sankyo[s]={};
-    updateHasData(s);
-  });
-  renderList(); updateSummary(); resetSaveBtn(); showToast('クリアしました');
+// ===== クリア =====
+function clearCurrentStore() {
+  qty.inaho[storeIdx]={}; qty.sankyo[storeIdx]={};
+  renderList(); updateSummary(); refreshHasData(); resetSaveBtn();
+  showToast('この店舗をクリアしました');
 }
-
 function clearAll(){document.getElementById('clear-overlay').classList.add('open');}
 function doClear(){
-  [0,1,2].forEach(i=>{qty.inaho[i]={};qty.sankyo[i]={};updateHasData(i);});
+  [0,1,2].forEach(i=>{qty.inaho[i]={};qty.sankyo[i]={};});
   document.getElementById('clear-overlay').classList.remove('open');
-  renderList(); updateSummary(); resetSaveBtn(); showToast('全クリアしました');
+  renderList(); updateSummary(); refreshHasData(); resetSaveBtn();
+  showToast('全クリアしました');
 }
 
-function calcSummary(sup) {
-  const products=PRODUCTS[sup]||[];
-  let items=new Set(), totalQty=0, amt1000=0, amt600=0;
-  [0,1,2].forEach(i=>{
-    for(const [code,q] of Object.entries(qty[sup][i])){
-      const p=products.find(x=>x.code===code); if(!p) continue;
-      items.add(code); totalQty+=q;
-      if(p.kubun==='1000均') amt1000+=q*(PRICES['1000均']);
-      else if(p.kubun==='600均') amt600+=q*(PRICES['600均']);
-    }
-  });
-  return {items:items.size, totalQty, amt1000, amt600};
-}
-
+// ===== 合計（選択中の店舗＋全体）=====
 function updateSummary() {
+  // 選択中の店舗の合計
+  const products = PRODUCTS[supplier]||[];
+  let items=0, totalQty=0, amt1000=0, amt600=0;
+  for(const [code,q] of Object.entries(qty[supplier][storeIdx])){
+    const p=products.find(x=>x.code===code); if(!p) continue;
+    items++; totalQty+=q;
+    if(p.kubun==='1000均') amt1000+=q*700;
+    else if(p.kubun==='600均') amt600+=q*390;
+  }
+  const storeName=document.getElementById('store-'+storeIdx).value.trim()||('店舗'+(storeIdx+1));
+  document.getElementById('sum-store-name').textContent=storeName+'（'+(['稲穂','三共'][['inaho','sankyo'].indexOf(supplier)])+'）';
+  document.getElementById('s-items').textContent=items;
+  document.getElementById('s-qty').textContent=totalQty;
+  document.getElementById('s-1000').textContent='¥'+amt1000.toLocaleString();
+  document.getElementById('s-600').textContent='¥'+amt600.toLocaleString();
+
+  // 全店舗・全取引先の合計
+  let allQty=0, allInaho=0, allSankyo=0;
   ['inaho','sankyo'].forEach(sup=>{
-    const s=calcSummary(sup);
-    const p=sup==='inaho'?'稲穂':'三共';
-    const key=sup;
-    document.getElementById(`si-${key}-items`).textContent=s.items;
-    document.getElementById(`si-${key}-qty`).textContent=s.totalQty;
-    document.getElementById(`si-${key}-1000`).textContent='¥'+s.amt1000.toLocaleString();
-    document.getElementById(`si-${key}-600`).textContent='¥'+s.amt600.toLocaleString();
-    const total=calcTotalItems(sup);
-    document.getElementById('sup-cnt-'+sup).textContent=total+'品目';
+    const prods=PRODUCTS[sup]||[];
+    [0,1,2].forEach(si=>{
+      for(const [code,q] of Object.entries(qty[sup][si])){
+        const p=prods.find(x=>x.code===code); if(!p) continue;
+        allQty+=q;
+        const amt=q*(PRICES[p.kubun]||0);
+        if(sup==='inaho') allInaho+=amt; else allSankyo+=amt;
+      }
+    });
   });
-  const grand=calcTotalItems('inaho')+calcTotalItems('sankyo');
-  document.getElementById('confirm-cnt').textContent=grand>0?`(${grand})`:'';
+  document.getElementById('sa-qty').textContent=allQty;
+  document.getElementById('sa-inaho').textContent='¥'+allInaho.toLocaleString();
+  document.getElementById('sa-sankyo').textContent='¥'+allSankyo.toLocaleString();
+
+  // 取引先バッジ
+  ['inaho','sankyo'].forEach(sup=>{
+    const s=new Set();
+    [0,1,2].forEach(i=>Object.keys(qty[sup][i]).forEach(c=>s.add(c)));
+    document.getElementById('sup-cnt-'+sup).textContent=s.size+'品目';
+  });
+  const grand=Object.keys(qty.inaho[0]).length+Object.keys(qty.inaho[1]).length+Object.keys(qty.inaho[2]).length+
+              Object.keys(qty.sankyo[0]).length+Object.keys(qty.sankyo[1]).length+Object.keys(qty.sankyo[2]).length;
+  document.getElementById('confirm-cnt').textContent=grand>0?'(入力あり)':'';
 }
 
-function calcTotalItems(sup){
-  const s=new Set();
-  [0,1,2].forEach(i=>Object.keys(qty[sup][i]).forEach(c=>s.add(c)));
-  return s.size;
-}
-
+// ===== タブ切替 =====
 function switchTab(tab){
   ['input','confirm','history'].forEach((t,i)=>{
     document.getElementById('tab-'+t).style.display=t===tab?'block':'none';
@@ -402,58 +408,57 @@ function switchTab(tab){
   if(tab==='history') loadHistory();
 }
 
+// ===== 確認タブ =====
 function renderConfirm(){
   const date=document.getElementById('order-date').value;
   let html='';
   ['inaho','sankyo'].forEach(sup=>{
     const products=PRODUCTS[sup]||[];
     const supName=sup==='inaho'?'稲穂':'三共';
-    let supHtml=''; let supGrandQty=0,supGrandAmt=0;
-
+    let supHtml=''; let supGrandQty=0, supGrandAmt=0;
     [0,1,2].forEach(si=>{
-      const storeName=document.getElementById('store-'+si).value.trim()||`店舗${si+1}`;
-      const delivery=document.getElementById('delivery-'+si).value;
       const codes=Object.keys(qty[sup][si]);
       if(!codes.length) return;
-
+      const storeName=document.getElementById('store-'+si).value.trim()||('店舗'+(si+1));
+      const delivery=document.getElementById('delivery-'+si).value;
       const byK={};
       codes.forEach(code=>{
         const p=products.find(x=>x.code===code); if(!p) return;
         (byK[p.kubun]=byK[p.kubun]||[]).push(p);
       });
       if(!Object.keys(byK).length) return;
-
-      let storeHtml=`<div style="padding:6px 0 2px;font-size:12px;font-weight:600;color:#1565C0;">${COLS[si]}列：${storeName}（${delivery}）</div>`;
-      let storeQty=0,storeAmt=0;
+      let storeQty=0, storeAmt=0;
+      let sh=`<div style="padding:6px 0 2px;font-size:12px;font-weight:600;color:#1565C0;">${storeName}（${delivery}）</div>`;
       for(const [k,items] of Object.entries(byK)){
         const price=PRICES[k]||0;
-        storeHtml+=`<div class="order-section-title">${k}${price?` @${price.toLocaleString()}円`:''}</div>`;
+        sh+=`<div class="order-section-title">${k}${price?` @${price.toLocaleString()}円`:''}</div>`;
         let kQty=0,kAmt=0;
         items.forEach(p=>{
           const q=qty[sup][si][p.code]; if(!q) return;
           const amt=(PRICES[p.kubun]||0)*q;
           kQty+=q; kAmt+=amt; storeQty+=q; storeAmt+=amt;
-          storeHtml+=`<div class="order-item">
+          sh+=`<div class="order-item">
             <div><div class="order-name">${p.name}</div><div class="order-meta-s">${p.code}</div></div>
             <div class="order-right"><div class="order-qty">${q}個</div>${amt?`<div class="order-price">¥${amt.toLocaleString()}</div>`:''}</div>
           </div>`;
         });
-        storeHtml+=`<div class="subtotal-row"><span>${k}小計</span><span>${kQty}個${kAmt?' / ¥'+kAmt.toLocaleString():''}</span></div>`;
+        sh+=`<div class="subtotal-row"><span>${k}小計</span><span>${kQty}個${kAmt?' / ¥'+kAmt.toLocaleString():''}</span></div>`;
       }
-      storeHtml+=`<div class="subtotal-row" style="font-weight:600;"><span>${storeName}合計</span><span>${storeQty}個${storeAmt?' / ¥'+storeAmt.toLocaleString():''}</span></div>`;
-      supHtml+=storeHtml;
-      supGrandQty+=storeQty; supGrandAmt+=storeAmt;
+      sh+=`<div class="subtotal-row" style="font-weight:600;"><span>${storeName}合計</span><span>${storeQty}個${storeAmt?' / ¥'+storeAmt.toLocaleString():''}</span></div>`;
+      supHtml+=sh; supGrandQty+=storeQty; supGrandAmt+=storeAmt;
     });
-
     if(!supHtml) return;
     html+=`<div class="conf-block">
       <div class="conf-block-title">【${supName}】${date}　合計 ${supGrandQty}個${supGrandAmt?' / ¥'+supGrandAmt.toLocaleString():''}</div>
-      <div class="conf-block-inner">${supHtml}<div class="total-row"><span>【${supName}】総合計</span><span>${supGrandQty}個${supGrandAmt?' / ¥'+supGrandAmt.toLocaleString():''}</span></div></div>
+      <div class="conf-block-inner">${supHtml}
+        <div class="total-row"><span>【${supName}】総合計</span><span>${supGrandQty}個${supGrandAmt?' / ¥'+supGrandAmt.toLocaleString():''}</span></div>
+      </div>
     </div>`;
   });
   document.getElementById('order-list').innerHTML=html||'<div class="empty">数量が入力されていません</div>';
 }
 
+// ===== 保存・Excel・メール =====
 function resetSaveBtn(){
   const btn=document.getElementById('save-btn');
   btn.disabled=false; btn.textContent='保存 → Excelダウンロード';
@@ -461,14 +466,17 @@ function resetSaveBtn(){
 }
 
 function buildPayload(){
-  const date=document.getElementById('order-date').value;
-  const stores=[0,1,2].map(i=>({
-    name:document.getElementById('store-'+i).value.trim(),
-    delivery:document.getElementById('delivery-'+i).value
-  }));
-  return {date, stores,
-    quantities:{inaho:[qty.inaho[0],qty.inaho[1],qty.inaho[2]],
-                sankyo:[qty.sankyo[0],qty.sankyo[1],qty.sankyo[2]]}};
+  return {
+    date: document.getElementById('order-date').value,
+    stores: [0,1,2].map(i=>({
+      name: document.getElementById('store-'+i).value.trim(),
+      delivery: document.getElementById('delivery-'+i).value
+    })),
+    quantities: {
+      inaho:  [qty.inaho[0],  qty.inaho[1],  qty.inaho[2]],
+      sankyo: [qty.sankyo[0], qty.sankyo[1], qty.sankyo[2]]
+    }
+  };
 }
 
 async function saveOrder(){
@@ -482,8 +490,7 @@ async function saveOrder(){
     const data=await res.json();
     window._lastId=data.id;
     showToast('保存しました！');
-    btn.textContent='Excelダウンロード';
-    btn.disabled=false;
+    btn.disabled=false; btn.textContent='Excelダウンロード';
     btn.onclick=()=>downloadExcel(data.id);
     document.getElementById('mail-btn').style.display='block';
     downloadExcel(data.id);
@@ -504,8 +511,7 @@ async function sendMail(){
   try{
     const res=await fetch(SERVER+'/orders/'+window._lastId+'/mail',{method:'POST'});
     const data=await res.json();
-    if(data.success) showToast('メールを送信しました！');
-    else showToast('送信失敗: '+data.error);
+    showToast(data.success?'メールを送信しました！':'送信失敗: '+(data.error||''));
   }catch(e){showToast('送信エラー');}
   btn.textContent='メールで送信'; btn.disabled=false;
 }
@@ -519,9 +525,9 @@ async function loadHistory(){
     orders.sort((a,b)=>b.created_at.localeCompare(a.created_at));
     el.innerHTML=orders.map(o=>{
       const d=new Date(o.created_at).toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-      const stores=(o.stores||[]).filter(s=>s.name).map(s=>s.name).join('・')||'(店舗未入力)';
+      const names=(o.stores||[]).filter(s=>s.name).map(s=>s.name).join('・')||'(店舗未入力)';
       return `<div class="history-item">
-        <div><div class="h-store">${stores}</div><div class="h-meta">${o.date||''} ${d}</div></div>
+        <div><div class="h-store">${names}</div><div class="h-meta">${o.date||''} ${d}</div></div>
         <div>
           <button class="h-dl-btn" onclick="downloadExcel('${o.id}')">DL</button>
           <button class="h-del-btn" onclick="delHistory('${o.id}')">削除</button>
