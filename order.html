@@ -60,14 +60,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .qdsp.hv{color:#1565C0;}
 .summary{position:sticky;bottom:0;background:#fff;border-top:1px solid #e0e0e0;padding:8px 14px;box-shadow:0 -2px 8px rgba(0,0,0,0.06);}
 .sum-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
-.sum-store-name{font-size:12px;font-weight:600;color:#1a1a1a;}
-.sum-vals{display:flex;gap:8px;}
-.sum-item{font-size:12px;color:#666;}
+.sum-store-name{font-size:15px;font-weight:600;color:#1a1a1a;}
+.sum-vals{display:flex;gap:8px;flex-wrap:wrap;}
+.sum-item{font-size:14px;color:#666;}
 .sum-item b{color:#1a1a1a;}
 .sum-item .money{color:#1565C0;font-weight:600;}
 .sum-all-row{display:flex;flex-direction:column;gap:2px;padding-top:4px;border-top:1px solid #efefef;margin-top:2px;}
-.sum-all-item{font-size:11px;color:#888;}
+.sum-all-item{font-size:13px;color:#888;}
 .sum-all-item b{color:#555;}
+.center-notice{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.78);color:#fff;padding:18px 28px;border-radius:16px;font-size:15px;font-weight:600;z-index:600;opacity:0;transition:opacity 0.3s;pointer-events:none;text-align:center;line-height:1.6;white-space:pre;}
+.center-notice.show{opacity:1;}
 .empty{text-align:center;padding:40px 14px;color:#aaa;font-size:13px;}
 .conf-block{margin-bottom:12px;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden;}
 .conf-block-title{background:#f5f5f5;padding:8px 12px;font-size:12px;font-weight:600;}
@@ -108,7 +110,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.6</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.7</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -218,8 +220,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 <!-- 一時保存リストモーダル -->
 <div class="overlay" id="tmp-list-overlay" onclick="closeTmpListIfBg(event)">
   <div class="modal" style="width:min(360px,95vw);max-height:80vh;overflow-y:auto;">
-    <h3 style="margin-bottom:4px;">一時保存リスト</h3>
-    <div style="font-size:12px;color:#e53935;margin-bottom:12px;">※ロードすると一時保存から消えますのでご注意ください</div>
+    <h3 style="margin-bottom:12px;">一時保存リスト</h3>
     <div id="tmp-list-body"></div>
     <div style="margin-top:12px;">
       <button class="mbtn-cancel" style="width:100%;padding:11px;" onclick="document.getElementById('tmp-list-overlay').classList.remove('open')">閉じる</button>
@@ -261,6 +262,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="center-notice" id="center-notice"></div>
 
 <script>
 const SERVER = 'https://order-app-c15s.onrender.com';
@@ -720,7 +722,7 @@ async function loadTmp(id){
     await fetch(SERVER+'/orders/'+id,{method:'DELETE'});
     document.getElementById('tmp-list-overlay').classList.remove('open');
     renderList(); updateSummary(); refreshHasData(); renderConfirm();
-    showToast('ロードしました');
+    showCenterNotice('ロードしました\n※一時保存から削除されました');
   }catch(e){showToast('ロード失敗');}
 }
 
@@ -777,6 +779,12 @@ function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+function showCenterNotice(msg){
+  const n=document.getElementById('center-notice');
+  n.textContent=msg; n.classList.add('show');
+  setTimeout(function(){n.classList.remove('show');},2500);
 }
 
 renderFilters(); renderList(); updateSummary(); renderConfirm();
