@@ -110,7 +110,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.8</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.9</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -522,7 +522,8 @@ function updateSummary(){
     else if(p.kubun==='600均') amt600+=q*390;
   }
   const storeName=document.getElementById('store-'+storeIdx).value.trim()||('店舗'+(storeIdx+1));
-  document.getElementById('sum-store-name').textContent=storeName;
+  const delivery=document.getElementById('delivery-'+storeIdx).value;
+  document.getElementById('sum-store-name').textContent=storeName+(delivery?'　'+delivery:'');
   document.getElementById('s-items').textContent=items;
   document.getElementById('s-qty').textContent=totalQty;
   document.getElementById('s-1000').textContent='¥'+amt1000.toLocaleString();
@@ -545,7 +546,8 @@ function updateSummary(){
     });
     if(hasData){
       const sn=document.getElementById('store-'+si).value.trim()||('店舗'+(si+1));
-      storeRows.push('<div class="sum-all-item"><b>'+sn+'</b>　稲穂:<b>¥'+inahoAmt.toLocaleString()+'</b>　三共:<b>¥'+sankyoAmt.toLocaleString()+'</b></div>');
+      const dl=document.getElementById('delivery-'+si).value;
+      storeRows.push('<div class="sum-all-item"><b>'+sn+'</b>'+(dl?'　'+dl:'')+'　稲穂:<b>¥'+inahoAmt.toLocaleString()+'</b>　三共:<b>¥'+sankyoAmt.toLocaleString()+'</b></div>');
     }
   }
   document.getElementById('sum-all-row').innerHTML=storeRows.join('')||'<div class="sum-all-item" style="color:#ccc;">入力データなし</div>';
