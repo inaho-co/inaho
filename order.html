@@ -108,7 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.0</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.1</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -713,6 +713,8 @@ async function loadTmp(id){
     });
     if(o.date) document.getElementById('order-date').value=o.date;
     if(o.author !== undefined) document.getElementById('order-author').value=o.author||'';
+    // ロードしたら一時保存リストから削除
+    await fetch(SERVER+'/orders/'+id,{method:'DELETE'});
     document.getElementById('tmp-list-overlay').classList.remove('open');
     renderList(); updateSummary(); refreshHasData(); renderConfirm();
     showToast('ロードしました');
