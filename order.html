@@ -7,36 +7,36 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;background:#f5f5f5;color:#1a1a1a;font-size:14px;}
-.header{background:#fff;border-bottom:1px solid #e0e0e0;padding:10px 14px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;}
-.header h1{font-size:16px;font-weight:600;}
-.ver{font-size:10px;color:#bbb;}
-.meta-section{background:#fff;border-bottom:1px solid #e0e0e0;padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
+.header{background:#fff;border-bottom:1px solid #e0e0e0;padding:12px 14px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;}
+.header h1{font-size:19px;font-weight:600;}
+.ver{font-size:11px;color:#bbb;}
+.meta-section{background:#fff;border-bottom:1px solid #e0e0e0;padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.mf label{font-size:11px;color:#666;margin-bottom:3px;display:block;}
-.mf select,.mf input{width:100%;font-size:13px;padding:7px 8px;border:1px solid #d0d0d0;border-radius:8px;background:#fafafa;color:#1a1a1a;-webkit-appearance:none;}
-.mf input[type=date]{font-size:12px;}
-.supplier-tabs{display:flex;gap:6px;padding:8px 14px;background:#fff;border-bottom:1px solid #e0e0e0;}
-.sup-tab{flex:1;padding:8px 4px;font-size:13px;font-weight:600;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;color:#666;cursor:pointer;text-align:center;}
+.mf label{font-size:13px;color:#666;margin-bottom:4px;display:block;}
+.mf select,.mf input{width:100%;font-size:16px;padding:10px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fafafa;color:#1a1a1a;-webkit-appearance:none;}
+.mf input[type=date]{font-size:15px;}
+.supplier-tabs{display:flex;gap:6px;padding:10px 14px;background:#fff;border-bottom:1px solid #e0e0e0;}
+.sup-tab{flex:1;padding:11px 4px;font-size:16px;font-weight:600;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;color:#666;cursor:pointer;text-align:center;}
 .sup-tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
-.sup-tab .sup-cnt{font-size:10px;display:block;margin-top:1px;opacity:0.8;}
-.store-section{background:#fff;border-bottom:1px solid #e0e0e0;padding:8px 14px;}
-.store-tabs{display:flex;gap:5px;margin-bottom:8px;}
-.store-tab{flex:1;padding:7px 4px;font-size:12px;font-weight:500;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;color:#666;cursor:pointer;text-align:center;}
+.sup-tab .sup-cnt{font-size:12px;display:block;margin-top:2px;opacity:0.8;}
+.store-section{background:#fff;border-bottom:1px solid #e0e0e0;padding:10px 14px;}
+.store-tabs{display:flex;gap:5px;margin-bottom:10px;}
+.store-tab{flex:1;padding:10px 4px;font-size:15px;font-weight:500;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;color:#666;cursor:pointer;text-align:center;}
 .store-tab.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
 .store-tab.has-data{border-color:#1565C0;color:#1565C0;}
 .store-tab.active.has-data{background:#1565C0;color:#fff;border-color:#1565C0;}
 .store-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.btn-row{display:flex;gap:8px;margin-top:6px;}
-.clear-store-btn{flex:1;padding:6px;font-size:11px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;}
-.clear-all-btn2{flex:1;padding:6px;font-size:11px;color:#666;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;}
+.btn-row{display:flex;gap:8px;margin-top:8px;}
+.clear-store-btn{flex:1;padding:10px;font-size:14px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;}
+.clear-all-btn2{flex:1;padding:10px;font-size:14px;color:#666;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;}
 .tab-bar{display:flex;background:#fff;border-bottom:1px solid #e0e0e0;}
 .tab-btn{flex:1;padding:10px 6px;font-size:13px;color:#888;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;}
 .tab-btn.active{color:#1a1a1a;border-bottom:2px solid #1a1a1a;font-weight:600;}
-.search-box{background:#fff;border-bottom:1px solid #e0e0e0;padding:8px 14px;}
-.search-box input{width:100%;padding:8px 12px;border:1px solid #d0d0d0;border-radius:20px;font-size:14px;background:#f8f8f8;}
-.filter-row{display:flex;gap:6px;padding:8px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid #e0e0e0;-webkit-overflow-scrolling:touch;}
+.search-box{background:#fff;border-bottom:1px solid #e0e0e0;padding:10px 14px;}
+.search-box input{width:100%;padding:10px 14px;border:1px solid #d0d0d0;border-radius:20px;font-size:16px;background:#f8f8f8;}
+.filter-row{display:flex;gap:6px;padding:10px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid #e0e0e0;-webkit-overflow-scrolling:touch;}
 .filter-row::-webkit-scrollbar{display:none;}
-.filter-btn{padding:5px 13px;font-size:12px;border:1px solid #d0d0d0;border-radius:20px;background:none;color:#666;cursor:pointer;white-space:nowrap;}
+.filter-btn{padding:8px 16px;font-size:14px;border:1px solid #d0d0d0;border-radius:20px;background:none;color:#666;cursor:pointer;white-space:nowrap;}
 .filter-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
 .product-list{padding:0 14px;padding-bottom:140px;}
 .product-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #efefef;}
@@ -108,13 +108,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.5</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.6</span></div>
 
 <div class="meta-section">
   <div class="row2">
     <div class="mf"><label>発注日</label><input type="date" id="order-date"></div>
     <div class="mf"><label>&nbsp;</label>
-      <button onclick="clearAll()" style="width:100%;padding:7px;font-size:12px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">全クリア</button>
+      <button onclick="clearAll()" style="width:100%;padding:10px;font-size:15px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">全クリア</button>
     </div>
   </div>
   <div class="mf"><label>発注作成者</label><input type="text" id="order-author" placeholder="氏名を入力"></div>
