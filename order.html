@@ -108,7 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 2.6</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.0</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -117,6 +117,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
       <button onclick="clearAll()" style="width:100%;padding:7px;font-size:12px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">全クリア</button>
     </div>
   </div>
+  <div class="mf"><label>発注作成者</label><input type="text" id="order-author" placeholder="氏名を入力"></div>
 </div>
 
 <div class="store-section">
@@ -162,7 +163,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
   <div id="confirm-body" style="display:none;">
     <div id="order-list" style="margin-bottom:4px;padding:0 14px;"></div>
   </div>
-  <div style="padding:10px 14px 24px;">
+  <div style="padding:10px 14px 4px;">
+    <button class="action-btn" id="save-tmp-btn" onclick="openSaveTmpModal()" style="background:#fff;color:#1a1a1a;border:1px solid #1a1a1a;">一時保存</button>
+    <button class="action-btn" onclick="openTmpList()" style="background:#fff;color:#555;border:1px solid #aaa;margin-bottom:8px;">一時保存リスト</button>
     <button class="action-btn mail-btn" id="mail-btn" onclick="sendMail()">メールで送信</button>
   </div>
 </div>
@@ -194,6 +197,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
     <div class="modal-btns">
       <button class="mbtn-cancel" onclick="closeModal()">キャンセル</button>
       <button class="mbtn-ok" onclick="confirmModal()">決定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 一時保存名前入力モーダル -->
+<div class="overlay" id="save-tmp-overlay">
+  <div class="modal">
+    <h3>一時保存</h3>
+    <div class="modal-sub">保存名を入力してください</div>
+    <input type="text" id="save-tmp-name" placeholder="例：福岡店 4月26日" style="width:100%;font-size:16px;padding:10px;border:1px solid #d0d0d0;border-radius:8px;margin-bottom:12px;">
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="document.getElementById('save-tmp-overlay').classList.remove('open')">キャンセル</button>
+      <button class="mbtn-ok" onclick="confirmSaveTmp()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 一時保存リストモーダル -->
+<div class="overlay" id="tmp-list-overlay" onclick="closeTmpListIfBg(event)">
+  <div class="modal" style="width:min(360px,95vw);max-height:80vh;overflow-y:auto;">
+    <h3 style="margin-bottom:12px;">一時保存リスト</h3>
+    <div id="tmp-list-body"></div>
+    <div style="margin-top:12px;">
+      <button class="mbtn-cancel" style="width:100%;padding:11px;" onclick="document.getElementById('tmp-list-overlay').classList.remove('open')">閉じる</button>
     </div>
   </div>
 </div>
@@ -243,7 +270,7 @@ let supplier = 'inaho';
 let storeIdx = 0;
 let filter = '全て';
 let modalCode = null;
-let OUT_OF_STOCK = new Set();
+let OUT_OF_STOCK = new Map(); // code → date
 
 document.getElementById('order-date').value = new Date().toISOString().split('T')[0];
 
@@ -253,16 +280,16 @@ async function loadOosFromServer() {
     try{
       const res = await fetch(SERVER+'/out_of_stock');
       if(!res.ok) throw new Error('status '+res.status);
-      const codes = await res.json();
-      OUT_OF_STOCK = new Set(codes.map(String));
+      const items = await res.json();
+      OUT_OF_STOCK = new Map(items.map(function(x){
+        // 旧形式（文字列）と新形式（{code,date}）両対応
+        return typeof x === 'string' ? [x, ''] : [x.code, x.date||''];
+      }));
       renderList();
       return;
     }catch(e){
-      if(i<3){
-        await new Promise(function(r){setTimeout(r, 4000);});
-      } else {
-        console.log('OOS取得失敗（最終）', e);
-      }
+      if(i<3) await new Promise(function(r){setTimeout(r,4000);});
+      else console.log('OOS取得失敗（最終）', e);
     }
   }
 }
@@ -317,11 +344,13 @@ function renderList() {
   const kc={'1000均':'k1','600均':'k6','EDLP':'ke','季節':'ke'};
   const rows = list.map(function(p){
     const oos=OUT_OF_STOCK.has(p.code);
+    const oosDate=oos ? OUT_OF_STOCK.get(p.code) : '';
+    const oosDateStr=oosDate ? '（'+oosDate+'）' : '';
 
     const v = oos ? 0 : (qty[supplier][storeIdx][p.code] || 0);
     const hvClass = v ? 'hv' : '';
     const dispVal = v ? String(v) : '−';
-    const oosBadge = oos ? '<span class="oos-badge">在庫なし</span>' : '';
+    const oosBadge = oos ? '<span class="oos-badge">在庫なし'+oosDateStr+'</span>' : '';
 
     if(oos){
       return '<div class="product-item out-of-stock">'
@@ -400,24 +429,34 @@ function confirmOos(){
   if(pendingOosCode){ addOos(pendingOosCode); pendingOosCode=null; }
 }
 
+async function postOos() {
+  const items=[...OUT_OF_STOCK].map(function(e){return {code:e[0], date:e[1]};});
+  for(let i=0; i<6; i++){
+    try{
+      const res = await fetch(SERVER+'/out_of_stock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:items})});
+      if(res.ok) return true;
+    }catch(e){}
+    if(i<5) await new Promise(function(r){setTimeout(r,10000);});
+  }
+  return false;
+}
+
 async function addOos(code) {
-  OUT_OF_STOCK.add(code);
-  // 全店舗・全取引先からこの商品の数量を削除
+  const today=new Date().toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'}).replace('/','/');
+  OUT_OF_STOCK.set(code, today);
   ['inaho','sankyo'].forEach(function(s){[0,1,2].forEach(function(i){delete qty[s][i][code];});});
   renderList(); updateSummary(); refreshHasData(); renderConfirm();
-  try{
-    await fetch(SERVER+'/out_of_stock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({codes:[...OUT_OF_STOCK]})});
-    showToast('在庫なしに設定しました');
-  }catch(e){showToast('保存失敗（ネットワークエラー）');}
+  showToast('保存中...');
+  const ok = await postOos();
+  showToast(ok ? '在庫なしに設定しました' : '保存失敗（再読み込みしてください）');
 }
 
 async function removeOos(code) {
   OUT_OF_STOCK.delete(code);
   renderList(); updateSummary(); refreshHasData(); renderConfirm();
-  try{
-    await fetch(SERVER+'/out_of_stock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({codes:[...OUT_OF_STOCK]})});
-    showToast('在庫ありに戻しました');
-  }catch(e){showToast('保存失敗（ネットワークエラー）');}
+  showToast('保存中...');
+  const ok = await postOos();
+  showToast(ok ? '在庫ありに戻しました' : '保存失敗（再読み込みしてください）');
 }
 
 function openModal(code) {
@@ -580,48 +619,153 @@ function resetSaveBtn(){
   btn.textContent='メールで送信'; btn.disabled=false;
 }
 
-async function saveOrder(){
-  const hasData=['inaho','sankyo'].some(function(s){return [0,1,2].some(function(i){return Object.keys(qty[s][i]).length>0;});});
-  if(!hasData){showToast('数量を入力してください');return;}
-  const btn=document.getElementById('mail-btn');
-  btn.disabled=true; btn.textContent='保存中...';
-  const payload={
+function buildPayload(){
+  return {
     date:document.getElementById('order-date').value,
+    author:document.getElementById('order-author').value.trim(),
     stores:[0,1,2].map(function(i){return {name:document.getElementById('store-'+i).value.trim(),delivery:document.getElementById('delivery-'+i).value};}),
     quantities:{inaho:[qty.inaho[0],qty.inaho[1],qty.inaho[2]],sankyo:[qty.sankyo[0],qty.sankyo[1],qty.sankyo[2]]}
   };
+}
+
+function hasAnyData(){
+  return ['inaho','sankyo'].some(function(s){return [0,1,2].some(function(i){return Object.keys(qty[s][i]).length>0;});});
+}
+
+// 一時保存モーダルを開く
+function openSaveTmpModal(){
+  if(!hasAnyData()){showToast('数量を入力してください');return;}
+  const d=document.getElementById('order-date').value;
+  document.getElementById('save-tmp-name').value=d||'';
+  document.getElementById('save-tmp-overlay').classList.add('open');
+  setTimeout(function(){document.getElementById('save-tmp-name').focus();},100);
+}
+
+// 一時保存確定
+async function confirmSaveTmp(){
+  const name=document.getElementById('save-tmp-name').value.trim();
+  if(!name){showToast('保存名を入力してください');return;}
+  document.getElementById('save-tmp-overlay').classList.remove('open');
+  const btn=document.getElementById('save-tmp-btn');
+  btn.disabled=true; btn.textContent='保存中...';
+  const payload=buildPayload();
+  payload.label=name;
   try{
     const res=await fetch(SERVER+'/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await res.json();
-    window._lastId=data.id;
-    btn.disabled=false; btn.textContent='メールで送信';
-    showToast('保存しました！');
-    await sendMailById(data.id);
-  }catch(e){showToast('保存失敗');btn.disabled=false;btn.textContent='メールで送信';}
+    showToast('「'+name+'」を一時保存しました');
+  }catch(e){showToast('保存失敗');}
+  btn.disabled=false; btn.textContent='一時保存';
 }
 
-function downloadExcel(id){
-  const a=document.createElement('a');
-  a.href=SERVER+'/orders/'+(id||window._lastId)+'/excel';
-  a.download='発注書.xlsx'; a.click();
-  showToast('Excelをダウンロード中...');
+// 一時保存リストを開く
+async function openTmpList(){
+  document.getElementById('tmp-list-body').innerHTML='<div style="text-align:center;padding:20px;color:#aaa;">読み込み中...</div>';
+  document.getElementById('tmp-list-overlay').classList.add('open');
+  try{
+    const res=await fetch(SERVER+'/orders');
+    const orders=await res.json();
+    renderTmpList(orders);
+  }catch(e){
+    document.getElementById('tmp-list-body').innerHTML='<div style="text-align:center;padding:20px;color:#e53935;">読み込み失敗</div>';
+  }
+}
+
+function renderTmpList(orders){
+  if(!orders.length){
+    document.getElementById('tmp-list-body').innerHTML='<div style="text-align:center;padding:20px;color:#aaa;">保存データなし</div>';
+    return;
+  }
+  const html=orders.slice().reverse().map(function(o){
+    const label=o.label||o.date||o.id;
+    const stores=o.stores?o.stores.map(function(s){return s.name;}).filter(Boolean).join('・'):'';
+    return '<div style="padding:10px 0;border-bottom:1px solid #efefef;">'
+      +'<div style="font-size:13px;font-weight:600;">'+label+'</div>'
+      +(stores?'<div style="font-size:11px;color:#aaa;margin-top:2px;">'+stores+'</div>':'')
+      +'<div style="display:flex;gap:6px;margin-top:8px;">'
+      +'<button onclick="loadTmp(\''+o.id+'\')" style="flex:1;padding:7px;font-size:12px;font-weight:600;background:#1a1a1a;color:#fff;border:none;border-radius:8px;cursor:pointer;">ロード</button>'
+      +'<button onclick="deleteTmp(\''+o.id+'\')" style="padding:7px 12px;font-size:12px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;">削除</button>'
+      +'</div></div>';
+  }).join('');
+  document.getElementById('tmp-list-body').innerHTML=html;
+}
+
+// ロード
+async function loadTmp(id){
+  try{
+    const res=await fetch(SERVER+'/orders');
+    const orders=await res.json();
+    const o=orders.find(function(x){return x.id===id;});
+    if(!o){showToast('データが見つかりません');return;}
+    // 店舗情報を復元
+    const stores=o.stores||[];
+    for(let i=0;i<3;i++){
+      document.getElementById('store-'+i).value=stores[i]?stores[i].name||'':'';
+      document.getElementById('delivery-'+i).value=stores[i]?stores[i].delivery||'稲穂のみ':'稲穂のみ';
+      updateStoreTab(i);
+    }
+    // 数量を復元
+    const q=o.quantities||{};
+    ['inaho','sankyo'].forEach(function(s){
+      [0,1,2].forEach(function(i){
+        qty[s][i]=(q[s]&&q[s][i])||{};
+      });
+    });
+    if(o.date) document.getElementById('order-date').value=o.date;
+    if(o.author !== undefined) document.getElementById('order-author').value=o.author||'';
+    document.getElementById('tmp-list-overlay').classList.remove('open');
+    renderList(); updateSummary(); refreshHasData(); renderConfirm();
+    showToast('ロードしました');
+  }catch(e){showToast('ロード失敗');}
+}
+
+// 削除
+async function deleteTmp(id){
+  try{
+    await fetch(SERVER+'/orders/'+id,{method:'DELETE'});
+    const res=await fetch(SERVER+'/orders');
+    const orders=await res.json();
+    renderTmpList(orders);
+    showToast('削除しました');
+  }catch(e){showToast('削除失敗');}
+}
+
+function closeTmpListIfBg(e){
+  if(e.target===document.getElementById('tmp-list-overlay')) document.getElementById('tmp-list-overlay').classList.remove('open');
+}
+
+async function saveOrder(){
+  if(!hasAnyData()){showToast('数量を入力してください');return null;}
+  const btn=document.getElementById('mail-btn');
+  btn.disabled=true; btn.textContent='保存中...';
+  try{
+    const res=await fetch(SERVER+'/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(buildPayload())});
+    const data=await res.json();
+    return data.id;
+  }catch(e){showToast('保存失敗');btn.disabled=false;btn.textContent='メールで送信';return null;}
 }
 
 async function sendMailById(id){
   const btn=document.getElementById('mail-btn');
   btn.textContent='送信中...'; btn.disabled=true;
   try{
-    const res=await fetch(SERVER+'/orders/'+(id||window._lastId)+'/mail',{method:'POST'});
+    const res=await fetch(SERVER+'/orders/'+id+'/mail',{method:'POST'});
     const data=await res.json();
-    showToast(data.success?'メールを送信しました！':'送信失敗');
+    if(data.success){
+      // 送信成功後にデータ削除
+      await fetch(SERVER+'/orders/'+id,{method:'DELETE'});
+      showToast('メールを送信しました！');
+    } else {
+      showToast('送信失敗');
+    }
   }catch(e){showToast('送信エラー');}
   btn.textContent='メールで送信'; btn.disabled=false;
 }
 
 async function sendMail(){
-  const hasData=['inaho','sankyo'].some(function(s){return [0,1,2].some(function(i){return Object.keys(qty[s][i]).length>0;});});
-  if(!hasData){showToast('数量を入力してください');return;}
-  await saveOrder();
+  if(!hasAnyData()){showToast('数量を入力してください');return;}
+  const id=await saveOrder();
+  if(id) await sendMailById(id);
 }
 
 function showToast(msg){
