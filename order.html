@@ -108,7 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.1</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.2</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -680,8 +680,9 @@ function renderTmpList(orders){
     const label=o.label||o.date||o.id;
     const stores=o.stores?o.stores.map(function(s){return s.name;}).filter(Boolean).join('・'):'';
     return '<div style="padding:10px 0;border-bottom:1px solid #efefef;">'
-      +'<div style="font-size:13px;font-weight:600;">'+label+'</div>'
-      +(stores?'<div style="font-size:11px;color:#aaa;margin-top:2px;">'+stores+'</div>':'')
+      +'<div style="font-size:16px;font-weight:600;">'+label+'</div>'
+      +(stores?'<div style="font-size:14px;color:#aaa;margin-top:2px;">'+stores+'</div>':'')
+      +(o.author?'<div style="font-size:14px;color:#aaa;margin-top:2px;">'+o.author+'</div>':'')
       +'<div style="display:flex;gap:6px;margin-top:8px;">'
       +'<button onclick="loadTmp(\''+o.id+'\')" style="flex:1;padding:7px;font-size:12px;font-weight:600;background:#1a1a1a;color:#fff;border:none;border-radius:8px;cursor:pointer;">ロード</button>'
       +'<button onclick="deleteTmp(\''+o.id+'\')" style="padding:7px 12px;font-size:12px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;">削除</button>'
