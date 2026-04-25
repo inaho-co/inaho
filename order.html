@@ -41,8 +41,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .product-list{padding:0 14px;padding-bottom:140px;}
 .product-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #efefef;}
 .product-info{flex:1;min-width:0;}
-.product-name{font-size:13px;line-height:1.4;word-break:break-all;}
-.product-meta{font-size:11px;color:#999;margin-top:2px;}
+.product-name{font-size:15px;line-height:1.4;word-break:break-all;}
+.product-meta{font-size:15px;color:#999;margin-top:2px;}
 .kubun-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;margin-right:4px;font-weight:500;}
 .k1{background:#E3F2FD;color:#1565C0;}
 .k6{background:#E8F5E9;color:#2E7D32;}
@@ -51,14 +51,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .product-item.out-of-stock .product-name{text-decoration:line-through;color:#aaa;}
 .product-item.out-of-stock .product-meta{color:#ccc;}
 .product-item.out-of-stock .qbtn{pointer-events:none;opacity:0.25;color:#ccc;border-color:#e0e0e0;}
+.product-item.out-of-stock .qbtn.oos-plus{pointer-events:auto;opacity:1;color:#e53935;border-color:#e53935;}
 .product-item.out-of-stock .qdsp{pointer-events:none;color:#ccc;}
 .oos-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;margin-right:4px;font-weight:500;background:#FFEBEE;color:#c62828;}
-.admin-btn{padding:5px 11px;font-size:12px;font-weight:600;border:1px solid #888;border-radius:8px;background:#fff;color:#555;cursor:pointer;}
-.admin-btn.active-mode{background:#e53935;color:#fff;border-color:#e53935;}
-.admin-bar{display:none;background:#FFF3E0;border-bottom:2px solid #FF6F00;padding:8px 14px;font-size:12px;color:#E65100;align-items:center;justify-content:space-between;}
-.admin-bar.show{display:flex;}
-.admin-save-btn{padding:6px 16px;font-size:12px;font-weight:600;background:#E65100;color:#fff;border:none;border-radius:8px;cursor:pointer;}
-.oos-checkbox{width:20px;height:20px;accent-color:#e53935;cursor:pointer;flex-shrink:0;}
 .qbtn{width:34px;height:34px;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .qbtn:active{background:#e0e0e0;}
 .qdsp{width:34px;text-align:center;font-size:15px;font-weight:500;color:#bbb;cursor:pointer;}
@@ -113,11 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><div style="display:flex;align-items:center;gap:8px;"><button class="admin-btn" id="admin-toggle-btn" onclick="toggleAdminMode()">管理</button><span class="ver">ver 2.5</span></div></div>
-<div class="admin-bar" id="admin-bar">
-  <span>🔧 在庫なし商品にチェック</span>
-  <button class="admin-save-btn" onclick="saveOos()">保存して終了</button>
-</div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 2.6</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -218,6 +209,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
   </div>
 </div>
 
+<div class="overlay" id="oos-overlay">
+  <div class="modal">
+    <h3>在庫なしにしますか？</h3>
+    <div class="modal-sub" id="oos-modal-pname"></div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="document.getElementById('oos-overlay').classList.remove('open')">キャンセル</button>
+      <button style="flex:1;padding:11px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:#e53935;color:#fff;border:none;" onclick="confirmOos()">在庫なしにする</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="restore-overlay">
+  <div class="modal">
+    <h3>在庫を復活させますか？</h3>
+    <div class="modal-sub" id="restore-modal-pname"></div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="document.getElementById('restore-overlay').classList.remove('open')">キャンセル</button>
+      <button style="flex:1;padding:11px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:#1565C0;color:#fff;border:none;" onclick="confirmRestore()">復活させる</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -231,18 +244,27 @@ let storeIdx = 0;
 let filter = '全て';
 let modalCode = null;
 let OUT_OF_STOCK = new Set();
-let adminMode = false;
 
 document.getElementById('order-date').value = new Date().toISOString().split('T')[0];
 
-// 起動時にサーバーから在庫なしリストを取得
+// 起動時：healthでサーバーを起こしてからOOS取得
 async function loadOosFromServer() {
-  try {
-    const res = await fetch(SERVER + '/out_of_stock');
-    const codes = await res.json();
-    OUT_OF_STOCK = new Set(codes.map(String));
-    renderList();
-  } catch(e) { console.log('OOS取得失敗', e); }
+  for(let i=0; i<4; i++){
+    try{
+      const res = await fetch(SERVER+'/out_of_stock');
+      if(!res.ok) throw new Error('status '+res.status);
+      const codes = await res.json();
+      OUT_OF_STOCK = new Set(codes.map(String));
+      renderList();
+      return;
+    }catch(e){
+      if(i<3){
+        await new Promise(function(r){setTimeout(r, 4000);});
+      } else {
+        console.log('OOS取得失敗（最終）', e);
+      }
+    }
+  }
 }
 loadOosFromServer();
 
@@ -294,49 +316,53 @@ function renderList() {
   if(!list.length){el.innerHTML='<div class="empty">該当商品なし</div>';return;}
   const kc={'1000均':'k1','600均':'k6','EDLP':'ke','季節':'ke'};
   const rows = list.map(function(p){
-    const price=PRICES[p.kubun]||0;
-    const priceStr=price?' @'+price.toLocaleString()+'円':'';
     const oos=OUT_OF_STOCK.has(p.code);
-
-    if(adminMode) {
-      const checked = oos ? 'checked' : '';
-      return '<div class="product-item" style="background:'+(oos?'#fff5f5':'')+';">'
-        +'<label style="display:flex;align-items:center;gap:10px;width:100%;cursor:pointer;">'
-        +'<input type="checkbox" class="oos-checkbox" data-code="'+p.code+'" '+checked+'>'
-        +'<div class="product-info">'
-        +'<div class="product-name" style="'+(oos?'text-decoration:line-through;color:#aaa;':'')+'"><span class="kubun-badge '+(kc[p.kubun]||'ke')+'">'+p.kubun+'</span>'+p.name+'</div>'
-        +'<div class="product-meta">'+p.code+' / '+p.hiban+priceStr+'</div>'
-        +'</div></label></div>';
-    }
 
     const v = oos ? 0 : (qty[supplier][storeIdx][p.code] || 0);
     const hvClass = v ? 'hv' : '';
     const dispVal = v ? String(v) : '−';
     const oosBadge = oos ? '<span class="oos-badge">在庫なし</span>' : '';
-    return '<div class="product-item'+(oos?' out-of-stock':'')+'">'
+
+    if(oos){
+      return '<div class="product-item out-of-stock">'
+        +'<div class="product-info">'
+        +'<div class="product-name">'+oosBadge+'<span class="kubun-badge '+(kc[p.kubun]||'ke')+'">'+p.kubun+'</span>'+p.name+'</div>'
+        +'<div class="product-meta">'+p.code+' / '+p.hiban+'</div>'
+        +'</div>'
+        +'<div class="qty-ctrl">'
+        +'<button class="qbtn" data-code="'+p.code+'" data-d="-1" disabled>−</button>'
+        +'<div class="qdsp" style="pointer-events:none;color:#ccc;">×</div>'
+        +'<button class="qbtn oos-plus" data-code="'+p.code+'" data-d="1">＋</button>'
+        +'</div></div>';
+    }
+
+    // 通常
+    return '<div class="product-item">'
       +'<div class="product-info">'
-      +'<div class="product-name">'+oosBadge+'<span class="kubun-badge '+(kc[p.kubun]||'ke')+'">'+p.kubun+'</span>'+p.name+'</div>'
-      +'<div class="product-meta">'+p.code+' / '+p.hiban+priceStr+'</div>'
+      +'<div class="product-name"><span class="kubun-badge '+(kc[p.kubun]||'ke')+'">'+p.kubun+'</span>'+p.name+'</div>'
+      +'<div class="product-meta">'+p.code+' / '+p.hiban+'</div>'
       +'</div>'
       +'<div class="qty-ctrl">'
-      +'<button class="qbtn" data-code="'+p.code+'" data-d="-1" disabled>−</button>'
-      +'<div class="qdsp" data-code="'+p.code+'" style="pointer-events:none;color:#ccc;">×</div>'
-      +'<button class="qbtn oos-plus" data-code="'+p.code+'" data-d="1" style="border-color:#e53935;color:#e53935;">＋</button>'
+      +'<button class="qbtn" data-code="'+p.code+'" data-d="-1">−</button>'
+      +'<div class="qdsp '+hvClass+'" data-code="'+p.code+'">'+dispVal+'</div>'
+      +'<button class="qbtn" data-code="'+p.code+'" data-d="1">＋</button>'
       +'</div></div>';
   });
   el.innerHTML = rows.join('');
 }
 
 document.getElementById('product-list').addEventListener('click', function(e){
-  if(adminMode) return;
   const btn = e.target.closest('.qbtn');
   const dsp = e.target.closest('.qdsp');
   if(btn && !btn.disabled){
     const code = btn.dataset.code;
     const d = parseInt(btn.dataset.d);
     if(OUT_OF_STOCK.has(code) && d===1){
-      // 在庫なし → 復活（在庫0）
-      removeOos(code);
+      // 在庫なし → 復活確認モーダル
+      const p=(PRODUCTS[supplier]||[]).find(function(x){return x.code===code;});
+      pendingRestoreCode = code;
+      document.getElementById('restore-modal-pname').textContent = p ? p.name : code;
+      document.getElementById('restore-overlay').classList.add('open');
     } else {
       chg(code, d);
     }
@@ -345,17 +371,33 @@ document.getElementById('product-list').addEventListener('click', function(e){
   }
 });
 
+let pendingOosCode = null;
+let pendingRestoreCode = null;
+
+function confirmRestore(){
+  document.getElementById('restore-overlay').classList.remove('open');
+  if(pendingRestoreCode){ removeOos(pendingRestoreCode); pendingRestoreCode=null; }
+}
+
 function chg(code, d) {
   const cur = qty[supplier][storeIdx][code]||0;
   if(cur===0 && d===-1){
-    // 0でマイナス → 在庫なしに設定
-    addOos(code);
+    // 0でマイナス → 確認モーダル表示
+    const p=(PRODUCTS[supplier]||[]).find(function(x){return x.code===code;});
+    pendingOosCode = code;
+    document.getElementById('oos-modal-pname').textContent = p ? p.name : code;
+    document.getElementById('oos-overlay').classList.add('open');
     return;
   }
   const nxt = Math.max(0, cur+d);
   if(nxt===0) delete qty[supplier][storeIdx][code];
   else qty[supplier][storeIdx][code]=nxt;
   renderList(); updateSummary(); refreshHasData(); resetSaveBtn(); renderConfirm();
+}
+
+function confirmOos(){
+  document.getElementById('oos-overlay').classList.remove('open');
+  if(pendingOosCode){ addOos(pendingOosCode); pendingOosCode=null; }
 }
 
 async function addOos(code) {
@@ -586,32 +628,6 @@ function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   setTimeout(function(){t.classList.remove('show');},2500);
-}
-
-function toggleAdminMode(){
-  adminMode=!adminMode;
-  const btn=document.getElementById('admin-toggle-btn');
-  const bar=document.getElementById('admin-bar');
-  btn.classList.toggle('active-mode', adminMode);
-  btn.textContent=adminMode?'× 終了':'管理';
-  bar.classList.toggle('show', adminMode);
-  renderList();
-}
-
-async function saveOos(){
-  // 現在チェックされているコードを収集
-  const checked=[...document.querySelectorAll('.oos-checkbox:checked')].map(function(cb){return cb.dataset.code;});
-  OUT_OF_STOCK=new Set(checked);
-  try{
-    const res=await fetch(SERVER+'/out_of_stock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({codes:checked})});
-    const data=await res.json();
-    showToast('在庫なし設定を保存しました（'+checked.length+'件）');
-  }catch(e){showToast('保存失敗');}
-  adminMode=false;
-  document.getElementById('admin-toggle-btn').classList.remove('active-mode');
-  document.getElementById('admin-toggle-btn').textContent='管理';
-  document.getElementById('admin-bar').classList.remove('show');
-  renderList();
 }
 
 renderFilters(); renderList(); updateSummary(); renderConfirm();
