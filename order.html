@@ -108,7 +108,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.2</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 3.3</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -128,15 +128,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
   </div>
   <div id="store-inputs-0" class="store-inputs">
     <div class="mf"><label>店舗名</label><input type="text" id="store-0" placeholder="店舗名" oninput="updateStoreTab(0)"></div>
-    <div class="mf"><label>配送区分</label><select id="delivery-0"><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
+    <div class="mf"><label>配送区分</label><select id="delivery-0"><option value="">　</option><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
   </div>
   <div id="store-inputs-1" class="store-inputs" style="display:none;">
     <div class="mf"><label>店舗名</label><input type="text" id="store-1" placeholder="店舗名" oninput="updateStoreTab(1)"></div>
-    <div class="mf"><label>配送区分</label><select id="delivery-1"><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
+    <div class="mf"><label>配送区分</label><select id="delivery-1"><option value="">　</option><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
   </div>
   <div id="store-inputs-2" class="store-inputs" style="display:none;">
     <div class="mf"><label>店舗名</label><input type="text" id="store-2" placeholder="店舗名" oninput="updateStoreTab(2)"></div>
-    <div class="mf"><label>配送区分</label><select id="delivery-2"><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
+    <div class="mf"><label>配送区分</label><select id="delivery-2"><option value="">　</option><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
   </div>
   <div class="btn-row">
     <button class="clear-all-btn2" onclick="clearAllQty()">数量クリア</button>
@@ -702,7 +702,7 @@ async function loadTmp(id){
     const stores=o.stores||[];
     for(let i=0;i<3;i++){
       document.getElementById('store-'+i).value=stores[i]?stores[i].name||'':'';
-      document.getElementById('delivery-'+i).value=stores[i]?stores[i].delivery||'稲穂のみ':'稲穂のみ';
+      document.getElementById('delivery-'+i).value=stores[i]?stores[i].delivery||'':'';
       updateStoreTab(i);
     }
     // 数量を復元
