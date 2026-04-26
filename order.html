@@ -112,7 +112,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.2</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.3</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -170,6 +170,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
   <div style="padding:10px 14px 4px;">
     <button class="action-btn" id="save-tmp-btn" onclick="openSaveTmpModal()" style="background:#fff;color:#1a1a1a;border:1px solid #1a1a1a;">一時保存</button>
     <button class="action-btn" onclick="openTmpList()" style="background:#fff;color:#555;border:1px solid #aaa;margin-bottom:8px;">一時保存リスト</button>
+    <div class="mf" style="margin-bottom:8px;">
+      <label>備考（メール本文に記載されます）</label>
+      <textarea id="order-comment" placeholder="特記事項・連絡事項など" style="width:100%;font-size:15px;padding:10px;border:1px solid #d0d0d0;border-radius:8px;background:#fafafa;color:#1a1a1a;resize:vertical;min-height:72px;font-family:inherit;"></textarea>
+    </div>
     <button class="action-btn mail-btn" id="mail-btn" onclick="sendMail()">メールで送信</button>
   </div>
 </div>
@@ -506,6 +510,7 @@ function doClear(){
     updateStoreTab(i);
   }
   document.getElementById('clear-overlay').classList.remove('open');
+  document.getElementById('order-comment').value='';
   renderList(); updateSummary(); refreshHasData(); resetSaveBtn(); initDeliveryStyles();
   showToast('全クリアしました');
 }
@@ -633,6 +638,7 @@ function buildPayload(){
   return {
     date:document.getElementById('order-date').value,
     author:document.getElementById('order-author').value.trim(),
+    comment:document.getElementById('order-comment').value.trim(),
     stores:[0,1,2].map(function(i){return {name:document.getElementById('store-'+i).value.trim(),delivery:document.getElementById('delivery-'+i).value};}),
     quantities:{inaho:[qty.inaho[0],qty.inaho[1],qty.inaho[2]],sankyo:[qty.sankyo[0],qty.sankyo[1],qty.sankyo[2]]}
   };
@@ -765,6 +771,7 @@ async function loadTmp(id){
     });
     if(o.date) document.getElementById('order-date').value=o.date;
     if(o.author !== undefined) document.getElementById('order-author').value=o.author||'';
+    if(o.comment !== undefined) document.getElementById('order-comment').value=o.comment||'';
     // ロードしたら一時保存リストから削除
     await fetch(SERVER+'/orders/'+id,{method:'DELETE'});
     document.getElementById('tmp-list-overlay').classList.remove('open');
