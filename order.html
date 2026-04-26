@@ -14,6 +14,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .mf label{font-size:13px;color:#666;margin-bottom:4px;display:block;}
 .mf select,.mf input{width:100%;font-size:16px;padding:10px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fafafa;color:#1a1a1a;-webkit-appearance:none;}
+.mf input:-webkit-autofill,.mf input:-webkit-autofill:hover,.mf input:-webkit-autofill:focus{-webkit-box-shadow:0 0 0 1000px #fafafa inset;box-shadow:0 0 0 1000px #fafafa inset;-webkit-text-fill-color:#1a1a1a;}
+.mf select.warn-empty{background:#FFFDE7;border-color:#F9A825;}
 .mf input[type=date]{font-size:15px;}
 .supplier-tabs{display:flex;gap:6px;padding:10px 14px;background:#fff;border-bottom:1px solid #e0e0e0;}
 .sup-tab{flex:1;padding:11px 4px;font-size:16px;font-weight:600;border:1px solid #d0d0d0;border-radius:8px;background:#f8f8f8;color:#666;cursor:pointer;text-align:center;}
@@ -110,7 +112,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.1</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.2</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -130,15 +132,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
   </div>
   <div id="store-inputs-0" class="store-inputs">
     <div class="mf"><label>店舗名</label><input type="text" id="store-0" placeholder="店舗名" oninput="updateStoreTab(0)"></div>
-    <div class="mf"><label>配送区分</label><select id="delivery-0" onchange="updateSummary()"><option value="">　</option><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
+    <div class="mf"><label>配送区分</label><select id="delivery-0" onchange="updateDeliveryStyle(0);updateSummary()"><option value="">　</option><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
   </div>
   <div id="store-inputs-1" class="store-inputs" style="display:none;">
     <div class="mf"><label>店舗名</label><input type="text" id="store-1" placeholder="店舗名" oninput="updateStoreTab(1)"></div>
-    <div class="mf"><label>配送区分</label><select id="delivery-1" onchange="updateSummary()"><option value="">　</option><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
+    <div class="mf"><label>配送区分</label><select id="delivery-1" onchange="updateDeliveryStyle(1);updateSummary()"><option value="">　</option><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
   </div>
   <div id="store-inputs-2" class="store-inputs" style="display:none;">
     <div class="mf"><label>店舗名</label><input type="text" id="store-2" placeholder="店舗名" oninput="updateStoreTab(2)"></div>
-    <div class="mf"><label>配送区分</label><select id="delivery-2" onchange="updateSummary()"><option value="">　</option><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
+    <div class="mf"><label>配送区分</label><select id="delivery-2" onchange="updateDeliveryStyle(2);updateSummary()"><option value="">　</option><option>稲穂のみ</option><option>直送</option><option>引き取り</option></select></div>
   </div>
   <div class="btn-row">
     <button class="clear-all-btn2" onclick="clearAllQty()">数量クリア</button>
@@ -504,7 +506,7 @@ function doClear(){
     updateStoreTab(i);
   }
   document.getElementById('clear-overlay').classList.remove('open');
-  renderList(); updateSummary(); refreshHasData(); resetSaveBtn();
+  renderList(); updateSummary(); refreshHasData(); resetSaveBtn(); initDeliveryStyles();
   showToast('全クリアしました');
 }
 
@@ -651,19 +653,39 @@ function getMissingDeliveries(){
   return missing;
 }
 
-function validate(){
+// 配送区分のwarn-emptyスタイルを更新
+function updateDeliveryStyle(i){
+  const sel=document.getElementById('delivery-'+i);
+  sel.classList.toggle('warn-empty', sel.value==='');
+}
+function initDeliveryStyles(){
+  for(let i=0;i<3;i++) updateDeliveryStyle(i);
+}
+
+// メール送信用バリデーション：数量＋発注者名＋全配送区分
+function validateForMail(){
   if(!hasAnyData()){showCenterNotice('数量を入力してください');return false;}
+  const author=document.getElementById('order-author').value.trim();
+  if(!author){showCenterNotice('発注作成者名を入力してください');return false;}
   const missing=getMissingDeliveries();
   if(missing.length>0){
-    showCenterNotice('配送区分が未設定の店舗があります\n【'+missing.join('・')+'】\n設定してから保存・送信してください');
+    showCenterNotice('配送区分が未設定の店舗があります\n【'+missing.join('・')+'】\n設定してから送信してください');
     return false;
   }
   return true;
 }
 
+// 一時保存用バリデーション：数量＋発注者名のみ（配送区分は不要）
+function validateForSave(){
+  if(!hasAnyData()){showCenterNotice('数量を入力してください');return false;}
+  const author=document.getElementById('order-author').value.trim();
+  if(!author){showCenterNotice('発注作成者名を入力してください');return false;}
+  return true;
+}
+
 // 一時保存モーダルを開く
 function openSaveTmpModal(){
-  if(!validate()){return;}
+  if(!validateForSave()){return;}
   const d=document.getElementById('order-date').value;
   document.getElementById('save-tmp-name').value=d||'';
   document.getElementById('save-tmp-overlay').classList.add('open');
@@ -767,7 +789,7 @@ function closeTmpListIfBg(e){
 }
 
 async function saveOrder(){
-  if(!validate()){return null;}
+  if(!validateForMail()){return null;}
   const btn=document.getElementById('mail-btn');
   btn.disabled=true; btn.textContent='保存中...';
   try{
@@ -795,7 +817,7 @@ async function sendMailById(id){
 }
 
 async function sendMail(){
-  if(!validate()){return;}
+  if(!validateForMail()){return;}
   const id=await saveOrder();
   if(id) await sendMailById(id);
 }
@@ -812,7 +834,7 @@ function showCenterNotice(msg){
   setTimeout(function(){n.classList.remove('show');},2500);
 }
 
-renderFilters(); renderList(); updateSummary(); renderConfirm();
+renderFilters(); renderList(); updateSummary(); renderConfirm(); initDeliveryStyles();
 </script>
 </body>
 </html>
