@@ -112,7 +112,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.4</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.5</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -281,10 +281,12 @@ let storeIdx = 0;
 let filter = '全て';
 let modalCode = null;
 let OUT_OF_STOCK = new Map(); // code → date
+let oosLoaded = false;  // 在庫なし情報の読み込み完了フラグ
+let oosFailed = false;  // 在庫なし情報の取得失敗フラグ
 
 document.getElementById('order-date').value = new Date().toISOString().split('T')[0];
 
-// 起動時：healthでサーバーを起こしてからOOS取得
+// 起動時：OOS取得（完了までローディング表示）
 async function loadOosFromServer() {
   for(let i=0; i<4; i++){
     try{
@@ -295,11 +297,17 @@ async function loadOosFromServer() {
         // 旧形式（文字列）と新形式（{code,date}）両対応
         return typeof x === 'string' ? [x, ''] : [x.code, x.date||''];
       }));
+      oosLoaded = true;
       renderList();
       return;
     }catch(e){
       if(i<3) await new Promise(function(r){setTimeout(r,4000);});
-      else console.log('OOS取得失敗（最終）', e);
+      else {
+        console.log('OOS取得失敗（最終）', e);
+        oosLoaded = true;
+        oosFailed = true;
+        renderList();
+      }
     }
   }
 }
@@ -345,6 +353,15 @@ function renderFilters() {
 function setFilter(k) { filter=k; renderFilters(); renderList(); }
 
 function renderList() {
+  const el = document.getElementById('product-list');
+  if(!oosLoaded){
+    el.innerHTML='<div class="empty" style="color:#888;"><div style="font-size:28px;margin-bottom:10px;">⏳</div>在庫情報を読み込み中...<br><span style="font-size:12px;color:#bbb;margin-top:6px;display:block;">しばらくお待ちください</span></div>';
+    return;
+  }
+  if(oosFailed){
+    el.innerHTML='<div class="empty" style="color:#e53935;"><div style="font-size:24px;margin-bottom:8px;">⚠️</div>在庫情報の取得に失敗しました<br><span style="font-size:12px;color:#aaa;margin-top:6px;display:block;">ページを再読み込みしてください</span></div>';
+    return;
+  }
   const q = document.getElementById('search').value.toLowerCase();
   let list = (PRODUCTS[supplier]||[]).slice();
   if(filter!=='全て') list=list.filter(function(p){return p.kubun===filter;});
