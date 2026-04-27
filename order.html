@@ -366,7 +366,6 @@ function renderList() {
   let list = (PRODUCTS[supplier]||[]).slice();
   if(filter!=='全て') list=list.filter(function(p){return p.kubun===filter;});
   if(q) list=list.filter(function(p){return p.name.toLowerCase().indexOf(q)>=0||p.hiban.toLowerCase().indexOf(q)>=0||p.code.indexOf(q)>=0;});
-  const el = document.getElementById('product-list');
   if(!list.length){el.innerHTML='<div class="empty">該当商品なし</div>';return;}
   const kc={'1000均':'k1','600均':'k6','EDLP':'ke','季節':'ke'};
   const rows = list.map(function(p){
