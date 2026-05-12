@@ -515,8 +515,14 @@ async function startCamera() {
   document.getElementById('btn-scan-cancel').style.display = 'block';
   try {
     html5QrCode = new Html5Qrcode('camera-video-container');
+    // マクロ（近接）カメラを優先：focusMode continuousと最小距離指定
+    const cameraConstraints = {
+      facingMode: 'environment',
+      focusMode: 'continuous',
+      advanced: [{ focusDistance: 0 }]
+    };
     await html5QrCode.start(
-      { facingMode: 'environment' },
+      cameraConstraints,
       { fps: 15 },
       (decodedText) => {
         const now = Date.now();
@@ -696,46 +702,85 @@ function renderCart() {
     return;
   }
   empty.style.display = 'none';
-  // DOM直接構築でイベントリスナーを確実に登録
   list.innerHTML = '';
   cart.forEach((item, idx) => {
     const row = document.createElement('div');
     row.className = 'cart-item';
-    row.innerHTML = `
-      <div class="cart-item-info">
-        <div class="cart-item-name">${item.name}</div>
-        <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
-      </div>
-      <div class="qty-controls">
-        <button class="qty-btn minus" id="btn-minus-${idx}">−</button>
-        <span class="qty-num">${item.qty}</span>
-        <button class="qty-btn plus" id="btn-plus-${idx}">＋</button>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
-        <div class="cart-item-subtotal">¥${(item.price * item.qty).toLocaleString()}</div>
-        <button class="price-edit-btn" id="btn-edit-${idx}">編集</button>
-      </div>
-    `;
+
+    // 商品情報
+    const info = document.createElement('div');
+    info.className = 'cart-item-info';
+    const nameEl = document.createElement('div');
+    nameEl.className = 'cart-item-name';
+    nameEl.textContent = item.name;
+    const unitEl = document.createElement('div');
+    unitEl.className = 'cart-item-unit';
+    unitEl.textContent = '¥' + item.price.toLocaleString() + ' × ' + item.qty;
+    info.appendChild(nameEl);
+    info.appendChild(unitEl);
+
+    // 数量コントロール
+    const qtyCtrl = document.createElement('div');
+    qtyCtrl.className = 'qty-controls';
+
+    const minusBtn = document.createElement('button');
+    minusBtn.className = 'qty-btn minus';
+    minusBtn.textContent = '−';
+    minusBtn.ontouchstart = function(e){ e.preventDefault(); };
+    minusBtn.ontouchend = function(e){ e.preventDefault(); cartQty(idx, -1); };
+    minusBtn.onclick = function(){ cartQty(idx, -1); };
+
+    const qtySpan = document.createElement('span');
+    qtySpan.className = 'qty-num';
+    qtySpan.textContent = item.qty;
+
+    const plusBtn = document.createElement('button');
+    plusBtn.className = 'qty-btn plus';
+    plusBtn.textContent = '＋';
+    plusBtn.ontouchstart = function(e){ e.preventDefault(); };
+    plusBtn.ontouchend = function(e){ e.preventDefault(); cartQty(idx, 1); };
+    plusBtn.onclick = function(){ cartQty(idx, 1); };
+
+    qtyCtrl.appendChild(minusBtn);
+    qtyCtrl.appendChild(qtySpan);
+    qtyCtrl.appendChild(plusBtn);
+
+    // 小計・編集
+    const right = document.createElement('div');
+    right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;';
+    const subtotalEl = document.createElement('div');
+    subtotalEl.className = 'cart-item-subtotal';
+    subtotalEl.textContent = '¥' + (item.price * item.qty).toLocaleString();
+    const editBtn = document.createElement('button');
+    editBtn.className = 'price-edit-btn';
+    editBtn.textContent = '編集';
+    editBtn.ontouchstart = function(e){ e.preventDefault(); };
+    editBtn.ontouchend = function(e){ e.preventDefault(); startPriceEditByIdx(idx); };
+    editBtn.onclick = function(){ startPriceEditByIdx(idx); };
+    right.appendChild(subtotalEl);
+    right.appendChild(editBtn);
+
+    row.appendChild(info);
+    row.appendChild(qtyCtrl);
+    row.appendChild(right);
     list.appendChild(row);
-    // DOMに追加してからイベントを登録
-    document.getElementById('btn-minus-' + idx).addEventListener('touchend', function(e){ e.preventDefault(); changeQtyByIdx(idx,-1); });
-    document.getElementById('btn-plus-'  + idx).addEventListener('touchend', function(e){ e.preventDefault(); changeQtyByIdx(idx, 1); });
-    document.getElementById('btn-edit-'  + idx).addEventListener('touchend', function(e){ e.preventDefault(); startPriceEditByIdx(idx); });
-    document.getElementById('btn-minus-' + idx).addEventListener('click', function(){ changeQtyByIdx(idx,-1); });
-    document.getElementById('btn-plus-'  + idx).addEventListener('click', function(){ changeQtyByIdx(idx, 1); });
-    document.getElementById('btn-edit-'  + idx).addEventListener('click', function(){ startPriceEditByIdx(idx); });
   });
 }
 
-let lastQtyChange = 0;
 function changeQtyByIdx(idx, delta) {
-  const now = Date.now();
-  if (now - lastQtyChange < 300) return; // 300ms以内の二重発火を無視
-  lastQtyChange = now;
   if (idx < 0 || idx >= cart.length) return;
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
   renderCart(); renderSummary();
+}
+
+// ontouchend から呼ぶ専用（clickとの二重実行をフラグで防ぐ）
+let cartQtyBusy = false;
+function cartQty(idx, delta) {
+  if (cartQtyBusy) return;
+  cartQtyBusy = true;
+  changeQtyByIdx(idx, delta);
+  setTimeout(() => { cartQtyBusy = false; }, 500);
 }
 
 function initCartEvents() {} // 不要（グローバル関数で対応）
@@ -991,7 +1036,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v25'; }
+  if (ver) { ver.textContent = 'v26'; }
 })();
 </script>
 </body>
