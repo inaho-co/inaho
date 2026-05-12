@@ -422,23 +422,24 @@ function startZXing(video) {
   }
   const hints = new Map();
   hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-  const reader = new ZXing.MultiFormatReader(hints);
+  const codeReader = new ZXing.BrowserMultiFormatReader(hints);
+  window._zxingReader = codeReader;
+
+  // canvasを使って定期的にフレームをデコード
   const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
   let running = true;
   window._zxingStop = () => { running = false; };
 
   function tick() {
     if (!running) return;
-    if (video.readyState === video.HAVE_ENOUGH_DATA && video.videoWidth > 0) {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      try {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const luminance = new ZXing.RGBLuminanceSource(imageData.data, canvas.width, canvas.height);
-        const binary = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(luminance));
-        const result = reader.decode(binary);
+    try {
+      if (video.readyState >= 2 && video.videoWidth > 0) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        // canvasからImageDataを取得してdecodeFromCanvas
+        const result = codeReader.decodeFromCanvas(canvas);
         if (result) {
           const now = Date.now();
           if (now - lastScanTime > 1500) {
@@ -447,11 +448,11 @@ function startZXing(video) {
             return;
           }
         }
-      } catch(e) { /* 読み取れなかっただけ */ }
-    }
-    requestAnimationFrame(tick);
+      }
+    } catch(e) { /* NotFoundException は無視 */ }
+    setTimeout(tick, 150);
   }
-  requestAnimationFrame(tick);
+  tick();
 }
 
 function stopCamera() {
