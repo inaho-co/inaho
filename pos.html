@@ -757,10 +757,10 @@ function renderCart() {
 }
 
 function changeQtyByIdx(idx, delta) {
-  alert('changeQty idx=' + idx + ' delta=' + delta + ' len=' + cart.length);
   if (idx < 0 || idx >= cart.length) return;
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  alert('変更後 qty=' + (cart[idx] ? cart[idx].qty : '削除済み'));
   renderCart(); renderSummary();
 }
 
@@ -1017,7 +1017,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v27d'; }
+  if (ver) { ver.textContent = 'v27d2'; }
 })();
 </script>
 </body>
