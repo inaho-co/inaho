@@ -696,47 +696,49 @@ function renderCart() {
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = cart.map((item, idx) => `
-    <div class="cart-item">
+  // DOM直接構築でイベントリスナーを確実に登録
+  list.innerHTML = '';
+  cart.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'cart-item';
+    row.innerHTML = `
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}</div>
         <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
       </div>
       <div class="qty-controls">
-        <button class="qty-btn minus" data-action="minus" data-idx="${idx}">−</button>
+        <button class="qty-btn minus" id="btn-minus-${idx}">−</button>
         <span class="qty-num">${item.qty}</span>
-        <button class="qty-btn plus" data-action="plus" data-idx="${idx}">＋</button>
+        <button class="qty-btn plus" id="btn-plus-${idx}">＋</button>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
-        <div class="cart-item-subtotal" id="subtotal-idx-${idx}">¥${(item.price * item.qty).toLocaleString()}</div>
-        <button class="price-edit-btn" data-action="edit" data-idx="${idx}">編集</button>
+        <div class="cart-item-subtotal">¥${(item.price * item.qty).toLocaleString()}</div>
+        <button class="price-edit-btn" id="btn-edit-${idx}">編集</button>
       </div>
-    </div>
-  `).join('');
+    `;
+    list.appendChild(row);
+    // DOMに追加してからイベントを登録
+    document.getElementById('btn-minus-' + idx).addEventListener('touchend', function(e){ e.preventDefault(); changeQtyByIdx(idx,-1); });
+    document.getElementById('btn-plus-'  + idx).addEventListener('touchend', function(e){ e.preventDefault(); changeQtyByIdx(idx, 1); });
+    document.getElementById('btn-edit-'  + idx).addEventListener('touchend', function(e){ e.preventDefault(); startPriceEditByIdx(idx); });
+    document.getElementById('btn-minus-' + idx).addEventListener('click', function(){ changeQtyByIdx(idx,-1); });
+    document.getElementById('btn-plus-'  + idx).addEventListener('click', function(){ changeQtyByIdx(idx, 1); });
+    document.getElementById('btn-edit-'  + idx).addEventListener('click', function(){ startPriceEditByIdx(idx); });
+  });
 }
 
+let lastQtyChange = 0;
 function changeQtyByIdx(idx, delta) {
+  const now = Date.now();
+  if (now - lastQtyChange < 300) return; // 300ms以内の二重発火を無視
+  lastQtyChange = now;
   if (idx < 0 || idx >= cart.length) return;
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
   renderCart(); renderSummary();
 }
 
-// イベント委譲：cart-list全体でタッチを拾う（touchendのみ、clickは抑制）
-function initCartEvents() {
-  const list = document.getElementById('cart-list');
-  list.addEventListener('touchend', function(e) {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    e.preventDefault(); // clickの二重発火を防ぐ
-    e.stopPropagation();
-    const action = btn.dataset.action;
-    const idx = parseInt(btn.dataset.idx);
-    if (action === 'plus')  changeQtyByIdx(idx, 1);
-    if (action === 'minus') changeQtyByIdx(idx, -1);
-    if (action === 'edit')  startPriceEditByIdx(idx);
-  }, { passive: false });
-}
+function initCartEvents() {} // 不要（グローバル関数で対応）
 
 function startPriceEditByIdx(idx) {
   if (idx < 0 || idx >= cart.length) return;
@@ -989,7 +991,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v24'; }
+  if (ver) { ver.textContent = 'v25'; }
 })();
 </script>
 </body>
