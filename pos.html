@@ -440,9 +440,15 @@ function startZXing(video) {
         canvas.height = h;
         ctx.drawImage(video, 0, 0, w, h);
         const imageData = ctx.getImageData(0, 0, w, h);
-        // Uint8ClampedArray → Int32Array に変換してRGBLuminanceSourceへ
-        const data = new Uint8ClampedArray(imageData.data.buffer);
-        const src = new ZXing.RGBLuminanceSource(data, w, h);
+        // RGBA(4ch) → RGB(3ch) に変換
+        const rgba = imageData.data;
+        const rgb = new Uint8ClampedArray(w * h * 3);
+        for (let i = 0; i < w * h; i++) {
+          rgb[i * 3]     = rgba[i * 4];
+          rgb[i * 3 + 1] = rgba[i * 4 + 1];
+          rgb[i * 3 + 2] = rgba[i * 4 + 2];
+        }
+        const src = new ZXing.RGBLuminanceSource(rgb, w, h);
         const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(src));
         const result = reader.decode(bmp);
         if (result) {
@@ -743,7 +749,7 @@ renderInputDisplay();
   }
   const ver = document.getElementById('ver-box');
   if (ver) {
-    ver.innerHTML = 'v7 iOS:' + iosVer + ' ZXing:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
+    ver.innerHTML = 'v8 iOS:' + iosVer + ' ZXing:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
   }
   const dbg = document.getElementById('debug-box');
   if (dbg) {
