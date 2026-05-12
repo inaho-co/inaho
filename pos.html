@@ -438,7 +438,6 @@ function startZXing(video) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0);
-        // canvasからImageDataを取得してdecodeFromCanvas
         const result = codeReader.decodeFromCanvas(canvas);
         if (result) {
           const now = Date.now();
@@ -448,8 +447,15 @@ function startZXing(video) {
             return;
           }
         }
+      } else {
+        document.getElementById('scan-status').textContent = '待機中 readyState:' + video.readyState + ' w:' + video.videoWidth;
       }
-    } catch(e) { /* NotFoundException は無視 */ }
+    } catch(e) {
+      // NotFoundException以外はデバッグ表示
+      if (e && e.name !== 'NotFoundException') {
+        document.getElementById('debug-box').textContent = 'ERR:' + e.name + ' ' + e.message;
+      }
+    }
     setTimeout(tick, 150);
   }
   tick();
@@ -733,7 +739,7 @@ renderInputDisplay();
   }
   const ver = document.getElementById('ver-box');
   if (ver) {
-    ver.innerHTML = 'iOS:' + iosVer + ' ZXing:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
+    ver.innerHTML = 'v3 iOS:' + iosVer + ' ZXing:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
   }
   const dbg = document.getElementById('debug-box');
   if (dbg) {
