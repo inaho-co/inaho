@@ -398,7 +398,7 @@ async function startCamera() {
     html5QrCode = new Html5Qrcode('camera-video-container');
     await html5QrCode.start(
       { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 200, height: 100 } },
+      { fps: 15 },
       (decodedText) => {
         const now = Date.now();
         if (now - lastScanTime < 1500) return;
@@ -687,7 +687,7 @@ renderInputDisplay();
   }
   const ver = document.getElementById('ver-box');
   if (ver) {
-    ver.innerHTML = 'v9 iOS:' + iosVer + ' h5qr:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
+    ver.innerHTML = 'v10 iOS:' + iosVer + ' h5qr:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
   }
   const dbg = document.getElementById('debug-box');
   if (dbg) {
