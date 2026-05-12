@@ -38,7 +38,7 @@
   .empty-cart svg { width: 48px; height: 48px; }
   .cart-item { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
   .cart-item-info { flex: 1; min-width: 0; }
-  .cart-item-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cart-item-name { font-size: 12px; font-weight: 600; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
   .cart-item-model { font-size: 10px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cart-item-unit { font-size: 10px; color: var(--text2); }
   .qty-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -688,23 +688,54 @@ function renderCart() {
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = cart.map(item => `
+  list.innerHTML = cart.map((item, idx) => `
     <div class="cart-item">
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}</div>
-        <div class="cart-item-unit" id="unit-${item.jan}">¥${item.price.toLocaleString()} × ${item.qty}</div>
+        <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
       </div>
       <div class="qty-controls">
-        <button class="qty-btn minus" onclick="changeQty('${item.jan}',-1)">−</button>
+        <button class="qty-btn minus" data-idx="${idx}" data-delta="-1" onclick="changeQtyByIdx(this)">−</button>
         <span class="qty-num">${item.qty}</span>
-        <button class="qty-btn plus" onclick="changeQty('${item.jan}',1)">＋</button>
+        <button class="qty-btn plus" data-idx="${idx}" data-delta="1" onclick="changeQtyByIdx(this)">＋</button>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
-        <div class="cart-item-subtotal" id="subtotal-${item.jan}">¥${(item.price * item.qty).toLocaleString()}</div>
-        <button class="price-edit-btn" onclick="startPriceEdit('${item.jan}')">編集</button>
+        <div class="cart-item-subtotal" id="subtotal-idx-${idx}">¥${(item.price * item.qty).toLocaleString()}</div>
+        <button class="price-edit-btn" data-idx="${idx}" onclick="startPriceEditByIdx(this)">編集</button>
       </div>
     </div>
   `).join('');
+}
+
+function changeQtyByIdx(btn) {
+  const idx = parseInt(btn.dataset.idx);
+  const delta = parseInt(btn.dataset.delta);
+  if (idx < 0 || idx >= cart.length) return;
+  cart[idx].qty += delta;
+  if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  renderCart(); renderSummary();
+}
+
+function startPriceEditByIdx(btn) {
+  const idx = parseInt(btn.dataset.idx);
+  if (idx < 0 || idx >= cart.length) return;
+  const item = cart[idx];
+  const subtotalEl = document.getElementById('subtotal-idx-' + idx);
+  if (!subtotalEl) return;
+  subtotalEl.innerHTML = `<input class="price-input" id="price-input-idx-${idx}" type="number" value="${item.price}" min="0" inputmode="numeric">`;
+  const input = document.getElementById('price-input-idx-' + idx);
+  input.focus();
+  input.select();
+  let committed = false;
+  const commit = () => {
+    if (committed) return;
+    committed = true;
+    cart[idx].price = parseInt(input.value) || 0;
+    renderCart();
+    renderSummary();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
 }
 
 function setTax(rate) {
@@ -936,7 +967,7 @@ renderInputDisplay();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v18'; }
+  if (ver) { ver.textContent = 'v19'; }
 })();
 </script>
 </body>
