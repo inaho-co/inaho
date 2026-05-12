@@ -696,23 +696,58 @@ function renderCart() {
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = cart.map((item, idx) => `
-    <div class="cart-item">
-      <div class="cart-item-info">
-        <div class="cart-item-name">${item.name}</div>
-        <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
-      </div>
-      <div class="qty-controls">
-        <button class="qty-btn minus" onclick="changeQtyByIdx(${idx},-1)">−</button>
-        <span class="qty-num">${item.qty}</span>
-        <button class="qty-btn plus" onclick="changeQtyByIdx(${idx},1)">＋</button>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
-        <div class="cart-item-subtotal" id="subtotal-idx-${idx}">¥${(item.price * item.qty).toLocaleString()}</div>
-        <button class="price-edit-btn" onclick="startPriceEditByIdx(${idx})">編集</button>
-      </div>
-    </div>
-  `).join('');
+  // innerHTML をやめて DOM を直接構築（iOSでonclickが効かない問題を回避）
+  list.innerHTML = '';
+  cart.forEach((item, idx) => {
+    const row = document.createElement('div');
+    row.className = 'cart-item';
+
+    const info = document.createElement('div');
+    info.className = 'cart-item-info';
+    info.innerHTML = `<div class="cart-item-name">${item.name}</div><div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>`;
+
+    const qtyCtrl = document.createElement('div');
+    qtyCtrl.className = 'qty-controls';
+
+    const minusBtn = document.createElement('button');
+    minusBtn.className = 'qty-btn minus';
+    minusBtn.textContent = '−';
+    minusBtn.addEventListener('click', () => { changeQtyByIdx(idx, -1); });
+
+    const qtyNum = document.createElement('span');
+    qtyNum.className = 'qty-num';
+    qtyNum.textContent = item.qty;
+
+    const plusBtn = document.createElement('button');
+    plusBtn.className = 'qty-btn plus';
+    plusBtn.textContent = '＋';
+    plusBtn.addEventListener('click', () => { changeQtyByIdx(idx, 1); });
+
+    qtyCtrl.appendChild(minusBtn);
+    qtyCtrl.appendChild(qtyNum);
+    qtyCtrl.appendChild(plusBtn);
+
+    const right = document.createElement('div');
+    right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;';
+
+    const subtotal = document.createElement('div');
+    subtotal.className = 'cart-item-subtotal';
+    subtotal.id = 'subtotal-idx-' + idx;
+    subtotal.textContent = '¥' + (item.price * item.qty).toLocaleString();
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'price-edit-btn';
+    editBtn.textContent = '編集';
+    editBtn.addEventListener('click', () => { startPriceEditByIdx(idx); });
+
+    right.appendChild(subtotal);
+    right.appendChild(editBtn);
+
+    row.appendChild(info);
+    row.appendChild(qtyCtrl);
+    row.appendChild(right);
+    list.appendChild(row);
+  });
 }
 
 function changeQtyByIdx(idx, delta) {
@@ -972,7 +1007,7 @@ renderInputDisplay();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v21'; }
+  if (ver) { ver.textContent = 'v22'; }
 })();
 </script>
 </body>
