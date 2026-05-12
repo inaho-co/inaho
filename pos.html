@@ -44,7 +44,7 @@
   .cart-item-model { font-size: 10px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cart-item-unit { font-size: 10px; color: var(--text2); }
   .qty-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-  .qty-btn { width: 26px; height: 26px; border: none; border-radius: 50%; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .qty-btn { width: 44px; height: 44px; border: none; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: 700; -webkit-tap-highlight-color: rgba(0,0,0,0.1); }
   .qty-btn.minus { background: #fee2e2; color: var(--red); }
   .qty-btn.plus { background: #ccfbf1; color: var(--teal); }
   .qty-num { font-size: 13px; font-weight: 700; min-width: 20px; text-align: center; }
@@ -720,7 +720,7 @@ function renderCart() {
     const minusBtn = document.createElement('button');
     minusBtn.className = 'qty-btn minus';
     minusBtn.textContent = '−';
-    minusBtn.addEventListener('touchstart', function(e){ e.stopPropagation(); e.preventDefault(); changeQtyByIdx(idx, -1); }, {passive:false});
+    minusBtn.addEventListener('click', function(){ changeQtyByIdx(idx, -1); });
 
     const qtySpan = document.createElement('span');
     qtySpan.className = 'qty-num';
@@ -729,7 +729,7 @@ function renderCart() {
     const plusBtn = document.createElement('button');
     plusBtn.className = 'qty-btn plus';
     plusBtn.textContent = '＋';
-    plusBtn.addEventListener('touchstart', function(e){ e.stopPropagation(); e.preventDefault(); changeQtyByIdx(idx, 1); }, {passive:false});
+    plusBtn.addEventListener('click', function(){ changeQtyByIdx(idx, 1); });
 
     qtyCtrl.appendChild(minusBtn);
     qtyCtrl.appendChild(qtySpan);
@@ -760,7 +760,8 @@ function changeQtyByIdx(idx, delta) {
   if (idx < 0 || idx >= cart.length) return;
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
-  setTimeout(() => { renderCart(); renderSummary(); }, 0);
+  renderCart();
+  renderSummary();
 }
 
 function initCartEvents() {} // 不要（グローバル関数で対応）
@@ -1016,7 +1017,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v28'; }
+  if (ver) { ver.textContent = 'v29'; }
 })();
 </script>
 </body>
