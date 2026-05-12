@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>POSレジ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --indigo: #4f46e5;
+    --indigo-dark: #3730a3;
+    --teal: #0d9488;
+    --teal-dark: #0f766e;
+    --red: #ef4444;
+    --green: #22c55e;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface2: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text2: #64748b;
+    --text3: #94a3b8;
+  }
+  html, body { height: 100%; overflow: hidden; font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(--bg); color: var(--text); }
+  #app { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
+
+  /* ===== LEFT: CART PANEL ===== */
+  #cart-panel { display: flex; flex-direction: column; width: 52%; border-right: 1px solid var(--border); background: var(--surface); }
+  .panel-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  #cart-header { background: var(--teal); }
+  #scan-header { background: var(--indigo); }
+  .panel-header .spacer { flex: 1; }
+  .btn-clear { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 13px; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
+  /* Cart list */
+  #cart-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text3); }
+  .empty-cart svg { width: 48px; height: 48px; }
+  .cart-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cart-item-model { font-size: 11px; color: var(--text2); }
+  .cart-item-unit { font-size: 11px; color: var(--text2); }
+  .qty-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .qty-btn { width: 28px; height: 28px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .qty-btn.minus { background: #fee2e2; color: var(--red); }
+  .qty-btn.plus { background: #ccfbf1; color: var(--teal); }
+  .qty-num { font-size: 14px; font-weight: 700; min-width: 24px; text-align: center; }
+  .cart-item-subtotal { font-size: 13px; font-weight: 700; min-width: 64px; text-align: right; flex-shrink: 0; }
+
+  /* Summary */
+  #summary { flex-shrink: 0; padding: 10px 12px; background: var(--surface2); border-top: 1px solid var(--border); }
+  .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 13px; }
+  .summary-row.total { font-size: 16px; font-weight: 700; padding: 6px 0; border-top: 1px solid var(--border); margin-top: 4px; }
+  .summary-row.total span:last-child { color: var(--teal); }
+  .summary-row .label { color: var(--text2); }
+  .received-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; cursor: pointer; }
+  .received-row .label { font-size: 13px; font-weight: 600; color: var(--text2); }
+  .received-val { font-size: 16px; font-weight: 700; }
+  .received-val.active { color: var(--teal); }
+  #change-box { display: none; background: #f0fdf4; border-radius: 10px; padding: 8px 12px; margin-top: 6px; }
+  #change-box.negative { background: #fef2f2; }
+  .change-label { font-size: 13px; font-weight: 700; }
+  .change-amount { font-size: 22px; font-weight: 800; }
+  .change-amount.positive { color: var(--green); }
+  .change-amount.negative { color: var(--red); }
+  #btn-checkout { width: 100%; padding: 14px; background: var(--teal); color: white; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  #btn-checkout:disabled { background: var(--text3); cursor: not-allowed; }
+
+  /* ===== RIGHT: SCAN PANEL ===== */
+  #scan-panel { display: flex; flex-direction: column; width: 48%; background: var(--surface); overflow: hidden; }
+  #camera-area { position: relative; height: 180px; flex-shrink: 0; background: #000; overflow: hidden; }
+  #camera-video { width: 100%; height: 100%; object-fit: cover; }
+  #camera-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; }
+  #btn-scan-start { display: flex; flex-direction: column; align-items: center; gap: 8px; color: white; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 700; }
+  #btn-scan-start svg { width: 40px; height: 40px; }
+  #btn-scan-cancel { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; display: none; }
+
+  /* Scan result */
+  #scan-result { padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 70px; }
+  .result-idle { color: var(--text3); font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .result-found { display: none; }
+  .result-found .badge { font-size: 12px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+  .result-found .prod-name { font-size: 15px; font-weight: 700; }
+  .result-found .prod-model { font-size: 12px; color: var(--text2); }
+  .result-found .prod-price { font-size: 18px; font-weight: 800; color: var(--indigo); }
+  .result-notfound { display: none; }
+  .result-notfound .badge { font-size: 12px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 4px; }
+  .result-notfound .code { font-size: 12px; color: var(--text2); }
+
+  /* Numpad */
+  #numpad-area { flex: 1; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .mode-tabs { display: flex; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+  .mode-tab { flex: 1; padding: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+  .mode-tab.jan { background: var(--surface2); color: var(--text); }
+  .mode-tab.jan.active { background: var(--indigo); color: white; }
+  .mode-tab.received { background: var(--surface2); color: var(--text); }
+  .mode-tab.received.active { background: var(--teal); color: white; }
+  .input-display { display: flex; align-items: center; gap: 8px; padding: 4px 2px; flex-shrink: 0; }
+  .input-display svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .input-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .input-val.placeholder { color: var(--text3); font-weight: 400; }
+  #btn-enter { background: var(--indigo); color: white; border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; flex-shrink: 0; }
+  #btn-enter svg { width: 18px; height: 18px; }
+  .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; flex: 1; }
+  .np-btn { border: none; border-radius: 8px; background: var(--surface2); font-size: 20px; font-weight: 700; cursor: pointer; transition: background 0.1s; display: flex; align-items: center; justify-content: center; }
+  .np-btn:active { background: #cbd5e1; }
+  .np-btn.clear { background: #fee2e2; color: var(--red); }
+  .np-btn.clear:active { background: #fca5a5; }
+
+  /* Sales log modal */
+  #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+  #modal-overlay.open { display: flex; }
+  #modal { background: white; border-radius: 16px; padding: 20px; width: 90%; max-width: 480px; max-height: 80vh; display: flex; flex-direction: column; gap: 12px; }
+  #modal h2 { font-size: 18px; font-weight: 800; }
+  #modal-list { flex: 1; overflow-y: auto; font-size: 13px; }
+  #modal-list table { width: 100%; border-collapse: collapse; }
+  #modal-list th { text-align: left; padding: 6px 4px; border-bottom: 2px solid var(--border); font-size: 12px; color: var(--text2); }
+  #modal-list td { padding: 5px 4px; border-bottom: 1px solid var(--border); }
+  .modal-btns { display: flex; gap: 8px; }
+  .modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  #btn-export { background: var(--indigo); color: white; }
+  #btn-modal-close { background: var(--surface2); color: var(--text); }
+
+  /* Sales button in header */
+  #btn-sales { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- LEFT: Cart Panel -->
+  <div id="cart-panel">
+    <div class="panel-header" id="cart-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      会計
+      <span class="spacer"></span>
+      <button id="btn-sales" onclick="openSalesModal()">売上履歴</button>
+      <button class="btn-clear" onclick="clearCart()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        クリア
+      </button>
+    </div>
+    <div id="cart-list">
+      <div class="empty-cart" id="empty-msg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span>商品をスキャンしてください</span>
+      </div>
+    </div>
+    <div id="summary">
+      <div class="summary-row"><span class="label">小計（税抜）</span><span id="subtotal">¥0</span></div>
+      <div class="summary-row"><span class="label">消費税（10%）</span><span id="tax">¥0</span></div>
+      <div class="summary-row total"><span>合計（税込）</span><span id="total">¥0</span></div>
+      <div class="received-row" onclick="setMode('received')">
+        <span class="label">預かり金</span>
+        <span class="received-val" id="received-display">¥0</span>
+      </div>
+      <div id="change-box">
+        <div class="change-label">お釣り</div>
+        <div class="change-amount" id="change-amount">¥0</div>
+      </div>
+      <button id="btn-checkout" disabled onclick="checkout()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        会計完了・次の客へ
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT: Scan Panel -->
+  <div id="scan-panel">
+    <div class="panel-header" id="scan-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/><rect x="7" y="7" width="10" height="10"/></svg>
+      バーコードスキャン
+    </div>
+
+    <div id="camera-area">
+      <video id="camera-video" autoplay playsinline muted></video>
+      <div id="camera-overlay">
+        <button id="btn-scan-start" onclick="startCamera()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/><rect x="7" y="7" width="10" height="10"/></svg>
+          スキャン開始
+        </button>
+      </div>
+      <button id="btn-scan-cancel" onclick="stopCamera()">キャンセル</button>
+    </div>
+
+    <div id="scan-result">
+      <div class="result-idle" id="result-idle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        スキャンしてください
+      </div>
+      <div class="result-found" id="result-found">
+        <div class="badge">✓ 追加しました</div>
+        <div class="prod-name" id="res-name"></div>
+        <div class="prod-model" id="res-model"></div>
+        <div class="prod-price" id="res-price"></div>
+      </div>
+      <div class="result-notfound" id="result-notfound">
+        <div class="badge">✗ 見つかりません</div>
+        <div class="code" id="res-code"></div>
+      </div>
+    </div>
+
+    <div id="numpad-area">
+      <div class="mode-tabs">
+        <button class="mode-tab jan active" onclick="setMode('jan')">JANコード</button>
+        <button class="mode-tab received" onclick="setMode('received')">預かり金</button>
+      </div>
+      <div class="input-display">
+        <svg id="mode-icon-jan" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/><line x1="14" y1="8" x2="14" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/></svg>
+        <svg id="mode-icon-rec" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="10"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="#0d9488" stroke="none">¥</text></svg>
+        <span class="input-val placeholder" id="input-display">JANコードを入力</span>
+        <button id="btn-enter" onclick="submitJAN()" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+        </button>
+      </div>
+      <div class="numpad-grid">
+        <button class="np-btn" onclick="numKey('7')">7</button>
+        <button class="np-btn" onclick="numKey('8')">8</button>
+        <button class="np-btn" onclick="numKey('9')">9</button>
+        <button class="np-btn" onclick="numKey('4')">4</button>
+        <button class="np-btn" onclick="numKey('5')">5</button>
+        <button class="np-btn" onclick="numKey('6')">6</button>
+        <button class="np-btn" onclick="numKey('1')">1</button>
+        <button class="np-btn" onclick="numKey('2')">2</button>
+        <button class="np-btn" onclick="numKey('3')">3</button>
+        <button class="np-btn clear" onclick="numKey('C')">C</button>
+        <button class="np-btn" onclick="numKey('0')">0</button>
+        <button class="np-btn" onclick="numKey('⌫')">⌫</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sales Modal -->
+<div id="modal-overlay" onclick="if(event.target===this)closeSalesModal()">
+  <div id="modal">
+    <h2>本日の売上履歴</h2>
+    <div id="modal-list"><p style="color:#94a3b8;font-size:13px">まだ売上がありません</p></div>
+    <div class="modal-btns">
+      <button id="btn-export" onclick="exportCSV()">CSVで出力</button>
+      <button id="btn-modal-close" onclick="closeSalesModal()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== PRODUCT DATA =====
+const PRODUCTS = {
+  "4534587181013": { jan:"4534587181013", name:"ﾌﾞﾗｯｸﾀｲｶﾞｰ125X28P", model:"MAT-BT-125", price:1000 },
+  "4534587181020": { jan:"4534587181020", name:"ﾌﾞﾗｯｸﾀｲｶﾞｰ147X52P", model:"MAT-BT-147", price:1000 },
+  "4534587181037": { jan:"4534587181037", name:"ﾌﾞﾗｯｸﾀｲｶﾞｰ165X52P", model:"MAT-BT-165", price:1000 },
+  "4534587181044": { jan:"4534587181044", name:"ﾌﾞﾗｯｸﾀｲｶﾞｰ190X52P", model:"MAT-BT-190", price:1000 },
+  "4534587231053": { jan:"4534587231053", name:"大魔神チップソー", model:"147X60P", price:1000 },
+  "4534587231060": { jan:"4534587231060", name:"大魔神チップソー", model:"165X60P", price:1000 },
+  "4534587231077": { jan:"4534587231077", name:"大魔神チップソー", model:"190X60P", price:1000 },
+  "4534587816106": { jan:"4534587816106", name:"切断砥石　拳王", model:"105X2.3", price:1000 },
+  "4534587816113": { jan:"4534587816113", name:"切断砥石　拳王", model:"105X0.8", price:1000 },
+  "4534587816137": { jan:"4534587816137", name:"切断砥石　拳王", model:"105X1.0", price:1000 },
+  "4534587816151": { jan:"4534587816151", name:"切断砥石　拳王", model:"105X1.6", price:1000 },
+  "4534587816304": { jan:"4534587816304", name:"切断砥石　拳王マルチ", model:"105X1.0", price:1000 },
+  "4536619600028": { jan:"4536619600028", name:"八兵衛ﾁｯﾌﾟｿｰ2枚入 230mm × 36P", model:"HKT-230", price:1000 },
+  "4536619600035": { jan:"4536619600035", name:"八兵衛ﾁｯﾌﾟｿｰ2枚入 255mm × 40P", model:"HKT-255", price:0 },
+  "4536619600394": { jan:"4536619600394", name:"INAHO ﾀﾞｲﾔﾓﾝﾄﾞﾎｲｰﾙ", model:"SA-E100", price:1000 },
+  "4536619600424": { jan:"4536619600424", name:"鬼平 255mm × 36P", model:"OKC-255", price:0 },
+  "4536619600431": { jan:"4536619600431", name:"鬼平 230mm × 32P", model:"OKC-230", price:0 },
+  "4536619600493": { jan:"4536619600493", name:"INAHO 開閉式ｶﾞｰﾃﾞﾝﾚｰｷ ﾐﾆ", model:"MS-29", price:600 },
+  "4536619600592": { jan:"4536619600592", name:"INAHO ﾀﾞｲﾔﾓﾝﾄﾞｶｯﾀｰ3枚組", model:"NA-K105", price:1000 },
+  "4536619600622": { jan:"4536619600622", name:"黒猿 三角ﾎｰﾐﾆ140mm", model:"BM-S", price:600 },
+  "4536619600707": { jan:"4536619600707", name:"HEIZO クイックバークランプ　300ｍｍ", model:"KUW-300", price:600 },
+  "4536619600721": { jan:"4536619600721", name:"HEIZO ソケットレンチセット12本セット9.5㎜", model:"WA-D12", price:1000 },
+  "4536619600738": { jan:"4536619600738", name:"HEIZO ﾀﾞｲﾔﾓﾝﾄﾞﾔｽﾘｾｯﾄ 5PCS", model:"KUM-5", price:1000 },
+  "4536619600790": { jan:"4536619600790", name:"HEIZO ｽｰﾊﾟｰﾚﾝﾁ", model:"NAT-8", price:1000 },
+  "4536619600837": { jan:"4536619600837", name:"自動遮光面", model:"ZM-101", price:0 },
+  "4536619600875": { jan:"4536619600875", name:"HEIZO ｲﾝﾊﾟｸﾄﾄﾞﾗｲﾊﾞｰ", model:"TS-U6", price:1000 },
+  "4536619600899": { jan:"4536619600899", name:"INAHO ﾛﾝｸﾞﾗｼﾞｵﾍﾟﾝﾁ", model:"TA-M", price:600 },
+  "4571528210043": { jan:"4571528210043", name:"INAHO ｱﾙﾐﾚﾍﾞﾙ", model:"MO-M200", price:600 },
+  "4571528210067": { jan:"4571528210067", name:"HEIZOスパイラル型ステップドリル14段４-30ｍｍ", model:"SI-N430", price:1000 },
+  "4571528210098": { jan:"4571528210098", name:"鉄工用用ヤスリセット　５本組", model:"YA-M5", price:1000 },
+  "4571528210272": { jan:"4571528210272", name:"HEIZO 18ｷﾞｱﾛｯｸﾒｼﾞｬｰ", model:"18G-75M", price:600 },
+  "4571528210289": { jan:"4571528210289", name:"HEIZO 高速巻取り尺30M", model:"KSG-30M", price:1000 },
+  "4571528210319": { jan:"4571528210319", name:"HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ30㎜×2M", model:"SB-302", price:600 },
+  "4571528210326": { jan:"4571528210326", name:"HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ30㎜×3M", model:"SB-303", price:1000 },
+  "4571528210333": { jan:"4571528210333", name:"HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ30㎜×4M", model:"SB-304", price:1000 },
+  "4571528210340": { jan:"4571528210340", name:"midoho ﾌﾞﾙﾎﾟｲﾝﾄﾁｾﾞﾙ 17H×280㎜", model:"B17-280", price:0 },
+  "4571528210357": { jan:"4571528210357", name:"midoho ｺｰﾙﾄﾞﾁｾﾞﾙ 17H×280㎜", model:"C17-280", price:0 },
+  "4571528210364": { jan:"4571528210364", name:"midoho ﾌﾞﾙﾎﾟｲﾝﾄﾁｾﾞﾙ SDS-puls", model:"BSP-280", price:0 },
+  "4571528210371": { jan:"4571528210371", name:"midoho ｺｰﾙﾄﾞﾁｾﾞﾙ SDS-puls", model:"CSP-280", price:0 },
+  "4571528210388": { jan:"4571528210388", name:"黒猿 首長ねじり鎌", model:"KNK-100", price:600 },
+  "4571528210395": { jan:"4571528210395", name:"INAHO DWｹﾝﾏ", model:"DWK-178", price:0 },
+  "4571528210418": { jan:"4571528210418", name:"INAHO 万能Rｹﾝﾏ", model:"DBK-100", price:1000 },
+  "4571528210425": { jan:"4571528210425", name:"HEIZO スパイラル型ステップドリル10段4-22ｍｍ", model:"SI-N422", price:1000 },
+  "4571528210487": { jan:"4571528210487", name:"HEIZO ウォーターポンププライヤ225", model:"HWP-250", price:600 },
+  "4571528210494": { jan:"4571528210494", name:"HEIZO ドライバーセット", model:"HDS-NO8", price:600 },
+  "4571528210517": { jan:"4571528210517", name:"HEIZO ダイヤモンドシャープナー　200ｍｍ", model:"HDS-200", price:600 },
+  "4571528210524": { jan:"4571528210524", name:"HEIZO ダイヤモンド両刀ヤスリ2本組 75㎜/100㎜", model:"HDY-02P", price:1000 },
+  "4571528210548": { jan:"4571528210548", name:"黒猿　鉈330", model:"KZN-330", price:1000 },
+  "4571528210555": { jan:"4571528210555", name:"HEIZO スモール25-ストップ50", model:"S25-S50", price:600 },
+  "4571528210562": { jan:"4571528210562", name:"HEIZO ラチェット式ベルト荷締機2パック　25ｍｍ*3.7Ｍ", model:"HRN-2537", price:1000 },
+  "4571528210609": { jan:"4571528210609", name:"HEIZO 常圧用　PVCエアホース　10ｍ", model:"HAH-P10", price:1000 },
+  "4571528210616": { jan:"4571528210616", name:"HEIZO ボルトクリッパー　450ｍｍ", model:"HBC-450", price:1000 },
+  "4571528210630": { jan:"4571528210630", name:"HEIZO 石頭ハンマー　黒ヘッド　1.0ｋｇ", model:"HSH-280", price:600 },
+  "4571528210647": { jan:"4571528210647", name:"HEIZO 片手ハンマー　磨きヘッド　330mm", model:"HKH-330", price:600 },
+  "4571528210654": { jan:"4571528210654", name:"HEIZO ネイルハンマー　黒ヘッド　330ｍｍ", model:"HNH-330", price:600 },
+  "4571528210661": { jan:"4571528210661", name:"黒猿中厚鎌　刃長180㍉全長350㍉", model:"KCK-350", price:600 },
+  "4571528210678": { jan:"4571528210678", name:"黒猿　刈払鎌　長尺　刃長180ミリ　全長450ミリ", model:"KKN-450", price:1000 },
+  "4571528210685": { jan:"4571528210685", name:"HEIZO タップ必需8点セット", model:"HTM-8PC", price:600 },
+  "4571528210692": { jan:"4571528210692", name:"INAHO　竹・山林草刈チップソーHIGOKUNI255-60P", model:"IH6-255", price:1000 },
+  "4571528210708": { jan:"4571528210708", name:"INAHO　平面・斜面草刈チップソー ONTAKE255-40P", model:"IO4-255", price:1000 },
+  "4571528210715": { jan:"4571528210715", name:"HEIZO 常圧用　PVCエアホース　20ｍ", model:"HAH-P20", price:2000 },
+  "4571528210722": { jan:"4571528210722", name:"HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ50㎜×3M", model:"SB-503", price:2000 },
+  "4571528210739": { jan:"4571528210739", name:"HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ50㎜×4M", model:"SB-504", price:2000 },
+  "4571528210746": { jan:"4571528210746", name:"HEIZO コンビネーションスパナセット8本組", model:"HCS-8MT", price:1000 },
+  "4571528210760": { jan:"4571528210760", name:"HEIZO デジタルノギス　150ｍｍ", model:"HDN-150", price:1000 },
+  "4571528210791": { jan:"4571528210791", name:"HEIZO マスターバールプロ 600ｍｍ", model:"HMB-P60", price:1000 },
+  "4571528210807": { jan:"4571528210807", name:"HEIZO マスターバールプロ 900ｍｍ", model:"HMB-P90", price:2000 },
+  "4571528210814": { jan:"4571528210814", name:"HEIZO鋼弾両頭ビットセット", model:"HBG-110-10", price:1000 },
+  "4571528210821": { jan:"4571528210821", name:"HEIZO　L型アングルドライバー", model:"HLA-100", price:1000 },
+  "4571528210838": { jan:"4571528210838", name:"HEIZOL型アングルフレキロング", model:"HLA-F30", price:2000 },
+  "4580796380020": { jan:"4580796380020", name:"BASE 万能ユーティリティハサミ", model:"BUS-200", price:600 },
+  "4580796380037": { jan:"4580796380037", name:"BASE ﾋﾟｯｸｱｯﾌﾟﾂｰﾙ 640mm", model:"BMP-640", price:600 },
+  "4580796380044": { jan:"4580796380044", name:"BASE LED内臓ﾋﾟｯｸｱｯﾌﾟﾂｰﾙ 570mm", model:"BMP-L57", price:600 },
+  "4580796380082": { jan:"4580796380082", name:"BASE モンキーレンチ軽量ショート200ｍｍ", model:"BMW-S20", price:600 },
+  "4580796380099": { jan:"4580796380099", name:"BASE エアタイヤゲージ350", model:"BAG-350", price:1000 },
+  "4580796380211": { jan:"4580796380211", name:"BASE ダイヤモンドカップホイール　100㎜", model:"BDC-CW4", price:1000 },
+  "4580796380235": { jan:"4580796380235", name:"BASE ﾌﾟﾗｲﾊﾞｰｾｯﾄ 3本組", model:"BPB-3PC", price:1000 },
+  "4580796380273": { jan:"4580796380273", name:"BASE 水平器　400mm　強力マグネット付き", model:"BLR-40M", price:1000 },
+  "4580796380327": { jan:"4580796380327", name:"BASE　SDS-pulusコンクリートドリル3.4　3PC", model:"BCS-343", price:600 },
+  "4580796380372": { jan:"4580796380372", name:"BASE 片手鍬 平型 370mm", model:"BKK-H37", price:600 },
+  "4580796380389": { jan:"4580796380389", name:"BASE 片手鍬 4本爪型 370mm", model:"BKK-437", price:600 },
+  "4580796380402": { jan:"4580796380402", name:"BASE 金切鋸替刃式 ﾊﾟｲﾌﾟﾌﾚｰﾑ型250mm", model:"BKN-P25", price:600 },
+  "4580796380457": { jan:"4580796380457", name:"BASE ﾏｸﾞﾈｯﾄﾊﾟｰﾂﾄﾚｲ 丸 2個ｾｯﾄ", model:"BMT-2SM", price:600 },
+  "4580796380464": { jan:"4580796380464", name:"Fieldo-Gu 剪定はさみ　215", model:"FSH-215", price:1000 },
+  "4580796380471": { jan:"4580796380471", name:"Fieldo-Gu 剪定はさみ　195", model:"FSH-195", price:1000 },
+  "4580796380488": { jan:"4580796380488", name:"BASE 木工用ドリルセット６PCS", model:"BMD-06P", price:1000 },
+  "4580796380501": { jan:"4580796380501", name:"BASE　タップダイス　12PCS", model:"BTD-M12", price:1000 },
+  "4580796380518": { jan:"4580796380518", name:"BASE銀軸ソケットビットセット", model:"BGS-05P", price:1000 },
+  "4580796380525": { jan:"4580796380525", name:"BASE　ダイヤモンドシャープナー　270ｍｍ", model:"BDS-270", price:1000 },
+  "4580796380556": { jan:"4580796380556", name:"BASE 塩ビカッター420　黒仕上げ", model:"BEC-420", price:1000 },
+  "4580796380594": { jan:"4580796380594", name:"BASE ロッキング ロングノーズプライヤ225", model:"BLL-225B", price:600 },
+  "4580796380600": { jan:"4580796380600", name:"BASE ロッキング バイスプライヤ225", model:"BLP-225B", price:600 },
+  "4580796380617": { jan:"4580796380617", name:"BASE 強力パワーニッパーPro　175ｍｍ平刃", model:"BKN-175", price:600 },
+  "4580796380624": { jan:"4580796380624", name:"BASE 強力パワーペンチ　Pro　200ｍｍ", model:"BKP-200", price:600 },
+  "4580796380631": { jan:"4580796380631", name:"BASE 水平器　600ｍｍ　強力マグネット付き", model:"BLR-60M", price:1000 },
+  "4580796380648": { jan:"4580796380648", name:"Kazi-Tu 芽切りはさみ　200ｍｍ", model:"KMH-200", price:600 },
+  "4580796380655": { jan:"4580796380655", name:"Kazi-Tu 剪定はさみ 　200ｍｍ", model:"KSH-200", price:1000 },
+  "4580796380662": { jan:"4580796380662", name:"Kazi-Tu 摘果・芽切はさみ　そり刃　190ｍｍ", model:"KTＨ-S19", price:600 },
+  "4580796380679": { jan:"4580796380679", name:"Kazi-Tu 太枝切はさみ　600ｍｍ", model:"KFH-600", price:1000 },
+  "4580796380686": { jan:"4580796380686", name:"Kazi-Tu 中厚鎌　刃長180mm", model:"KCK-180", price:600 },
+  "4580796380693": { jan:"4580796380693", name:"Kazi-Tu 刈払鎌　刃長180mm", model:"KKK-180", price:1000 },
+  "4580796380709": { jan:"4580796380709", name:"Kazi-Tu 斧　アックス 335", model:"KOA-335", price:1000 },
+  "4580796380716": { jan:"4580796380716", name:"Kazi-Tu 木工用　万能鋸270　中目", model:"KBN-270", price:1000 },
+  "4580796380723": { jan:"4580796380723", name:"Kazi-Tu 折込式鋸　240　中目", model:"KON-240", price:1000 },
+  "4580796380730": { jan:"4580796380730", name:"Kazi-Tu 竹挽・樹脂鋸　270　細目", model:"KTN-270", price:1000 },
+  "4580796380747": { jan:"4580796380747", name:"Kazi-Tu ストロングソー（硬太木挽）450　極粗目", model:"KSS-450", price:1000 },
+  "4580796380754": { jan:"4580796380754", name:"BASE ロッキング C型プライヤ350", model:"BLC-350B", price:1000 },
+  "4580796380761": { jan:"4580796380761", name:"BASE エアカプラ　ダブルソケット", model:"BAC-WST", price:600 },
+  "4580796380778": { jan:"4580796380778", name:"BASE パイプカッター428", model:"BPC-428", price:1000 },
+  "4580796380808": { jan:"4580796380808", name:"BASE ロングボールポイント６角棒レンチ９本組", model:"BB6-9PC", price:600 },
+  "4580796380815": { jan:"4580796380815", name:"BASE ロングヘックスローブレンチ　９本組", model:"BHR-9PC", price:600 },
+  "4580796380822": { jan:"4580796380822", name:"Kazi-Tu 剪定はさみ　210ｍｍ", model:"KSH-210", price:600 },
+  "4580796380846": { jan:"4580796380846", name:"BASE 高耐久エアダスター115", model:"BAD-115", price:600 },
+  "4580796380853": { jan:"4580796380853", name:"BASE 精密ドライバーセット　20PCS", model:"BSD-20P", price:600 },
+  "4580796380860": { jan:"4580796380860", name:"BASE ダイヤモンドカッター セグメントタイプ105ｍｍ", model:"BDS-105", price:600 },
+  "4580796380877": { jan:"4580796380877", name:"BASE ドリルチャック　10ｍｍ  6.35軸", model:"BDC-10", price:600 },
+  "4580796380884": { jan:"4580796380884", name:"BASE キーレスドリルチャック　10ｍｍ　6.35軸", model:"BDC-K10", price:600 },
+  "4580796380907": { jan:"4580796380907", name:"BASE 金切りハサミ左曲り250", model:"BKH-H25", price:1000 },
+  "4580796380914": { jan:"4580796380914", name:"Kazi-Tu 強力剪定はさみ　ラチェット式200ｍｍ", model:"KSH-R20", price:1000 },
+  "4580796380921": { jan:"4580796380921", name:"Fieldo-Gu 剪定はさみPROα　200ｍｍ", model:"FSH-PA2", price:2000 },
+  "4580796380938": { jan:"4580796380938", name:"BASE銀軸ソケットアダプターセット", model:"BGS-AM3", price:600 },
+  "4580796380945": { jan:"4580796380945", name:"BASEビットセット　MGホルダー付", model:"BDB-65110", price:1000 },
+  "4580796380952": { jan:"4580796380952", name:"BASE銀軸ボールポイントショート10本組", model:"BGB-BS10", price:600 },
+  "4580796380969": { jan:"4580796380969", name:"BASE銀軸ヘックスローブショート10本組", model:"BGB-HS10", price:600 },
+  "4580796380976": { jan:"4580796380976", name:"BASE鉄工用ドリルセット13本組", model:"BTD-13S", price:600 },
+  "4580796380983": { jan:"4580796380983", name:"BASE6角軸鉄工ドリルセット10PC", model:"BTD-10S", price:1000 },
+  "4580796380990": { jan:"4580796380990", name:"BASE木工用ドリルセット3PC", model:"BMD-03P", price:600 },
+  "4589961313030": { jan:"4589961313030", name:"ﾔﾏｼｮｳ ひざらくらくﾊﾟｯﾄﾞ", model:"HP-01", price:600 },
+  "4907534001526": { jan:"4907534001526", name:"富士手袋　天牛　減振手袋　0015", model:"M", price:1000 },
+  "4907534001533": { jan:"4907534001533", name:"富士手袋　天牛　減振手袋　0015", model:"L", price:1000 },
+  "4907534001540": { jan:"4907534001540", name:"富士手袋　天牛　減振手袋　0015", model:"LL", price:1000 },
+  "4907534538008": { jan:"4907534538008", name:"富士手袋　ウレタン手袋　5380　10P", model:"S", price:1000 },
+  "4907534538015": { jan:"4907534538015", name:"富士手袋　ウレタン手袋　5380　10P", model:"M", price:1000 },
+  "4907534538022": { jan:"4907534538022", name:"富士手袋　ウレタン手袋　5380　10P", model:"L", price:1000 },
+  "4907534867712": { jan:"4907534867712", name:"富士手袋　ラバーダブルシェルパ8677", model:"M", price:1000 },
+  "4907534867719": { jan:"4907534867719", name:"富士手袋　ラバーダブルシェルパ8677", model:"L", price:1000 },
+  "4907534867726": { jan:"4907534867726", name:"富士手袋　ラバーダブルシェルパ8677", model:"LL", price:1000 },
+};
+
+// ===== STATE =====
+let cart = [];
+let receivedAmount = '';
+let mode = 'jan';
+let janInput = '';
+let salesLog = JSON.parse(localStorage.getItem('salesLog') || '[]');
+let cameraStream = null;
+let barcodeDetector = null;
+let scanInterval = null;
+let lastScanTime = 0;
+
+// ===== CAMERA =====
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    cameraStream = stream;
+    const video = document.getElementById('camera-video');
+    video.srcObject = stream;
+    document.getElementById('camera-overlay').style.display = 'none';
+    document.getElementById('btn-scan-cancel').style.display = 'block';
+
+    if ('BarcodeDetector' in window) {
+      barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128'] });
+      scanInterval = setInterval(scanFrame, 300);
+    } else {
+      // Fallback: ZXing via CDN
+      loadZXing();
+    }
+  } catch(e) {
+    alert('カメラを起動できませんでした。\nカメラの許可を確認してください。');
+  }
+}
+
+async function scanFrame() {
+  const video = document.getElementById('camera-video');
+  if (!video.readyState || video.readyState < 2) return;
+  const now = Date.now();
+  if (now - lastScanTime < 1500) return;
+  try {
+    const barcodes = await barcodeDetector.detect(video);
+    if (barcodes.length > 0) {
+      lastScanTime = now;
+      handleScannedCode(barcodes[0].rawValue);
+    }
+  } catch(e) {}
+}
+
+function loadZXing() {
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+  script.onload = () => {
+    const codeReader = new ZXing.BrowserMultiFormatReader();
+    const video = document.getElementById('camera-video');
+    codeReader.decodeFromVideoElement(video, (result, err) => {
+      if (result) {
+        const now = Date.now();
+        if (now - lastScanTime < 1500) return;
+        lastScanTime = now;
+        handleScannedCode(result.getText());
+      }
+    });
+    window._zxingReader = codeReader;
+  };
+  document.head.appendChild(script);
+}
+
+function stopCamera() {
+  if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
+  if (window._zxingReader) { window._zxingReader.reset(); window._zxingReader = null; }
+  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  const video = document.getElementById('camera-video');
+  video.srcObject = null;
+  document.getElementById('camera-overlay').style.display = 'flex';
+  document.getElementById('btn-scan-cancel').style.display = 'none';
+}
+
+// ===== SCAN LOGIC =====
+function handleScannedCode(code) {
+  stopCamera();
+  const product = PRODUCTS[code];
+  if (product) {
+    showResultFound(product);
+    addToCart(product);
+    setMode('received');
+    if (navigator.vibrate) navigator.vibrate(100);
+  } else {
+    showResultNotFound(code);
+  }
+  renderCart();
+  renderSummary();
+}
+
+function showResultFound(p) {
+  document.getElementById('result-idle').style.display = 'none';
+  document.getElementById('result-notfound').style.display = 'none';
+  document.getElementById('result-found').style.display = 'block';
+  document.getElementById('res-name').textContent = p.name;
+  document.getElementById('res-model').textContent = '型式: ' + p.model;
+  document.getElementById('res-price').textContent = '¥' + p.price.toLocaleString();
+}
+
+function showResultNotFound(code) {
+  document.getElementById('result-idle').style.display = 'none';
+  document.getElementById('result-found').style.display = 'none';
+  document.getElementById('result-notfound').style.display = 'block';
+  document.getElementById('res-code').textContent = 'コード: ' + code;
+}
+
+// ===== CART =====
+function addToCart(product) {
+  const idx = cart.findIndex(i => i.jan === product.jan);
+  if (idx >= 0) cart[idx].qty++;
+  else cart.push({ jan: product.jan, name: product.name, model: product.model, price: product.price, qty: 1 });
+}
+
+function removeFromCart(jan) {
+  cart = cart.filter(i => i.jan !== jan);
+  renderCart(); renderSummary();
+}
+
+function changeQty(jan, delta) {
+  const idx = cart.findIndex(i => i.jan === jan);
+  if (idx < 0) return;
+  cart[idx].qty += delta;
+  if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  renderCart(); renderSummary();
+}
+
+function renderCart() {
+  const list = document.getElementById('cart-list');
+  const empty = document.getElementById('empty-msg');
+  if (cart.length === 0) {
+    list.innerHTML = '';
+    list.appendChild(empty);
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-model">${item.model}</div>
+        <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
+      </div>
+      <div class="qty-controls">
+        <button class="qty-btn minus" onclick="changeQty('${item.jan}',-1)">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn plus" onclick="changeQty('${item.jan}',1)">＋</button>
+      </div>
+      <div class="cart-item-subtotal">¥${(item.price * item.qty).toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+
+function renderSummary() {
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const tax = Math.floor(subtotal * 0.1);
+  const total = subtotal + tax;
+  const received = parseInt(receivedAmount) || 0;
+  const change = received - total;
+
+  document.getElementById('subtotal').textContent = '¥' + subtotal.toLocaleString();
+  document.getElementById('tax').textContent = '¥' + tax.toLocaleString();
+  document.getElementById('total').textContent = '¥' + total.toLocaleString();
+
+  const recDisp = document.getElementById('received-display');
+  recDisp.textContent = '¥' + (receivedAmount || '0');
+  recDisp.className = 'received-val' + (mode === 'received' ? ' active' : '');
+
+  const changeBox = document.getElementById('change-box');
+  if (received > 0) {
+    changeBox.style.display = 'block';
+    changeBox.className = change >= 0 ? '' : 'negative';
+    const ca = document.getElementById('change-amount');
+    ca.textContent = '¥' + change.toLocaleString();
+    ca.className = 'change-amount ' + (change >= 0 ? 'positive' : 'negative');
+  } else {
+    changeBox.style.display = 'none';
+  }
+
+  document.getElementById('btn-checkout').disabled = cart.length === 0;
+}
+
+function clearCart() {
+  cart = []; receivedAmount = ''; janInput = '';
+  setMode('jan');
+  document.getElementById('result-idle').style.display = 'flex';
+  document.getElementById('result-found').style.display = 'none';
+  document.getElementById('result-notfound').style.display = 'none';
+  renderCart(); renderSummary(); renderInputDisplay();
+}
+
+// ===== CHECKOUT =====
+function checkout() {
+  if (cart.length === 0) return;
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const tax = Math.floor(subtotal * 0.1);
+  const total = subtotal + tax;
+  const received = parseInt(receivedAmount) || 0;
+  const now = new Date();
+  const record = {
+    datetime: now.toLocaleString('ja-JP'),
+    items: cart.map(i => ({ name: i.name, model: i.model, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
+    subtotal, tax, total, received, change: received - total
+  };
+  salesLog.push(record);
+  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
+  clearCart();
+}
+
+// ===== NUMPAD =====
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.mode-tab.' + m).classList.add('active');
+  document.getElementById('mode-icon-jan').style.display = m === 'jan' ? 'block' : 'none';
+  document.getElementById('mode-icon-rec').style.display = m === 'received' ? 'block' : 'none';
+  renderInputDisplay();
+  renderSummary();
+}
+
+function numKey(key) {
+  if (mode === 'jan') {
+    if (key === 'C') janInput = '';
+    else if (key === '⌫') janInput = janInput.slice(0, -1);
+    else janInput += key;
+  } else {
+    if (key === 'C') receivedAmount = '';
+    else if (key === '⌫') receivedAmount = receivedAmount.slice(0, -1);
+    else {
+      if (receivedAmount === '0') receivedAmount = key;
+      else receivedAmount += key;
+    }
+    renderSummary();
+  }
+  renderInputDisplay();
+}
+
+function renderInputDisplay() {
+  const disp = document.getElementById('input-display');
+  const enterBtn = document.getElementById('btn-enter');
+  if (mode === 'jan') {
+    if (janInput) {
+      disp.textContent = janInput;
+      disp.className = 'input-val';
+      enterBtn.style.display = 'block';
+    } else {
+      disp.textContent = 'JANコードを入力';
+      disp.className = 'input-val placeholder';
+      enterBtn.style.display = 'none';
+    }
+  } else {
+    disp.textContent = '¥' + (receivedAmount || '0');
+    disp.className = 'input-val';
+    enterBtn.style.display = 'none';
+  }
+}
+
+function submitJAN() {
+  if (!janInput) return;
+  handleScannedCode(janInput);
+  janInput = '';
+  renderInputDisplay();
+}
+
+// ===== SALES MODAL =====
+function openSalesModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  renderSalesModal();
+}
+function closeSalesModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+function renderSalesModal() {
+  const el = document.getElementById('modal-list');
+  if (salesLog.length === 0) {
+    el.innerHTML = '<p style="color:#94a3b8;font-size:13px;padding:8px 0">まだ売上がありません</p>';
+    return;
+  }
+  const total = salesLog.reduce((s, r) => s + r.total, 0);
+  el.innerHTML = `
+    <p style="font-size:13px;margin-bottom:8px;color:#0f172a">件数: <b>${salesLog.length}件</b>　合計売上: <b style="color:#0d9488">¥${total.toLocaleString()}</b></p>
+    <table>
+      <thead><tr><th>日時</th><th>合計</th><th>預かり</th><th>お釣り</th></tr></thead>
+      <tbody>
+        ${salesLog.map((r,i) => `<tr>
+          <td>${r.datetime}</td>
+          <td>¥${r.total.toLocaleString()}</td>
+          <td>¥${r.received.toLocaleString()}</td>
+          <td style="color:${r.change>=0?'#22c55e':'#ef4444'}">¥${r.change.toLocaleString()}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function exportCSV() {
+  if (salesLog.length === 0) { alert('売上データがありません'); return; }
+  const rows = [['日時','商品名','型式','単価','数量','小計','合計（税込）','預かり金','お釣り']];
+  salesLog.forEach(r => {
+    r.items.forEach((item, idx) => {
+      rows.push([
+        idx === 0 ? r.datetime : '',
+        item.name, item.model,
+        item.price, item.qty, item.subtotal,
+        idx === 0 ? r.total : '',
+        idx === 0 ? r.received : '',
+        idx === 0 ? r.change : ''
+      ]);
+    });
+  });
+  const bom = '\uFEFF';
+  const csv = bom + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = `売上_${today}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===== INIT =====
+renderCart();
+renderSummary();
+renderInputDisplay();
+</script>
+</body>
+</html>
