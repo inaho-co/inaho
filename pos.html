@@ -10,6 +10,8 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  input, select, textarea { font-size: 16px; } /* iOSズーム防止 */
+  html { touch-action: manipulation; }
   :root {
     --indigo: #4f46e5;
     --teal: #0d9488;
@@ -579,6 +581,8 @@ function handleScannedCode(code) {
     addToCart(product);
     setMode('received');
     if (navigator.vibrate) navigator.vibrate(100);
+    // 連続スキャンできるよう少し待ってカメラ再起動
+    setTimeout(() => startCamera(), 800);
   } else {
     beep('ng');
     showResultNotFound(code);
@@ -637,9 +641,13 @@ function addUnknownItem(price) {
 function addToCart(product) {
   // 価格設定に応じた販売価格を適用
   const sellPrice = priceSettings[product.price] !== undefined ? priceSettings[product.price] : product.price;
-  const idx = cart.findIndex(i => i.jan === product.jan);
-  if (idx >= 0) cart[idx].qty++;
-  else cart.push({ jan: product.jan, name: product.name, model: product.model, price: sellPrice, qty: 1 });
+  const janKey = String(product.jan);
+  const idx = cart.findIndex(i => String(i.jan) === janKey);
+  if (idx >= 0) {
+    cart[idx].qty++;
+  } else {
+    cart.push({ jan: janKey, name: product.name, model: product.model, price: sellPrice, qty: 1 });
+  }
 }
 
 function startPriceEdit(jan) {
@@ -695,29 +703,26 @@ function renderCart() {
         <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
       </div>
       <div class="qty-controls">
-        <button class="qty-btn minus" data-idx="${idx}" data-delta="-1" onclick="changeQtyByIdx(this)">−</button>
+        <button class="qty-btn minus" onclick="changeQtyByIdx(${idx},-1)">−</button>
         <span class="qty-num">${item.qty}</span>
-        <button class="qty-btn plus" data-idx="${idx}" data-delta="1" onclick="changeQtyByIdx(this)">＋</button>
+        <button class="qty-btn plus" onclick="changeQtyByIdx(${idx},1)">＋</button>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
         <div class="cart-item-subtotal" id="subtotal-idx-${idx}">¥${(item.price * item.qty).toLocaleString()}</div>
-        <button class="price-edit-btn" data-idx="${idx}" onclick="startPriceEditByIdx(this)">編集</button>
+        <button class="price-edit-btn" onclick="startPriceEditByIdx(${idx})">編集</button>
       </div>
     </div>
   `).join('');
 }
 
-function changeQtyByIdx(btn) {
-  const idx = parseInt(btn.dataset.idx);
-  const delta = parseInt(btn.dataset.delta);
+function changeQtyByIdx(idx, delta) {
   if (idx < 0 || idx >= cart.length) return;
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
   renderCart(); renderSummary();
 }
 
-function startPriceEditByIdx(btn) {
-  const idx = parseInt(btn.dataset.idx);
+function startPriceEditByIdx(idx) {
   if (idx < 0 || idx >= cart.length) return;
   const item = cart[idx];
   const subtotalEl = document.getElementById('subtotal-idx-' + idx);
@@ -967,7 +972,7 @@ renderInputDisplay();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v19'; }
+  if (ver) { ver.textContent = 'v21'; }
 })();
 </script>
 </body>
