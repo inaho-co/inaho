@@ -733,6 +733,7 @@ function initCartEvents() {
       e.stopPropagation();
       const action = btn.dataset.action;
       const idx = parseInt(btn.dataset.idx);
+      alert('action=' + action + ' idx=' + idx + ' cartLen=' + cart.length);
       if (action === 'plus')  changeQtyByIdx(idx, 1);
       if (action === 'minus') changeQtyByIdx(idx, -1);
       if (action === 'edit')  startPriceEditByIdx(idx);
@@ -991,7 +992,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v23'; }
+  if (ver) { ver.textContent = 'v23d'; }
 })();
 </script>
 </body>
