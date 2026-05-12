@@ -422,10 +422,8 @@ function startZXing(video) {
   }
   const hints = new Map();
   hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-  const codeReader = new ZXing.BrowserMultiFormatReader(hints);
-  window._zxingReader = codeReader;
-
-  // canvasを使って定期的にフレームをデコード
+  const reader = new ZXing.MultiFormatReader();
+  reader.setHints(hints);
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   let running = true;
@@ -438,7 +436,10 @@ function startZXing(video) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0);
-        const result = codeReader.decodeFromCanvas(canvas);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const src = new ZXing.RGBLuminanceSource(imageData.data, canvas.width, canvas.height);
+        const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(src));
+        const result = reader.decode(bmp);
         if (result) {
           const now = Date.now();
           if (now - lastScanTime > 1500) {
@@ -447,16 +448,13 @@ function startZXing(video) {
             return;
           }
         }
-      } else {
-        document.getElementById('scan-status').textContent = '待機中 readyState:' + video.readyState + ' w:' + video.videoWidth;
       }
     } catch(e) {
-      // NotFoundException以外はscan-statusに表示
       if (e && e.name !== 'NotFoundException') {
         document.getElementById('scan-status').textContent = 'ERR:' + e.name;
       }
     }
-    setTimeout(tick, 150);
+    setTimeout(tick, 200);
   }
   tick();
 }
@@ -739,7 +737,7 @@ renderInputDisplay();
   }
   const ver = document.getElementById('ver-box');
   if (ver) {
-    ver.innerHTML = 'v5 iOS:' + iosVer + ' ZXing:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
+    ver.innerHTML = 'v6 iOS:' + iosVer + ' ZXing:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
   }
   const dbg = document.getElementById('debug-box');
   if (dbg) {
