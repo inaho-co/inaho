@@ -6,8 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>POSレジ</title>
-<!-- ZXingを最初から読み込む -->
-<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<!-- html5-qrcode ライブラリ（iOS Safari実績あり） -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
@@ -167,7 +167,7 @@
     </div>
 
     <div id="camera-area">
-      <video id="camera-video" autoplay playsinline muted></video>
+      <div id="camera-video-container" style="width:100%;height:100%;"></div>
       <div id="camera-overlay">
         <button id="btn-scan-start" onclick="startCamera()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/><rect x="7" y="7" width="10" height="10"/></svg>
@@ -388,101 +388,39 @@ let cameraStream = null;
 let lastScanTime = 0;
 
 // ===== CAMERA =====
+let html5QrCode = null;
+
 async function startCamera() {
   document.getElementById('scan-status').textContent = '起動中...';
+  document.getElementById('camera-overlay').style.display = 'none';
+  document.getElementById('btn-scan-cancel').style.display = 'block';
   try {
-    // まず背面カメラ指定で試す
-    let stream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { exact: 'environment' } }
-      });
-    } catch(e) {
-      // 失敗したら制限なしで試す
-      stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    }
-    cameraStream = stream;
-    const video = document.getElementById('camera-video');
-    video.srcObject = stream;
-    await video.play();
-    document.getElementById('camera-overlay').style.display = 'none';
-    document.getElementById('btn-scan-cancel').style.display = 'block';
+    html5QrCode = new Html5Qrcode('camera-video-container');
+    await html5QrCode.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 200, height: 100 } },
+      (decodedText) => {
+        const now = Date.now();
+        if (now - lastScanTime < 1500) return;
+        lastScanTime = now;
+        handleScannedCode(decodedText);
+      },
+      () => {}
+    );
     document.getElementById('scan-status').textContent = 'スキャン中...';
-    startZXing(video);
   } catch(e) {
+    document.getElementById('camera-overlay').style.display = 'flex';
+    document.getElementById('btn-scan-cancel').style.display = 'none';
     document.getElementById('scan-status').textContent = '';
-    alert('カメラエラー\n名前:' + e.name + '\n内容:' + e.message + '\nコード:' + e.code);
+    alert('カメラエラー: ' + e);
   }
 }
 
-function startZXing(video) {
-  if (!window.ZXing) {
-    document.getElementById('scan-status').textContent = 'ZXing読込失敗';
-    return;
+async function stopCamera() {
+  if (html5QrCode) {
+    try { await html5QrCode.stop(); html5QrCode.clear(); } catch(e) {}
+    html5QrCode = null;
   }
-  const hints = new Map();
-  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-  const reader = new ZXing.MultiFormatReader();
-  reader.setHints(hints);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  let running = true;
-  window._zxingStop = () => { running = false; };
-  let errCount = 0;
-
-  function tick() {
-    if (!running) return;
-    try {
-      if (video.readyState >= 2 && video.videoWidth > 0) {
-        const w = video.videoWidth;
-        const h = video.videoHeight;
-        canvas.width = w;
-        canvas.height = h;
-        ctx.drawImage(video, 0, 0, w, h);
-        const imageData = ctx.getImageData(0, 0, w, h);
-        // RGBA(4ch) → RGB(3ch) に変換
-        const rgba = imageData.data;
-        const rgb = new Uint8ClampedArray(w * h * 3);
-        for (let i = 0; i < w * h; i++) {
-          rgb[i * 3]     = rgba[i * 4];
-          rgb[i * 3 + 1] = rgba[i * 4 + 1];
-          rgb[i * 3 + 2] = rgba[i * 4 + 2];
-        }
-        const src = new ZXing.RGBLuminanceSource(rgb, w, h);
-        const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(src));
-        const result = reader.decode(bmp);
-        if (result) {
-          const now = Date.now();
-          if (now - lastScanTime > 1500) {
-            lastScanTime = now;
-            handleScannedCode(result.getText());
-            return;
-          }
-        }
-      }
-    } catch(e) {
-      if (e && e.name !== 'NotFoundException') {
-        errCount++;
-        document.getElementById('scan-status').textContent = 'ERR:' + e.name + '(' + errCount + ')';
-      }
-    }
-    setTimeout(tick, 200);
-  }
-  tick();
-}
-
-function stopCamera() {
-  if (window._zxingStop) { window._zxingStop(); window._zxingStop = null; }
-  if (window._zxingReader) {
-    try { window._zxingReader.reset(); } catch(e) {}
-    window._zxingReader = null;
-  }
-  if (cameraStream) {
-    cameraStream.getTracks().forEach(t => t.stop());
-    cameraStream = null;
-  }
-  const video = document.getElementById('camera-video');
-  video.srcObject = null;
   document.getElementById('camera-overlay').style.display = 'flex';
   document.getElementById('btn-scan-cancel').style.display = 'none';
   document.getElementById('scan-status').textContent = '';
@@ -740,7 +678,7 @@ renderInputDisplay();
   const ua = navigator.userAgent;
   const ios = ua.match(/OS (\d+_\d+)/);
   const iosVer = ios ? ios[1].replace('_', '.') : '不明';
-  const zxingOk = typeof ZXing !== 'undefined' ? '✅OK' : '❌なし';
+  const zxingOk = typeof Html5Qrcode !== 'undefined' ? '✅OK' : '❌なし';
   const bdOk = 'BarcodeDetector' in window ? '✅あり' : '❌なし';
   const camOk = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? '✅あり' : '❌なし';
   let formats = '-';
@@ -749,7 +687,7 @@ renderInputDisplay();
   }
   const ver = document.getElementById('ver-box');
   if (ver) {
-    ver.innerHTML = 'v8 iOS:' + iosVer + ' ZXing:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
+    ver.innerHTML = 'v9 iOS:' + iosVer + ' h5qr:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
   }
   const dbg = document.getElementById('debug-box');
   if (dbg) {
