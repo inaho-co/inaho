@@ -37,11 +37,11 @@
   .empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text3); }
   .empty-cart svg { width: 48px; height: 48px; }
   .cart-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
-  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-info { flex: 1; min-width: 0; max-width: 45%; }
   .cart-item-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cart-item-model { font-size: 11px; color: var(--text2); }
   .cart-item-unit { font-size: 11px; color: var(--text2); }
-  .qty-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .qty-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
   .qty-btn { width: 28px; height: 28px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
   .qty-btn.minus { background: #fee2e2; color: var(--red); }
   .qty-btn.plus { background: #ccfbf1; color: var(--teal); }
@@ -144,9 +144,13 @@
       </div>
     </div>
     <div id="summary">
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-shrink:0;">
+        <button onclick="setTax(0)" id="tax-btn-0" style="flex:1;padding:5px;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:#0d9488;color:white;">税なし</button>
+        <button onclick="setTax(10)" id="tax-btn-10" style="flex:1;padding:5px;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:#f1f5f9;color:#0f172a;">10%</button>
+      </div>
       <div class="summary-row"><span class="label">小計（税抜）</span><span id="subtotal">¥0</span></div>
-      <div class="summary-row"><span class="label">消費税（10%）</span><span id="tax">¥0</span></div>
-      <div class="summary-row total"><span>合計（税込）</span><span id="total">¥0</span></div>
+      <div class="summary-row" id="tax-row" style="display:none;"><span class="label" id="tax-label">消費税（10%）</span><span id="tax">¥0</span></div>
+      <div class="summary-row total"><span>合計</span><span id="total">¥0</span></div>
       <div class="received-row" onclick="setMode('received')">
         <span class="label">預かり金</span>
         <span class="received-val" id="received-display">¥0</span>
@@ -396,6 +400,7 @@ let janInput = '';
 let manualPrice = '';
 let salesLog = [];
 try { salesLog = JSON.parse(localStorage.getItem('salesLog') || '[]'); } catch(e) {}
+let taxRate = 0;
 let cameraStream = null;
 let lastScanTime = 0;
 
@@ -517,9 +522,23 @@ function renderCart() {
   `).join('');
 }
 
+function setTax(rate) {
+  taxRate = rate;
+  [0, 10].forEach(r => {
+    const btn = document.getElementById('tax-btn-' + r);
+    if (btn) btn.style.background = r === rate ? '#0d9488' : '#f1f5f9';
+    if (btn) btn.style.color = r === rate ? 'white' : '#0f172a';
+  });
+  const taxRow = document.getElementById('tax-row');
+  if (taxRow) taxRow.style.display = rate === 0 ? 'none' : 'flex';
+  const taxLabel = document.getElementById('tax-label');
+  if (taxLabel) taxLabel.textContent = '消費税（' + rate + '%）';
+  renderSummary();
+}
+
 function renderSummary() {
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const tax = Math.floor(subtotal * 0.1);
+  const tax = Math.floor(subtotal * taxRate / 100);
   const total = subtotal + tax;
   const received = parseInt(receivedAmount) || 0;
   const change = received - total;
@@ -558,7 +577,7 @@ function clearCart() {
 function checkout() {
   if (cart.length === 0) return;
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const tax = Math.floor(subtotal * 0.1);
+  const tax = Math.floor(subtotal * taxRate / 100);
   const total = subtotal + tax;
   const received = parseInt(receivedAmount) || 0;
   const now = new Date();
@@ -732,14 +751,7 @@ renderInputDisplay();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) {
-    ver.innerHTML = 'v11 iOS:' + iosVer + ' h5qr:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
-  }
-  const dbg = document.getElementById('debug-box');
-  if (dbg) {
-    dbg.innerHTML =
-      'iOS:' + iosVer + ' ZXing:' + zxingOk + ' BarcodeDetector:' + bdOk + ' Camera:' + camOk + '<br>対応形式: ' + formats;
-  }
+  if (ver) { ver.textContent = 'v14'; }
 })();
 </script>
 </body>
