@@ -25,7 +25,7 @@
     --text3: #94a3b8;
   }
   html, body { height: 100%; overflow: hidden; font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(--surface2); color: var(--text); }
-  #app { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
+  #app { display: flex; flex: 1; overflow: hidden; }
 
   /* CART PANEL */
   #cart-panel { display: flex; flex-direction: column; width: 52%; border-right: 1px solid var(--border); background: var(--surface); }
@@ -40,9 +40,9 @@
   .empty-cart svg { width: 48px; height: 48px; }
   .cart-item { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
   .cart-item-info { flex: 1; min-width: 0; }
-  .cart-item-name { font-size: 14px; font-weight: 600; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
-  .cart-item-model { font-size: 11px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cart-item-unit { font-size: 11px; color: var(--text2); }
+  .cart-item-name { font-size: 17px; font-weight: 600; white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
+  .cart-item-model { font-size: 13px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cart-item-unit { font-size: 13px; color: var(--text2); }
   .qty-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
   .qty-btn { width: 24px; height: 24px; border: none; border-radius: 50%; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; font-weight: 700; -webkit-tap-highlight-color: rgba(0,0,0,0.1); }
   .qty-btn.minus { background: #fee2e2; color: var(--red); }
@@ -128,6 +128,33 @@
   #btn-export { background: var(--indigo); color: white; }
   #btn-modal-close { background: var(--surface2); color: var(--text); }
 
+  /* PAGE TABS */
+  #page-tabs { display: flex; background: #1e293b; flex-shrink: 0; }
+  .page-tab { flex: 1; padding: 10px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; color: rgba(255,255,255,0.55); background: transparent; border-bottom: 3px solid transparent; }
+  .page-tab.active { color: white; border-bottom-color: var(--teal); }
+
+  /* CASHLESS PAGE */
+  #cashless-page { display: none; flex-direction: column; flex: 1; overflow: hidden; background: var(--surface); }
+  #cashless-page.active { display: flex; }
+  #main-page { display: flex; flex: 1; overflow: hidden; }
+  #main-page.hidden { display: none; }
+
+  .cl-header { background: #7c3aed; color: white; padding: 12px 16px; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .cl-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .cl-left { width: 52%; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+  .cl-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 10px; gap: 8px; }
+  .cl-split { display: flex; flex: 1; overflow: hidden; }
+
+  .cl-cart-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .cl-summary { flex-shrink: 0; padding: 10px 12px; background: var(--surface2); border-top: 1px solid var(--border); }
+  #btn-cl-checkout { width: 100%; padding: 14px; background: #7c3aed; color: white; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; margin-top: 8px; }
+  #btn-cl-checkout:disabled { background: var(--text3); cursor: not-allowed; }
+  .cl-quick-btns { display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+  .cl-quick-btn { flex: 1; min-width: 70px; padding: 10px 4px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .cl-manual-form { background: var(--surface2); border-radius: 10px; padding: 10px; flex-shrink: 0; }
+  .cl-manual-form input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 6px; box-sizing: border-box; }
+  .cl-add-btn { width: 100%; padding: 10px; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+
   /* PRICE SETTING MODAL */
   #price-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
   #price-modal-overlay.open { display: flex; }
@@ -148,11 +175,84 @@
 </style>
 </head>
 <body>
+<div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
+<!-- PAGE TABS -->
+<div id="page-tabs">
+  <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
+  <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
+</div>
+
+<!-- CASHLESS PAGE -->
+<div id="cashless-page">
+  <div class="cl-header">
+    <span>💳 現金なし売上入力</span>
+    <span style="flex:1"></span>
+    <button class="btn-sm" onclick="clearClCart()">クリア</button>
+  </div>
+  <div class="cl-body">
+    <div class="cl-split">
+      <!-- カートリスト -->
+      <div class="cl-left">
+        <div class="cl-cart-list" id="cl-cart-list">
+          <div class="empty-cart" id="cl-empty-msg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <span>商品を追加してください</span>
+          </div>
+        </div>
+        <div class="cl-summary">
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <button onclick="setClTax(0)" id="cl-tax-btn-0" style="flex:1;padding:5px;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:#7c3aed;color:white;">税なし</button>
+            <button onclick="setClTax(10)" id="cl-tax-btn-10" style="flex:1;padding:5px;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:#f1f5f9;color:#0f172a;">10%</button>
+          </div>
+          <div class="summary-row"><span class="label">小計（税抜）</span><span id="cl-subtotal">¥0</span></div>
+          <div class="summary-row" id="cl-tax-row" style="display:none;"><span class="label" id="cl-tax-label">消費税（10%）</span><span id="cl-tax">¥0</span></div>
+          <div class="summary-row total"><span>合計</span><span id="cl-total" style="color:#7c3aed;">¥0</span></div>
+          <button id="btn-cl-checkout" disabled onclick="clCheckout()">売上登録・次の客へ</button>
+        </div>
+      </div>
+      <!-- 入力エリア -->
+      <div class="cl-right">
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:2px;">均一価格から追加</div>
+        <div class="cl-quick-btns">
+          <button class="cl-quick-btn" style="background:#ccfbf1;color:#0d9488;" onclick="addClQuick(600)">¥600</button>
+          <button class="cl-quick-btn" style="background:#e0e7ff;color:#4f46e5;" onclick="addClQuick(1000)">¥1,000</button>
+          <button class="cl-quick-btn" style="background:#fef9c3;color:#ca8a04;" onclick="addClQuick(2000)">¥2,000</button>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-top:6px;margin-bottom:2px;">手入力で追加</div>
+        <div class="cl-manual-form">
+          <input id="cl-name" type="text" placeholder="商品名（任意）">
+          <input id="cl-model" type="text" placeholder="型式（任意）">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text2);">金額:</span>
+            <span id="cl-price-display" style="font-size:20px;font-weight:700;flex:1;color:#7c3aed;">¥0</span>
+          </div>
+          <button class="cl-add-btn" onclick="addClManual()">＋ カートに追加</button>
+        </div>
+        <!-- テンキー -->
+        <div class="numpad-grid" style="flex:1;">
+          <button class="np-btn" onclick="clNumKey('7')">7</button>
+          <button class="np-btn" onclick="clNumKey('8')">8</button>
+          <button class="np-btn" onclick="clNumKey('9')">9</button>
+          <button class="np-btn" onclick="clNumKey('4')">4</button>
+          <button class="np-btn" onclick="clNumKey('5')">5</button>
+          <button class="np-btn" onclick="clNumKey('6')">6</button>
+          <button class="np-btn" onclick="clNumKey('1')">1</button>
+          <button class="np-btn" onclick="clNumKey('2')">2</button>
+          <button class="np-btn" onclick="clNumKey('3')">3</button>
+          <button class="np-btn clear" onclick="clNumKey('C')">C</button>
+          <button class="np-btn" onclick="clNumKey('0')">0</button>
+          <button class="np-btn" onclick="clNumKey('⌫')">⌫</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="app">
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v37</span>
+      <span id="ver-box">v38</span>
       <span class="spacer"></span>
       <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
       &nbsp;
@@ -215,6 +315,13 @@
       <div class="result-notfound" id="result-notfound">
         <div class="badge">✗ 見つかりません　→ 価格を選んで追加</div>
         <div class="code" id="res-code"></div>
+        <!-- 商品名・型式入力 & 保存 -->
+        <div style="margin-top:8px;background:#f8fafc;border-radius:8px;padding:8px;border:1px solid #e2e8f0;">
+          <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;">商品名・型式を入力して保存できます</div>
+          <input id="notfound-name" type="text" placeholder="商品名" style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;margin-bottom:4px;box-sizing:border-box;">
+          <input id="notfound-model" type="text" placeholder="型式" style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;margin-bottom:6px;box-sizing:border-box;">
+          <button onclick="saveNewProduct()" style="width:100%;padding:7px;background:#0d9488;color:white;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">💾 商品情報を保存</button>
+        </div>
         <div id="quick-price-btns" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
           <button onclick="addUnknownItem(600)"  style="flex:1;padding:8px 4px;background:#ccfbf1;color:#0d9488;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">¥600</button>
           <button onclick="addUnknownItem(1000)" style="flex:1;padding:8px 4px;background:#e0e7ff;color:#4f46e5;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">¥1,000</button>
@@ -261,6 +368,9 @@
     </div>
   </div>
 </div>
+
+</div><!-- /app -->
+</div><!-- /page-wrapper -->
 
 <!-- Price Setting Modal -->
 <div id="price-modal-overlay" onclick="if(event.target===this)closePriceModal()">
@@ -979,13 +1089,14 @@ function renderSalesModal() {
   el.innerHTML = `
     <p style="font-size:13px;margin-bottom:8px">件数: <b>${salesLog.length}件</b>　合計売上: <b style="color:#0d9488">¥${total.toLocaleString()}</b></p>
     <table>
-      <thead><tr><th>日時</th><th>合計</th><th>預かり</th><th>お釣り</th></tr></thead>
+      <thead><tr><th>日時</th><th>合計</th><th>支払</th><th>預かり</th><th>お釣り</th></tr></thead>
       <tbody>
         ${salesLog.map(r => `<tr>
           <td>${r.datetime}</td>
           <td>¥${r.total.toLocaleString()}</td>
-          <td>¥${r.received.toLocaleString()}</td>
-          <td style="color:${r.change>=0?'#22c55e':'#ef4444'}">¥${r.change.toLocaleString()}</td>
+          <td style="font-size:11px;color:${r.paymentMethod==='現金なし'?'#7c3aed':'#0d9488'}">${r.paymentMethod||'現金'}</td>
+          <td>${r.paymentMethod==='現金なし'?'-':'¥'+r.received.toLocaleString()}</td>
+          <td style="color:${r.change>=0?'#22c55e':'#ef4444'}">${r.paymentMethod==='現金なし'?'-':'¥'+r.change.toLocaleString()}</td>
         </tr>`).join('')}
       </tbody>
     </table>
@@ -994,15 +1105,16 @@ function renderSalesModal() {
 
 function exportCSV() {
   if (salesLog.length === 0) { alert('売上データがありません'); return; }
-  const rows = [['日時','商品名','型式','単価','数量','小計','合計（税込）','預かり金','お釣り']];
+  const rows = [['日時','支払方法','商品名','型式','単価','数量','小計','合計（税込）','預かり金','お釣り']];
   salesLog.forEach(r => {
     r.items.forEach((item, idx) => {
       rows.push([
         idx === 0 ? r.datetime : '',
+        idx === 0 ? (r.paymentMethod || '現金') : '',
         item.name, item.model, item.price, item.qty, item.subtotal,
         idx === 0 ? r.total : '',
-        idx === 0 ? r.received : '',
-        idx === 0 ? r.change : ''
+        idx === 0 ? (r.paymentMethod === '現金なし' ? '-' : r.received) : '',
+        idx === 0 ? (r.paymentMethod === '現金なし' ? '-' : r.change) : ''
       ]);
     });
   });
@@ -1016,11 +1128,172 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
+// ===== PAGE SWITCH =====
+function switchPage(page) {
+  const mainPage = document.getElementById('app');
+  const clPage = document.getElementById('cashless-page');
+  document.querySelectorAll('.page-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && page === 'main') || (i === 1 && page === 'cashless'));
+  });
+  if (page === 'main') {
+    mainPage.style.display = 'flex';
+    clPage.classList.remove('active');
+  } else {
+    mainPage.style.display = 'none';
+    clPage.classList.add('active');
+  }
+}
+
+// ===== CASHLESS CART =====
+let clCart = [];
+let clTaxRate = 0;
+let clPrice = '';
+
+function setClTax(rate) {
+  clTaxRate = rate;
+  [0, 10].forEach(r => {
+    const btn = document.getElementById('cl-tax-btn-' + r);
+    if (btn) { btn.style.background = r === rate ? '#7c3aed' : '#f1f5f9'; btn.style.color = r === rate ? 'white' : '#0f172a'; }
+  });
+  document.getElementById('cl-tax-row').style.display = rate === 0 ? 'none' : 'flex';
+  document.getElementById('cl-tax-label').textContent = '消費税（' + rate + '%）';
+  renderClSummary();
+}
+
+function clNumKey(key) {
+  if (key === 'C') clPrice = '';
+  else if (key === '⌫') clPrice = clPrice.slice(0, -1);
+  else { if (clPrice === '0') clPrice = key; else clPrice += key; }
+  document.getElementById('cl-price-display').textContent = '¥' + (clPrice || '0');
+}
+
+function addClQuick(basePrice) {
+  const price = priceSettings[basePrice] !== undefined ? priceSettings[basePrice] : basePrice;
+  const item = { jan: 'cl_' + Date.now(), name: '均一商品', model: '¥' + price + '均一', price: price, qty: 1 };
+  // 同じ価格の均一商品はまとめる
+  const existing = clCart.find(i => i.price === price && i.name === '均一商品');
+  if (existing) { existing.qty++; } else { clCart.push(item); }
+  beep('ok');
+  renderClCart();
+  renderClSummary();
+}
+
+function addClManual() {
+  const name = document.getElementById('cl-name').value.trim() || '手入力商品';
+  const model = document.getElementById('cl-model').value.trim();
+  const price = parseInt(clPrice) || 0;
+  if (price <= 0) { alert('金額を入力してください'); return; }
+  clCart.push({ jan: 'cl_' + Date.now(), name: name, model: model, price: price, qty: 1 });
+  document.getElementById('cl-name').value = '';
+  document.getElementById('cl-model').value = '';
+  clPrice = '';
+  document.getElementById('cl-price-display').textContent = '¥0';
+  beep('ok');
+  renderClCart();
+  renderClSummary();
+}
+
+function clearClCart() {
+  clCart = []; clPrice = '';
+  document.getElementById('cl-price-display').textContent = '¥0';
+  renderClCart();
+  renderClSummary();
+}
+
+function clChangeQty(jan, delta) {
+  const idx = clCart.findIndex(i => i.jan === jan);
+  if (idx < 0) return;
+  clCart[idx].qty += delta;
+  if (clCart[idx].qty <= 0) clCart.splice(idx, 1);
+  renderClCart();
+  renderClSummary();
+}
+
+function renderClCart() {
+  const list = document.getElementById('cl-cart-list');
+  const empty = document.getElementById('cl-empty-msg');
+  if (clCart.length === 0) {
+    list.innerHTML = '';
+    list.appendChild(empty);
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = '';
+  clCart.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'cart-item';
+    row.innerHTML = `
+      <div class="cart-item-info" style="flex:1;min-width:0;">
+        <div class="cart-item-name">${item.name}</div>
+        ${item.model ? `<div class="cart-item-model">${item.model}</div>` : ''}
+        <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
+      </div>
+      <div class="qty-controls">
+        <button class="qty-btn minus" onclick="clChangeQty('${item.jan}',-1)">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn plus" onclick="clChangeQty('${item.jan}',1)">＋</button>
+      </div>
+      <div style="min-width:54px;text-align:right;font-size:13px;font-weight:700;flex-shrink:0;">¥${(item.price*item.qty).toLocaleString()}</div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function renderClSummary() {
+  const subtotal = clCart.reduce((s, i) => s + i.price * i.qty, 0);
+  const tax = Math.floor(subtotal * clTaxRate / 100);
+  const total = subtotal + tax;
+  document.getElementById('cl-subtotal').textContent = '¥' + subtotal.toLocaleString();
+  document.getElementById('cl-tax').textContent = '¥' + tax.toLocaleString();
+  document.getElementById('cl-total').textContent = '¥' + total.toLocaleString();
+  document.getElementById('btn-cl-checkout').disabled = clCart.length === 0;
+}
+
+function clCheckout() {
+  if (clCart.length === 0) return;
+  const subtotal = clCart.reduce((s, i) => s + i.price * i.qty, 0);
+  const tax = Math.floor(subtotal * clTaxRate / 100);
+  const total = subtotal + tax;
+  const now = new Date();
+  const record = {
+    datetime: now.toLocaleString('ja-JP'),
+    items: clCart.map(i => ({ name: i.name, model: i.model, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
+    subtotal, tax, total, received: 0, change: 0, paymentMethod: '現金なし'
+  };
+  salesLog.push(record);
+  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
+  clearClCart();
+  beep('ok');
+}
+
+// ===== JANなし商品保存 =====
+function saveNewProduct() {
+  const name = document.getElementById('notfound-name').value.trim();
+  const model = document.getElementById('notfound-model').value.trim();
+  if (!name) { alert('商品名を入力してください'); return; }
+  if (!unknownCode) { alert('JANコードが取得できていません'); return; }
+  // 既存に追加（セッション中のみ有効）
+  PRODUCTS[unknownCode] = { jan: unknownCode, name: name, model: model, price: 0 };
+  alert(`✅ 保存しました\nJAN: ${unknownCode}\n商品名: ${name}\n型式: ${model}\n※価格は0円で登録されました。カート追加後に「編集」で変更できます。`);
+  // 保存後そのまま追加
+  const product = PRODUCTS[unknownCode];
+  showResultFound(product);
+  addToCart(product);
+  setMode('received');
+  document.getElementById('result-notfound').style.display = 'none';
+  document.getElementById('notfound-name').value = '';
+  document.getElementById('notfound-model').value = '';
+  renderCart();
+  renderSummary();
+}
+
 // ===== INIT =====
 renderCart();
 renderSummary();
 renderInputDisplay();
-initCartEvents();
+renderClCart();
+renderClSummary();
 
 // デバッグ情報を画面に表示
 (async () => {
@@ -1035,7 +1308,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v37'; }
+  if (ver) { ver.textContent = 'v38'; }
 })();
 </script>
 </body>
