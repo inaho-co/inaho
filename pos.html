@@ -47,6 +47,9 @@
   .qty-btn.plus { background: #ccfbf1; color: var(--teal); }
   .qty-num { font-size: 14px; font-weight: 700; min-width: 24px; text-align: center; }
   .cart-item-subtotal { font-size: 13px; font-weight: 700; min-width: 64px; text-align: right; flex-shrink: 0; }
+  .price-edit-btn { background: none; border: 1px dashed var(--border); border-radius: 4px; color: var(--text2); font-size: 11px; padding: 1px 4px; cursor: pointer; margin-left: 2px; flex-shrink: 0; }
+  .price-edit-btn:active { background: var(--surface2); }
+  .price-input { width: 70px; font-size: 13px; font-weight: 700; border: 2px solid var(--indigo); border-radius: 6px; padding: 2px 4px; text-align: right; color: var(--indigo); }
 
   #summary { flex-shrink: 0; padding: 10px 12px; background: var(--surface2); border-top: 1px solid var(--border); }
   .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 13px; }
@@ -76,7 +79,7 @@
   #btn-scan-cancel { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; display: none; }
   #scan-status { font-size: 11px; color: rgba(255,255,255,0.9); position: absolute; top: 6px; left: 8px; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; }
   #debug-box { font-size: 11px; color: #64748b; padding: 4px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; min-height: 20px; }
-  #ver-box { position: fixed; top: 0; left: 0; z-index: 9999; font-size: 10px; color: white; background: rgba(0,0,0,0.75); padding: 3px 7px; border-radius: 0 0 6px 0; line-height: 1.6; pointer-events: none; }
+  #ver-box { font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 400; }
 
   #scan-result { padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 70px; }
   .result-idle { color: var(--text3); font-size: 13px; display: flex; align-items: center; gap: 6px; }
@@ -122,17 +125,36 @@
   .modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
   #btn-export { background: var(--indigo); color: white; }
   #btn-modal-close { background: var(--surface2); color: var(--text); }
+
+  /* PRICE SETTING MODAL */
+  #price-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+  #price-modal-overlay.open { display: flex; }
+  #price-modal { background: white; border-radius: 16px; padding: 20px; width: 92%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; }
+  #price-modal h2 { font-size: 17px; font-weight: 800; }
+  .price-tier { background: var(--surface2); border-radius: 12px; padding: 14px; }
+  .price-tier-label { font-size: 12px; color: var(--text2); font-weight: 600; margin-bottom: 8px; }
+  .price-tier-row { display: flex; align-items: center; gap: 8px; }
+  .price-tier-row span { font-size: 14px; color: var(--text2); }
+  .price-tier-input { width: 90px; font-size: 18px; font-weight: 700; border: 2px solid var(--border); border-radius: 8px; padding: 6px 8px; text-align: right; }
+  .price-tier-input:focus { border-color: var(--indigo); outline: none; }
+  .price-reset-btn { font-size: 12px; color: var(--text2); background: white; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; margin-left: auto; }
+  .price-modal-btns { display: flex; gap: 8px; }
+  .price-modal-btns button { flex: 1; padding: 13px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  #btn-price-apply { background: var(--teal); color: white; }
+  #btn-price-close { background: var(--surface2); color: var(--text); }
+  .price-note { font-size: 11px; color: var(--text3); text-align: center; }
 </style>
 </head>
 <body>
-<div id="ver-box">読込中...</div>
 <div id="app">
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      会計
+      会計 <span id="ver-box"></span>
       <span class="spacer"></span>
+      <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
+      &nbsp;
       <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
       &nbsp;
       <button class="btn-sm" onclick="clearCart()">クリア</button>
@@ -234,6 +256,42 @@
         <button class="np-btn" onclick="numKey('0')">0</button>
         <button class="np-btn" onclick="numKey('⌫')">⌫</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Price Setting Modal -->
+<div id="price-modal-overlay" onclick="if(event.target===this)closePriceModal()">
+  <div id="price-modal">
+    <h2>💴 金額設定</h2>
+    <div class="price-tier">
+      <div class="price-tier-label">600円均一の販売価格</div>
+      <div class="price-tier-row">
+        <span>¥</span>
+        <input class="price-tier-input" id="price-input-600" type="number" value="600" min="0" inputmode="numeric">
+        <button class="price-reset-btn" onclick="document.getElementById('price-input-600').value=600">リセット</button>
+      </div>
+    </div>
+    <div class="price-tier">
+      <div class="price-tier-label">1,000円均一の販売価格</div>
+      <div class="price-tier-row">
+        <span>¥</span>
+        <input class="price-tier-input" id="price-input-1000" type="number" value="1000" min="0" inputmode="numeric">
+        <button class="price-reset-btn" onclick="document.getElementById('price-input-1000').value=1000">リセット</button>
+      </div>
+    </div>
+    <div class="price-tier">
+      <div class="price-tier-label">2,000円均一の販売価格</div>
+      <div class="price-tier-row">
+        <span>¥</span>
+        <input class="price-tier-input" id="price-input-2000" type="number" value="2000" min="0" inputmode="numeric">
+        <button class="price-reset-btn" onclick="document.getElementById('price-input-2000').value=2000">リセット</button>
+      </div>
+    </div>
+    <p class="price-note">変更するとカート内の商品にも反映されます</p>
+    <div class="price-modal-btns">
+      <button id="btn-price-apply" onclick="applyPriceSettings()">適用する</button>
+      <button id="btn-price-close" onclick="closePriceModal()">閉じる</button>
     </div>
   </div>
 </div>
@@ -392,6 +450,42 @@ const PRODUCTS = {
   "4907534867726": { jan:"4907534867726", name:"富士手袋　ラバーダブルシェルパ8677", model:"LL", price:1000 },
 };
 
+// ===== PRICE SETTINGS =====
+// 各均一価格帯の現在の販売価格（デフォルトは定価）
+let priceSettings = { 600: 600, 1000: 1000, 2000: 2000 };
+
+function openPriceModal() {
+  document.getElementById('price-input-600').value = priceSettings[600];
+  document.getElementById('price-input-1000').value = priceSettings[1000];
+  document.getElementById('price-input-2000').value = priceSettings[2000];
+  document.getElementById('price-modal-overlay').classList.add('open');
+}
+
+function closePriceModal() {
+  document.getElementById('price-modal-overlay').classList.remove('open');
+}
+
+function applyPriceSettings() {
+  const new600  = parseInt(document.getElementById('price-input-600').value)  || 600;
+  const new1000 = parseInt(document.getElementById('price-input-1000').value) || 1000;
+  const new2000 = parseInt(document.getElementById('price-input-2000').value) || 2000;
+
+  // カート内の商品も更新（元の定価ベースで対応する価格帯を判定）
+  cart.forEach(item => {
+    const basePrices = Object.keys(PRODUCTS).map(k => PRODUCTS[k])
+      .find(p => p.jan === item.jan);
+    const origPrice = basePrices ? basePrices.price : item.price;
+    if (origPrice === 600)  item.price = new600;
+    else if (origPrice === 1000) item.price = new1000;
+    else if (origPrice === 2000) item.price = new2000;
+  });
+
+  priceSettings = { 600: new600, 1000: new1000, 2000: new2000 };
+  closePriceModal();
+  renderCart();
+  renderSummary();
+}
+
 // ===== STATE =====
 let cart = [];
 let receivedAmount = '';
@@ -443,16 +537,44 @@ async function stopCamera() {
   document.getElementById('scan-status').textContent = '';
 }
 
+// ===== BEEP =====
+function beep(type) {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (type === 'ok') {
+      // 成功：レジっぽい短いピッ
+      osc.frequency.setValueAtTime(1200, ctx.currentTime);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.12);
+    } else {
+      // 失敗：低めのブー
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.25);
+    }
+  } catch(e) {}
+}
+
 // ===== SCAN LOGIC =====
 function handleScannedCode(code) {
   stopCamera();
   const product = PRODUCTS[code];
   if (product) {
+    beep('ok');
     showResultFound(product);
     addToCart(product);
     setMode('received');
     if (navigator.vibrate) navigator.vibrate(100);
   } else {
+    beep('ng');
     showResultNotFound(code);
   }
   renderCart();
@@ -477,9 +599,34 @@ function showResultNotFound(code) {
 
 // ===== CART =====
 function addToCart(product) {
+  // 価格設定に応じた販売価格を適用
+  const sellPrice = priceSettings[product.price] !== undefined ? priceSettings[product.price] : product.price;
   const idx = cart.findIndex(i => i.jan === product.jan);
   if (idx >= 0) cart[idx].qty++;
-  else cart.push({ jan: product.jan, name: product.name, model: product.model, price: product.price, qty: 1 });
+  else cart.push({ jan: product.jan, name: product.name, model: product.model, price: sellPrice, qty: 1 });
+}
+
+function startPriceEdit(jan) {
+  const idx = cart.findIndex(i => i.jan === jan);
+  if (idx < 0) return;
+  const item = cart[idx];
+  const subtotalEl = document.getElementById('subtotal-' + jan);
+  const unitEl = document.getElementById('unit-' + jan);
+  if (!subtotalEl) return;
+  // インライン入力欄に差し替え
+  subtotalEl.innerHTML = `<input class="price-input" id="price-input-${jan}" type="number" value="${item.price}" min="0" inputmode="numeric">`;
+  unitEl.textContent = '（金額を編集中）';
+  const input = document.getElementById('price-input-' + jan);
+  input.focus();
+  input.select();
+  const commit = () => {
+    const newPrice = parseInt(input.value) || 0;
+    cart[idx].price = newPrice;
+    renderCart();
+    renderSummary();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { input.blur(); } });
 }
 
 function removeFromCart(jan) {
@@ -510,14 +657,17 @@ function renderCart() {
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}</div>
         <div class="cart-item-model">${item.model}</div>
-        <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
+        <div class="cart-item-unit" id="unit-${item.jan}">¥${item.price.toLocaleString()} × ${item.qty}</div>
       </div>
       <div class="qty-controls">
         <button class="qty-btn minus" onclick="changeQty('${item.jan}',-1)">−</button>
         <span class="qty-num">${item.qty}</span>
         <button class="qty-btn plus" onclick="changeQty('${item.jan}',1)">＋</button>
       </div>
-      <div class="cart-item-subtotal">¥${(item.price * item.qty).toLocaleString()}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
+        <div class="cart-item-subtotal" id="subtotal-${item.jan}">¥${(item.price * item.qty).toLocaleString()}</div>
+        <button class="price-edit-btn" onclick="startPriceEdit('${item.jan}')">金額変更</button>
+      </div>
     </div>
   `).join('');
 }
@@ -751,7 +901,7 @@ renderInputDisplay();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v14'; }
+  if (ver) { ver.textContent = 'v16'; }
 })();
 </script>
 </body>
