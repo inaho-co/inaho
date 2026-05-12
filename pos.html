@@ -696,58 +696,23 @@ function renderCart() {
     return;
   }
   empty.style.display = 'none';
-  // innerHTML をやめて DOM を直接構築（iOSでonclickが効かない問題を回避）
-  list.innerHTML = '';
-  cart.forEach((item, idx) => {
-    const row = document.createElement('div');
-    row.className = 'cart-item';
-
-    const info = document.createElement('div');
-    info.className = 'cart-item-info';
-    info.innerHTML = `<div class="cart-item-name">${item.name}</div><div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>`;
-
-    const qtyCtrl = document.createElement('div');
-    qtyCtrl.className = 'qty-controls';
-
-    const minusBtn = document.createElement('button');
-    minusBtn.className = 'qty-btn minus';
-    minusBtn.textContent = '−';
-    minusBtn.addEventListener('click', () => { changeQtyByIdx(idx, -1); });
-
-    const qtyNum = document.createElement('span');
-    qtyNum.className = 'qty-num';
-    qtyNum.textContent = item.qty;
-
-    const plusBtn = document.createElement('button');
-    plusBtn.className = 'qty-btn plus';
-    plusBtn.textContent = '＋';
-    plusBtn.addEventListener('click', () => { changeQtyByIdx(idx, 1); });
-
-    qtyCtrl.appendChild(minusBtn);
-    qtyCtrl.appendChild(qtyNum);
-    qtyCtrl.appendChild(plusBtn);
-
-    const right = document.createElement('div');
-    right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;';
-
-    const subtotal = document.createElement('div');
-    subtotal.className = 'cart-item-subtotal';
-    subtotal.id = 'subtotal-idx-' + idx;
-    subtotal.textContent = '¥' + (item.price * item.qty).toLocaleString();
-
-    const editBtn = document.createElement('button');
-    editBtn.className = 'price-edit-btn';
-    editBtn.textContent = '編集';
-    editBtn.addEventListener('click', () => { startPriceEditByIdx(idx); });
-
-    right.appendChild(subtotal);
-    right.appendChild(editBtn);
-
-    row.appendChild(info);
-    row.appendChild(qtyCtrl);
-    row.appendChild(right);
-    list.appendChild(row);
-  });
+  list.innerHTML = cart.map((item, idx) => `
+    <div class="cart-item">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
+      </div>
+      <div class="qty-controls">
+        <button class="qty-btn minus" data-action="minus" data-idx="${idx}">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn plus" data-action="plus" data-idx="${idx}">＋</button>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
+        <div class="cart-item-subtotal" id="subtotal-idx-${idx}">¥${(item.price * item.qty).toLocaleString()}</div>
+        <button class="price-edit-btn" data-action="edit" data-idx="${idx}">編集</button>
+      </div>
+    </div>
+  `).join('');
 }
 
 function changeQtyByIdx(idx, delta) {
@@ -755,6 +720,24 @@ function changeQtyByIdx(idx, delta) {
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
   renderCart(); renderSummary();
+}
+
+// イベント委譲：cart-list全体でタッチを拾う
+function initCartEvents() {
+  const list = document.getElementById('cart-list');
+  ['touchend', 'click'].forEach(evtType => {
+    list.addEventListener(evtType, function(e) {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const idx = parseInt(btn.dataset.idx);
+      if (action === 'plus')  changeQtyByIdx(idx, 1);
+      if (action === 'minus') changeQtyByIdx(idx, -1);
+      if (action === 'edit')  startPriceEditByIdx(idx);
+    }, { passive: false });
+  });
 }
 
 function startPriceEditByIdx(idx) {
@@ -993,6 +976,7 @@ function exportCSV() {
 renderCart();
 renderSummary();
 renderInputDisplay();
+initCartEvents();
 
 // デバッグ情報を画面に表示
 (async () => {
@@ -1007,7 +991,7 @@ renderInputDisplay();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v22'; }
+  if (ver) { ver.textContent = 'v23'; }
 })();
 </script>
 </body>
