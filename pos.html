@@ -217,8 +217,14 @@
         <div class="prod-price" id="res-price"></div>
       </div>
       <div class="result-notfound" id="result-notfound">
-        <div class="badge">✗ 見つかりません</div>
+        <div class="badge">✗ 見つかりません　→ 価格を選んで追加</div>
         <div class="code" id="res-code"></div>
+        <div id="quick-price-btns" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+          <button onclick="addUnknownItem(600)"  style="flex:1;padding:8px 4px;background:#ccfbf1;color:#0d9488;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">¥600</button>
+          <button onclick="addUnknownItem(1000)" style="flex:1;padding:8px 4px;background:#e0e7ff;color:#4f46e5;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">¥1,000</button>
+          <button onclick="addUnknownItem(2000)" style="flex:1;padding:8px 4px;background:#fef9c3;color:#ca8a04;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">¥2,000</button>
+          <button onclick="addUnknownItem(null)" style="flex:1;padding:8px 4px;background:#f1f5f9;color:#64748b;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">その他</button>
+        </div>
       </div>
     </div>
 
@@ -590,11 +596,41 @@ function showResultFound(p) {
   document.getElementById('res-price').textContent = '¥' + p.price.toLocaleString();
 }
 
+let unknownCode = '';
+
 function showResultNotFound(code) {
+  unknownCode = code;
   document.getElementById('result-idle').style.display = 'none';
   document.getElementById('result-found').style.display = 'none';
   document.getElementById('result-notfound').style.display = 'block';
   document.getElementById('res-code').textContent = 'コード: ' + code;
+}
+
+function addUnknownItem(price) {
+  if (price === null) {
+    // その他：手入力モードへ切り替え
+    setMode('manual');
+    document.getElementById('result-idle').style.display = 'flex';
+    document.getElementById('result-notfound').style.display = 'none';
+    return;
+  }
+  // 価格設定の一括変更を反映
+  const sellPrice = priceSettings[price] !== undefined ? priceSettings[price] : price;
+  const item = {
+    jan: 'unknown_' + Date.now(),
+    name: '未登録商品',
+    model: unknownCode,
+    price: sellPrice,
+    qty: 1
+  };
+  cart.push(item);
+  beep('ok');
+  if (navigator.vibrate) navigator.vibrate(100);
+  document.getElementById('result-idle').style.display = 'flex';
+  document.getElementById('result-notfound').style.display = 'none';
+  setMode('received');
+  renderCart();
+  renderSummary();
 }
 
 // ===== CART =====
@@ -901,7 +937,7 @@ renderInputDisplay();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v16'; }
+  if (ver) { ver.textContent = 'v17'; }
 })();
 </script>
 </body>
