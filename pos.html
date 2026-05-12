@@ -73,7 +73,7 @@
 
   /* SCAN PANEL */
   #scan-panel { display: flex; flex-direction: column; width: 48%; background: var(--surface); overflow: hidden; }
-  #camera-area { position: relative; height: 180px; flex-shrink: 0; background: #000; overflow: hidden; }
+  #camera-area { position: relative; height: 200px; flex-shrink: 0; background: #000; overflow: hidden; }
   #camera-video { width: 100%; height: 100%; object-fit: cover; display: block; }
   #camera-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; }
   #btn-scan-start { display: flex; flex-direction: column; align-items: center; gap: 8px; color: white; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 700; }
@@ -81,7 +81,7 @@
   #btn-scan-cancel { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; display: none; }
   #scan-status { font-size: 11px; color: rgba(255,255,255,0.9); position: absolute; top: 6px; left: 8px; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; }
   #debug-box { font-size: 11px; color: #64748b; padding: 4px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; min-height: 20px; }
-  #ver-box { font-size: 11px; color: rgba(255,255,255,0.95); font-weight: 600; background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 4px; }
+  #ver-box { font-size: 12px; color: white; font-weight: 700; background: rgba(0,0,0,0.3); padding: 2px 7px; border-radius: 5px; flex-shrink: 0; }
 
   #scan-result { padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 70px; }
   .result-idle { color: var(--text3); font-size: 13px; display: flex; align-items: center; gap: 6px; }
@@ -109,7 +109,7 @@
   #btn-enter { background: var(--indigo); color: white; border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; flex-shrink: 0; }
   #btn-enter svg { width: 18px; height: 18px; display: block; }
   .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; flex: 1; }
-  .np-btn { border: none; border-radius: 8px; background: var(--surface2); font-size: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .np-btn { border: none; border-radius: 8px; background: var(--surface2); font-size: 24px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .np-btn:active { background: #cbd5e1; }
   .np-btn.clear { background: #fee2e2; color: var(--red); }
   .np-btn.clear:active { background: #fca5a5; }
@@ -152,8 +152,7 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      会計 <span id="ver-box"></span>
+      <span id="ver-box">v37</span>
       <span class="spacer"></span>
       <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
       &nbsp;
@@ -191,11 +190,6 @@
 
   <!-- RIGHT: Scan Panel -->
   <div id="scan-panel">
-    <div class="panel-header" id="scan-header">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/><rect x="7" y="7" width="10" height="10"/></svg>
-      バーコードスキャン
-    </div>
-
     <div id="camera-area">
       <div id="camera-video-container" style="width:100%;height:100%;"></div>
       <div id="camera-overlay">
@@ -1041,7 +1035,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v34'; }
+  if (ver) { ver.textContent = 'v37'; }
 })();
 </script>
 </body>
