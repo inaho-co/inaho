@@ -6,16 +6,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>POSレジ</title>
+<!-- ZXingを最初から読み込む -->
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
     --indigo: #4f46e5;
-    --indigo-dark: #3730a3;
     --teal: #0d9488;
-    --teal-dark: #0f766e;
     --red: #ef4444;
     --green: #22c55e;
-    --bg: #f8fafc;
     --surface: #ffffff;
     --surface2: #f1f5f9;
     --border: #e2e8f0;
@@ -23,18 +22,17 @@
     --text2: #64748b;
     --text3: #94a3b8;
   }
-  html, body { height: 100%; overflow: hidden; font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(--bg); color: var(--text); }
+  html, body { height: 100%; overflow: hidden; font-family: -apple-system, 'Hiragino Sans', sans-serif; background: var(--surface2); color: var(--text); }
   #app { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
 
-  /* ===== LEFT: CART PANEL ===== */
+  /* CART PANEL */
   #cart-panel { display: flex; flex-direction: column; width: 52%; border-right: 1px solid var(--border); background: var(--surface); }
   .panel-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
   #cart-header { background: var(--teal); }
   #scan-header { background: var(--indigo); }
   .panel-header .spacer { flex: 1; }
-  .btn-clear { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 13px; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+  .btn-sm { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
 
-  /* Cart list */
   #cart-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text3); }
   .empty-cart svg { width: 48px; height: 48px; }
@@ -50,7 +48,6 @@
   .qty-num { font-size: 14px; font-weight: 700; min-width: 24px; text-align: center; }
   .cart-item-subtotal { font-size: 13px; font-weight: 700; min-width: 64px; text-align: right; flex-shrink: 0; }
 
-  /* Summary */
   #summary { flex-shrink: 0; padding: 10px 12px; background: var(--surface2); border-top: 1px solid var(--border); }
   .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 13px; }
   .summary-row.total { font-size: 16px; font-weight: 700; padding: 6px 0; border-top: 1px solid var(--border); margin-top: 4px; }
@@ -69,48 +66,46 @@
   #btn-checkout { width: 100%; padding: 14px; background: var(--teal); color: white; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
   #btn-checkout:disabled { background: var(--text3); cursor: not-allowed; }
 
-  /* ===== RIGHT: SCAN PANEL ===== */
+  /* SCAN PANEL */
   #scan-panel { display: flex; flex-direction: column; width: 48%; background: var(--surface); overflow: hidden; }
   #camera-area { position: relative; height: 180px; flex-shrink: 0; background: #000; overflow: hidden; }
-  #camera-video { width: 100%; height: 100%; object-fit: cover; }
+  #camera-video { width: 100%; height: 100%; object-fit: cover; display: block; }
   #camera-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; }
   #btn-scan-start { display: flex; flex-direction: column; align-items: center; gap: 8px; color: white; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 700; }
   #btn-scan-start svg { width: 40px; height: 40px; }
   #btn-scan-cancel { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; display: none; }
+  #scan-status { font-size: 11px; color: rgba(255,255,255,0.7); position: absolute; top: 6px; left: 8px; }
 
-  /* Scan result */
   #scan-result { padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 70px; }
   .result-idle { color: var(--text3); font-size: 13px; display: flex; align-items: center; gap: 6px; }
   .result-found { display: none; }
-  .result-found .badge { font-size: 12px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+  .result-found .badge { font-size: 12px; font-weight: 700; color: var(--green); margin-bottom: 2px; }
   .result-found .prod-name { font-size: 15px; font-weight: 700; }
   .result-found .prod-model { font-size: 12px; color: var(--text2); }
   .result-found .prod-price { font-size: 18px; font-weight: 800; color: var(--indigo); }
   .result-notfound { display: none; }
-  .result-notfound .badge { font-size: 12px; font-weight: 700; color: var(--red); display: flex; align-items: center; gap: 4px; }
+  .result-notfound .badge { font-size: 12px; font-weight: 700; color: var(--red); }
   .result-notfound .code { font-size: 12px; color: var(--text2); }
 
-  /* Numpad */
   #numpad-area { flex: 1; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
   .mode-tabs { display: flex; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
-  .mode-tab { flex: 1; padding: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+  .mode-tab { flex: 1; padding: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; }
   .mode-tab.jan { background: var(--surface2); color: var(--text); }
   .mode-tab.jan.active { background: var(--indigo); color: white; }
   .mode-tab.received { background: var(--surface2); color: var(--text); }
   .mode-tab.received.active { background: var(--teal); color: white; }
   .input-display { display: flex; align-items: center; gap: 8px; padding: 4px 2px; flex-shrink: 0; }
-  .input-display svg { width: 18px; height: 18px; flex-shrink: 0; }
   .input-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .input-val.placeholder { color: var(--text3); font-weight: 400; }
   #btn-enter { background: var(--indigo); color: white; border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; flex-shrink: 0; }
-  #btn-enter svg { width: 18px; height: 18px; }
+  #btn-enter svg { width: 18px; height: 18px; display: block; }
   .numpad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; flex: 1; }
-  .np-btn { border: none; border-radius: 8px; background: var(--surface2); font-size: 20px; font-weight: 700; cursor: pointer; transition: background 0.1s; display: flex; align-items: center; justify-content: center; }
+  .np-btn { border: none; border-radius: 8px; background: var(--surface2); font-size: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .np-btn:active { background: #cbd5e1; }
   .np-btn.clear { background: #fee2e2; color: var(--red); }
   .np-btn.clear:active { background: #fca5a5; }
 
-  /* Sales log modal */
+  /* MODAL */
   #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
   #modal-overlay.open { display: flex; }
   #modal { background: white; border-radius: 16px; padding: 20px; width: 90%; max-width: 480px; max-height: 80vh; display: flex; flex-direction: column; gap: 12px; }
@@ -123,9 +118,6 @@
   .modal-btns button { flex: 1; padding: 12px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
   #btn-export { background: var(--indigo); color: white; }
   #btn-modal-close { background: var(--surface2); color: var(--text); }
-
-  /* Sales button in header */
-  #btn-sales { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -136,11 +128,9 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
       会計
       <span class="spacer"></span>
-      <button id="btn-sales" onclick="openSalesModal()">売上履歴</button>
-      <button class="btn-clear" onclick="clearCart()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-        クリア
-      </button>
+      <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
+      &nbsp;
+      <button class="btn-sm" onclick="clearCart()">クリア</button>
     </div>
     <div id="cart-list">
       <div class="empty-cart" id="empty-msg">
@@ -161,7 +151,6 @@
         <div class="change-amount" id="change-amount">¥0</div>
       </div>
       <button id="btn-checkout" disabled onclick="checkout()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
         会計完了・次の客へ
       </button>
     </div>
@@ -182,12 +171,12 @@
           スキャン開始
         </button>
       </div>
+      <span id="scan-status"></span>
       <button id="btn-scan-cancel" onclick="stopCamera()">キャンセル</button>
     </div>
 
     <div id="scan-result">
       <div class="result-idle" id="result-idle">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         スキャンしてください
       </div>
       <div class="result-found" id="result-found">
@@ -208,8 +197,6 @@
         <button class="mode-tab received" onclick="setMode('received')">預かり金</button>
       </div>
       <div class="input-display">
-        <svg id="mode-icon-jan" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="7" y2="16"/><line x1="10" y1="8" x2="10" y2="16"/><line x1="14" y1="8" x2="14" y2="16"/><line x1="17" y1="8" x2="17" y2="16"/></svg>
-        <svg id="mode-icon-rec" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="10"/><text x="12" y="16" text-anchor="middle" font-size="12" fill="#0d9488" stroke="none">¥</text></svg>
         <span class="input-val placeholder" id="input-display">JANコードを入力</span>
         <button id="btn-enter" onclick="submitJAN()" style="display:none">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
@@ -392,77 +379,72 @@ let cart = [];
 let receivedAmount = '';
 let mode = 'jan';
 let janInput = '';
-let salesLog = JSON.parse(localStorage.getItem('salesLog') || '[]');
+let salesLog = [];
+try { salesLog = JSON.parse(localStorage.getItem('salesLog') || '[]'); } catch(e) {}
 let cameraStream = null;
-let barcodeDetector = null;
-let scanInterval = null;
 let lastScanTime = 0;
 
 // ===== CAMERA =====
 async function startCamera() {
+  document.getElementById('scan-status').textContent = '起動中...';
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    });
+    // まず背面カメラ指定で試す
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { exact: 'environment' } }
+      });
+    } catch(e) {
+      // 失敗したら制限なしで試す
+      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    }
     cameraStream = stream;
     const video = document.getElementById('camera-video');
     video.srcObject = stream;
+    await video.play();
     document.getElementById('camera-overlay').style.display = 'none';
     document.getElementById('btn-scan-cancel').style.display = 'block';
-
-    if ('BarcodeDetector' in window) {
-      barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128'] });
-      scanInterval = setInterval(scanFrame, 300);
-    } else {
-      // Fallback: ZXing via CDN
-      loadZXing();
-    }
+    document.getElementById('scan-status').textContent = 'スキャン中...';
+    startZXing(video);
   } catch(e) {
-    alert('カメラを起動できませんでした。\nカメラの許可を確認してください。');
+    document.getElementById('scan-status').textContent = '';
+    alert('カメラを起動できませんでした。\n' + e.message);
   }
 }
 
-async function scanFrame() {
-  const video = document.getElementById('camera-video');
-  if (!video.readyState || video.readyState < 2) return;
-  const now = Date.now();
-  if (now - lastScanTime < 1500) return;
-  try {
-    const barcodes = await barcodeDetector.detect(video);
-    if (barcodes.length > 0) {
+function startZXing(video) {
+  if (!window.ZXing) {
+    document.getElementById('scan-status').textContent = 'ライブラリ読込失敗';
+    return;
+  }
+  const hints = new Map();
+  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+  const codeReader = new ZXing.BrowserMultiFormatReader(hints);
+  codeReader.decodeFromVideoElement(video, (result, err) => {
+    if (result) {
+      const now = Date.now();
+      if (now - lastScanTime < 1500) return;
       lastScanTime = now;
-      handleScannedCode(barcodes[0].rawValue);
+      handleScannedCode(result.getText());
     }
-  } catch(e) {}
-}
-
-function loadZXing() {
-  const script = document.createElement('script');
-  script.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
-  script.onload = () => {
-    const codeReader = new ZXing.BrowserMultiFormatReader();
-    const video = document.getElementById('camera-video');
-    codeReader.decodeFromVideoElement(video, (result, err) => {
-      if (result) {
-        const now = Date.now();
-        if (now - lastScanTime < 1500) return;
-        lastScanTime = now;
-        handleScannedCode(result.getText());
-      }
-    });
-    window._zxingReader = codeReader;
-  };
-  document.head.appendChild(script);
+  });
+  window._zxingReader = codeReader;
 }
 
 function stopCamera() {
-  if (scanInterval) { clearInterval(scanInterval); scanInterval = null; }
-  if (window._zxingReader) { window._zxingReader.reset(); window._zxingReader = null; }
-  if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
+  if (window._zxingReader) {
+    try { window._zxingReader.reset(); } catch(e) {}
+    window._zxingReader = null;
+  }
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
   const video = document.getElementById('camera-video');
   video.srcObject = null;
   document.getElementById('camera-overlay').style.display = 'flex';
   document.getElementById('btn-scan-cancel').style.display = 'none';
+  document.getElementById('scan-status').textContent = '';
 }
 
 // ===== SCAN LOGIC =====
@@ -569,7 +551,6 @@ function renderSummary() {
   } else {
     changeBox.style.display = 'none';
   }
-
   document.getElementById('btn-checkout').disabled = cart.length === 0;
 }
 
@@ -605,8 +586,6 @@ function setMode(m) {
   mode = m;
   document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
   document.querySelector('.mode-tab.' + m).classList.add('active');
-  document.getElementById('mode-icon-jan').style.display = m === 'jan' ? 'block' : 'none';
-  document.getElementById('mode-icon-rec').style.display = m === 'received' ? 'block' : 'none';
   renderInputDisplay();
   renderSummary();
 }
@@ -671,11 +650,11 @@ function renderSalesModal() {
   }
   const total = salesLog.reduce((s, r) => s + r.total, 0);
   el.innerHTML = `
-    <p style="font-size:13px;margin-bottom:8px;color:#0f172a">件数: <b>${salesLog.length}件</b>　合計売上: <b style="color:#0d9488">¥${total.toLocaleString()}</b></p>
+    <p style="font-size:13px;margin-bottom:8px">件数: <b>${salesLog.length}件</b>　合計売上: <b style="color:#0d9488">¥${total.toLocaleString()}</b></p>
     <table>
       <thead><tr><th>日時</th><th>合計</th><th>預かり</th><th>お釣り</th></tr></thead>
       <tbody>
-        ${salesLog.map((r,i) => `<tr>
+        ${salesLog.map(r => `<tr>
           <td>${r.datetime}</td>
           <td>¥${r.total.toLocaleString()}</td>
           <td>¥${r.received.toLocaleString()}</td>
@@ -693,8 +672,7 @@ function exportCSV() {
     r.items.forEach((item, idx) => {
       rows.push([
         idx === 0 ? r.datetime : '',
-        item.name, item.model,
-        item.price, item.qty, item.subtotal,
+        item.name, item.model, item.price, item.qty, item.subtotal,
         idx === 0 ? r.total : '',
         idx === 0 ? r.received : '',
         idx === 0 ? r.change : ''
