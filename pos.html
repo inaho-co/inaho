@@ -720,8 +720,7 @@ function renderCart() {
     const minusBtn = document.createElement('button');
     minusBtn.className = 'qty-btn minus';
     minusBtn.textContent = '−';
-    minusBtn.addEventListener('touchstart', function(e){ e.preventDefault(); changeQtyByIdx(idx, -1); }, {passive:false});
-    minusBtn.addEventListener('click', function(e){ changeQtyByIdx(idx, -1); });
+    minusBtn.addEventListener('touchstart', function(e){ e.stopPropagation(); e.preventDefault(); changeQtyByIdx(idx, -1); }, {passive:false});
 
     const qtySpan = document.createElement('span');
     qtySpan.className = 'qty-num';
@@ -730,8 +729,7 @@ function renderCart() {
     const plusBtn = document.createElement('button');
     plusBtn.className = 'qty-btn plus';
     plusBtn.textContent = '＋';
-    plusBtn.addEventListener('touchstart', function(e){ e.preventDefault(); changeQtyByIdx(idx, 1); }, {passive:false});
-    plusBtn.addEventListener('click', function(e){ changeQtyByIdx(idx, 1); });
+    plusBtn.addEventListener('touchstart', function(e){ e.stopPropagation(); e.preventDefault(); changeQtyByIdx(idx, 1); }, {passive:false});
 
     qtyCtrl.appendChild(minusBtn);
     qtyCtrl.appendChild(qtySpan);
@@ -758,11 +756,8 @@ function renderCart() {
   });
 }
 
-let cartQtyBusy = false;
 function changeQtyByIdx(idx, delta) {
-  if (cartQtyBusy) return;
-  cartQtyBusy = true;
-  setTimeout(() => { cartQtyBusy = false; }, 400);
+  alert('changeQty idx=' + idx + ' delta=' + delta + ' len=' + cart.length);
   if (idx < 0 || idx >= cart.length) return;
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
@@ -1022,7 +1017,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v27'; }
+  if (ver) { ver.textContent = 'v27d'; }
 })();
 </script>
 </body>
