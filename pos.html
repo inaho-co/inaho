@@ -760,8 +760,7 @@ function changeQtyByIdx(idx, delta) {
   if (idx < 0 || idx >= cart.length) return;
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) cart.splice(idx, 1);
-  alert('変更後 qty=' + (cart[idx] ? cart[idx].qty : '削除済み'));
-  renderCart(); renderSummary();
+  setTimeout(() => { renderCart(); renderSummary(); }, 0);
 }
 
 function initCartEvents() {} // 不要（グローバル関数で対応）
@@ -1017,7 +1016,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v27d2'; }
+  if (ver) { ver.textContent = 'v28'; }
 })();
 </script>
 </body>
