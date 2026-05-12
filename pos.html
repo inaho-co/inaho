@@ -36,20 +36,20 @@
   #cart-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text3); }
   .empty-cart svg { width: 48px; height: 48px; }
-  .cart-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
-  .cart-item-info { flex: 1; min-width: 0; max-width: 45%; }
-  .cart-item-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cart-item-model { font-size: 11px; color: var(--text2); }
-  .cart-item-unit { font-size: 11px; color: var(--text2); }
-  .qty-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
-  .qty-btn { width: 28px; height: 28px; border: none; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .cart-item { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cart-item-model { font-size: 10px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cart-item-unit { font-size: 10px; color: var(--text2); }
+  .qty-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .qty-btn { width: 26px; height: 26px; border: none; border-radius: 50%; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
   .qty-btn.minus { background: #fee2e2; color: var(--red); }
   .qty-btn.plus { background: #ccfbf1; color: var(--teal); }
-  .qty-num { font-size: 14px; font-weight: 700; min-width: 24px; text-align: center; }
-  .cart-item-subtotal { font-size: 13px; font-weight: 700; min-width: 64px; text-align: right; flex-shrink: 0; }
-  .price-edit-btn { background: none; border: 1px dashed var(--border); border-radius: 4px; color: var(--text2); font-size: 11px; padding: 1px 4px; cursor: pointer; margin-left: 2px; flex-shrink: 0; }
+  .qty-num { font-size: 13px; font-weight: 700; min-width: 20px; text-align: center; }
+  .cart-item-subtotal { font-size: 12px; font-weight: 700; min-width: 54px; text-align: right; flex-shrink: 0; }
+  .price-edit-btn { background: none; border: 1px dashed var(--border); border-radius: 4px; color: var(--text2); font-size: 10px; padding: 1px 3px; cursor: pointer; flex-shrink: 0; }
   .price-edit-btn:active { background: var(--surface2); }
-  .price-input { width: 70px; font-size: 13px; font-weight: 700; border: 2px solid var(--indigo); border-radius: 6px; padding: 2px 4px; text-align: right; color: var(--indigo); }
+  .price-input { width: 60px; font-size: 12px; font-weight: 700; border: 2px solid var(--indigo); border-radius: 6px; padding: 2px 4px; text-align: right; color: var(--indigo); }
 
   #summary { flex-shrink: 0; padding: 10px 12px; background: var(--surface2); border-top: 1px solid var(--border); }
   .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 13px; }
@@ -692,7 +692,6 @@ function renderCart() {
     <div class="cart-item">
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}</div>
-        <div class="cart-item-model">${item.model}</div>
         <div class="cart-item-unit" id="unit-${item.jan}">¥${item.price.toLocaleString()} × ${item.qty}</div>
       </div>
       <div class="qty-controls">
@@ -702,7 +701,7 @@ function renderCart() {
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;">
         <div class="cart-item-subtotal" id="subtotal-${item.jan}">¥${(item.price * item.qty).toLocaleString()}</div>
-        <button class="price-edit-btn" onclick="startPriceEdit('${item.jan}')">金額変更</button>
+        <button class="price-edit-btn" onclick="startPriceEdit('${item.jan}')">編集</button>
       </div>
     </div>
   `).join('');
@@ -937,7 +936,7 @@ renderInputDisplay();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v17'; }
+  if (ver) { ver.textContent = 'v18'; }
 })();
 </script>
 </body>
