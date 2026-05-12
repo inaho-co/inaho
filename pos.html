@@ -44,7 +44,7 @@
   .cart-item-model { font-size: 10px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cart-item-unit { font-size: 10px; color: var(--text2); }
   .qty-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-  .qty-btn { width: 44px; height: 44px; border: none; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: 700; -webkit-tap-highlight-color: rgba(0,0,0,0.1); }
+  .qty-btn { width: 32px; height: 32px; border: none; border-radius: 50%; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; font-weight: 700; -webkit-tap-highlight-color: rgba(0,0,0,0.1); }
   .qty-btn.minus { background: #fee2e2; color: var(--red); }
   .qty-btn.plus { background: #ccfbf1; color: var(--teal); }
   .qty-num { font-size: 13px; font-weight: 700; min-width: 20px; text-align: center; }
@@ -686,107 +686,115 @@ function changeQty(jan, delta) {
   renderCart(); renderSummary();
 }
 
+function makeCartRow(item, idx) {
+  const row = document.createElement('div');
+  row.className = 'cart-item';
+  row.dataset.jan = item.jan;
+
+  const info = document.createElement('div');
+  info.className = 'cart-item-info';
+  const nameEl = document.createElement('div');
+  nameEl.className = 'cart-item-name';
+  nameEl.textContent = item.name;
+  const unitEl = document.createElement('div');
+  unitEl.className = 'cart-item-unit';
+  unitEl.textContent = '¥' + item.price.toLocaleString() + ' × ' + item.qty;
+  info.appendChild(nameEl);
+  info.appendChild(unitEl);
+
+  const qtyCtrl = document.createElement('div');
+  qtyCtrl.className = 'qty-controls';
+  const minusBtn = document.createElement('button');
+  minusBtn.className = 'qty-btn minus';
+  minusBtn.textContent = '−';
+  minusBtn.addEventListener('click', function(){ changeQtyByJan(item.jan, -1); });
+  const qtySpan = document.createElement('span');
+  qtySpan.className = 'qty-num';
+  qtySpan.textContent = item.qty;
+  const plusBtn = document.createElement('button');
+  plusBtn.className = 'qty-btn plus';
+  plusBtn.textContent = '＋';
+  plusBtn.addEventListener('click', function(){ changeQtyByJan(item.jan, 1); });
+  qtyCtrl.appendChild(minusBtn);
+  qtyCtrl.appendChild(qtySpan);
+  qtyCtrl.appendChild(plusBtn);
+
+  const right = document.createElement('div');
+  right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;';
+  const subtotalEl = document.createElement('div');
+  subtotalEl.className = 'cart-item-subtotal';
+  subtotalEl.textContent = '¥' + (item.price * item.qty).toLocaleString();
+  const editBtn = document.createElement('button');
+  editBtn.className = 'price-edit-btn';
+  editBtn.textContent = '編集';
+  editBtn.addEventListener('click', function(){ startPriceEditByJan(item.jan); });
+  right.appendChild(subtotalEl);
+  right.appendChild(editBtn);
+
+  row.appendChild(info);
+  row.appendChild(qtyCtrl);
+  row.appendChild(right);
+  return row;
+}
+
 function renderCart() {
   const list = document.getElementById('cart-list');
   const empty = document.getElementById('empty-msg');
+
   if (cart.length === 0) {
-    list.innerHTML = '';
+    // 全行削除
+    Array.from(list.querySelectorAll('.cart-item')).forEach(r => r.remove());
     list.appendChild(empty);
     empty.style.display = 'flex';
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = '';
+
+  // janキーで既存行を管理
+  const existingRows = {};
+  list.querySelectorAll('.cart-item').forEach(r => { existingRows[r.dataset.jan] = r; });
+
+  // cartにある商品は追加or更新
   cart.forEach((item, idx) => {
-    const row = document.createElement('div');
-    row.className = 'cart-item';
-
-    // 商品情報
-    const info = document.createElement('div');
-    info.className = 'cart-item-info';
-    const nameEl = document.createElement('div');
-    nameEl.className = 'cart-item-name';
-    nameEl.textContent = item.name;
-    const unitEl = document.createElement('div');
-    unitEl.className = 'cart-item-unit';
-    unitEl.textContent = '¥' + item.price.toLocaleString() + ' × ' + item.qty;
-    info.appendChild(nameEl);
-    info.appendChild(unitEl);
-
-    // 数量コントロール
-    const qtyCtrl = document.createElement('div');
-    qtyCtrl.className = 'qty-controls';
-
-    const minusBtn = document.createElement('button');
-    minusBtn.className = 'qty-btn minus';
-    minusBtn.textContent = '−';
-    minusBtn.addEventListener('click', function(){ changeQtyByIdx(idx, -1); });
-
-    const qtySpan = document.createElement('span');
-    qtySpan.className = 'qty-num';
-    qtySpan.textContent = item.qty;
-
-    const plusBtn = document.createElement('button');
-    plusBtn.className = 'qty-btn plus';
-    plusBtn.textContent = '＋';
-    plusBtn.addEventListener('click', function(){ changeQtyByIdx(idx, 1); });
-
-    qtyCtrl.appendChild(minusBtn);
-    qtyCtrl.appendChild(qtySpan);
-    qtyCtrl.appendChild(plusBtn);
-
-    // 小計・編集
-    const right = document.createElement('div');
-    right.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;';
-    const subtotalEl = document.createElement('div');
-    subtotalEl.className = 'cart-item-subtotal';
-    subtotalEl.textContent = '¥' + (item.price * item.qty).toLocaleString();
-    const editBtn = document.createElement('button');
-    editBtn.className = 'price-edit-btn';
-    editBtn.textContent = '編集';
-    editBtn.addEventListener('touchstart', function(e){ e.preventDefault(); startPriceEditByIdx(idx); }, {passive:false});
-    editBtn.addEventListener('click', function(){ startPriceEditByIdx(idx); });
-    right.appendChild(subtotalEl);
-    right.appendChild(editBtn);
-
-    row.appendChild(info);
-    row.appendChild(qtyCtrl);
-    row.appendChild(right);
-    list.appendChild(row);
+    if (existingRows[item.jan]) {
+      // 既存行の数量・金額だけ更新
+      const row = existingRows[item.jan];
+      row.querySelector('.cart-item-unit').textContent = '¥' + item.price.toLocaleString() + ' × ' + item.qty;
+      row.querySelector('.qty-num').textContent = item.qty;
+      row.querySelector('.cart-item-subtotal').textContent = '¥' + (item.price * item.qty).toLocaleString();
+      delete existingRows[item.jan];
+    } else {
+      // 新しい行を追加
+      list.appendChild(makeCartRow(item, idx));
+    }
   });
+
+  // cartにない残った行は削除
+  Object.values(existingRows).forEach(r => r.remove());
 }
 
-function changeQtyByIdx(idx, delta) {
-  if (idx < 0 || idx >= cart.length) return;
+function changeQtyByJan(jan, delta) {
+  const idx = cart.findIndex(i => i.jan === jan);
+  if (idx < 0) return;
   cart[idx].qty += delta;
   if (cart[idx].qty <= 0) {
     cart.splice(idx, 1);
-    renderCart();
-  } else {
-    // 削除がない場合はqtyとsubtotalだけ直接書き換え（DOM再構築なし）
-    const rows = document.getElementById('cart-list').querySelectorAll('.cart-item');
-    if (rows[idx]) {
-      const unitEl = rows[idx].querySelector('.cart-item-unit');
-      const subtotalEl = rows[idx].querySelector('.cart-item-subtotal');
-      const qtyNum = rows[idx].querySelector('.qty-num');
-      const item = cart[idx];
-      if (unitEl) unitEl.textContent = '¥' + item.price.toLocaleString() + ' × ' + item.qty;
-      if (subtotalEl) subtotalEl.textContent = '¥' + (item.price * item.qty).toLocaleString();
-      if (qtyNum) qtyNum.textContent = item.qty;
-    }
   }
+  renderCart();
   renderSummary();
 }
 
-function initCartEvents() {} // 不要（グローバル関数で対応）
-
-function startPriceEditByIdx(idx) {
-  if (idx < 0 || idx >= cart.length) return;
+function startPriceEditByJan(jan) {
+  const idx = cart.findIndex(i => i.jan === jan);
+  if (idx < 0) return;
   const item = cart[idx];
-  const subtotalEl = document.getElementById('subtotal-idx-' + idx);
+  // 該当行のsubtotal要素を取得
+  const row = document.querySelector(`.cart-item[data-jan="${CSS.escape(jan)}"]`);
+  if (!row) return;
+  const subtotalEl = row.querySelector('.cart-item-subtotal');
   if (!subtotalEl) return;
-  subtotalEl.innerHTML = `<input class="price-input" id="price-input-idx-${idx}" type="number" value="${item.price}" min="0" inputmode="numeric">`;
-  const input = document.getElementById('price-input-idx-' + idx);
+  subtotalEl.innerHTML = `<input class="price-input" type="number" value="${item.price}" min="0" inputmode="numeric" style="width:70px;font-size:13px;font-weight:700;border:2px solid #4f46e5;border-radius:6px;padding:2px 4px;text-align:right;">`;
+  const input = subtotalEl.querySelector('input');
   input.focus();
   input.select();
   let committed = false;
@@ -893,12 +901,14 @@ function addManualItem() {
   if (price <= 0) { alert('金額を入力してください'); return; }
   const item = { jan: 'manual_' + Date.now(), name: name, model: '', price: price, qty: 1 };
   cart.push(item);
+  // 手入力モードを維持したまま名前と金額だけリセット
   document.getElementById('manual-name').value = '';
   manualPrice = '';
   renderManualPrice();
   renderCart();
   renderSummary();
-  setMode('received');
+  // 商品名入力欄にフォーカスを戻す
+  document.getElementById('manual-name').focus();
 }
 
 function numKey(key) {
@@ -1031,7 +1041,7 @@ initCartEvents();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v30'; }
+  if (ver) { ver.textContent = 'v32'; }
 })();
 </script>
 </body>
