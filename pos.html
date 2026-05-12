@@ -74,7 +74,8 @@
   #btn-scan-start { display: flex; flex-direction: column; align-items: center; gap: 8px; color: white; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 700; }
   #btn-scan-start svg { width: 40px; height: 40px; }
   #btn-scan-cancel { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; display: none; }
-  #scan-status { font-size: 11px; color: rgba(255,255,255,0.7); position: absolute; top: 6px; left: 8px; }
+  #scan-status { font-size: 11px; color: rgba(255,255,255,0.9); position: absolute; top: 6px; left: 8px; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; }
+  #debug-box { font-size: 11px; color: #64748b; padding: 4px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; min-height: 20px; }
 
   #scan-result { padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 70px; }
   .result-idle { color: var(--text3); font-size: 13px; display: flex; align-items: center; gap: 6px; }
@@ -693,6 +694,25 @@ function exportCSV() {
 renderCart();
 renderSummary();
 renderInputDisplay();
+
+// デバッグ情報を画面に表示
+(async () => {
+  const ua = navigator.userAgent;
+  const ios = ua.match(/OS (\d+_\d+)/);
+  const iosVer = ios ? ios[1].replace('_', '.') : '不明';
+  const zxingOk = typeof ZXing !== 'undefined' ? '✅OK' : '❌なし';
+  const bdOk = 'BarcodeDetector' in window ? '✅あり' : '❌なし';
+  const camOk = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) ? '✅あり' : '❌なし';
+  let formats = '-';
+  if ('BarcodeDetector' in window) {
+    try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
+  }
+  const dbg = document.getElementById('debug-box');
+  if (dbg) {
+    dbg.innerHTML =
+      'iOS:' + iosVer + ' ZXing:' + zxingOk + ' BarcodeDetector:' + bdOk + ' Camera:' + camOk + '<br>対応形式: ' + formats;
+  }
+})();
 </script>
 </body>
 </html>
