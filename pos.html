@@ -411,7 +411,7 @@ async function startCamera() {
     startZXing(video);
   } catch(e) {
     document.getElementById('scan-status').textContent = '';
-    alert('カメラを起動できませんでした。\n' + e.message);
+    alert('カメラエラー\n名前:' + e.name + '\n内容:' + e.message + '\nコード:' + e.code);
   }
 }
 
@@ -739,7 +739,7 @@ renderInputDisplay();
   }
   const ver = document.getElementById('ver-box');
   if (ver) {
-    ver.innerHTML = 'v3 iOS:' + iosVer + ' ZXing:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
+    ver.innerHTML = 'v4 iOS:' + iosVer + ' ZXing:' + zxingOk + ' BD:' + bdOk + '<br>対応形式: ' + formats;
   }
   const dbg = document.getElementById('debug-box');
   if (dbg) {
