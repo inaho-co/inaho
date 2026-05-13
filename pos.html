@@ -185,6 +185,29 @@
   .sales-del-btn:active { background: #fca5a5; }
   #btn-sales-clear-all { background: #fee2e2; color: var(--red); }
 
+  /* TOAST */
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 600; z-index: 999; display: none; align-items: center; gap: 10px; white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  #toast.show { display: flex; }
+  #toast.error { background: #ef4444; }
+  #toast.success { background: #0d9488; }
+
+  /* GITHUB SETUP MODAL */
+  #gh-setup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; align-items: center; justify-content: center; }
+  #gh-setup-overlay.open { display: flex; }
+  #gh-setup { background: white; border-radius: 16px; padding: 24px; width: 92%; max-width: 420px; display: flex; flex-direction: column; gap: 14px; }
+  #gh-setup h2 { font-size: 18px; font-weight: 800; }
+  #gh-setup p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+  #gh-setup input { width: 100%; padding: 10px 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px; box-sizing: border-box; font-family: monospace; }
+  #gh-setup input:focus { border-color: var(--indigo); outline: none; }
+  #btn-gh-save { background: var(--indigo); color: white; border: none; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  #gh-status { font-size: 12px; color: var(--text2); text-align: center; }
+
+  /* SYNC INDICATOR */
+  #sync-indicator { position: fixed; top: 45px; right: 8px; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; z-index: 50; display: none; }
+  #sync-indicator.syncing { display: block; background: #fef9c3; color: #92400e; }
+  #sync-indicator.ok { display: block; background: #ccfbf1; color: #0d9488; }
+  #sync-indicator.err { display: block; background: #fee2e2; color: #ef4444; }
+
   /* PRICE SETTING MODAL */
   #price-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
   #price-modal-overlay.open { display: flex; }
@@ -282,13 +305,15 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v39</span>
+      <span id="ver-box">v40</span>
       <span class="spacer"></span>
       <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
       &nbsp;
       <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
       &nbsp;
       <button class="btn-sm" onclick="openDbModal()">DB管理</button>
+      &nbsp;
+      <button class="btn-sm" id="btn-gh-setting" onclick="openGhSetup()">🔗GitHub</button>
       &nbsp;
       <button class="btn-sm" onclick="clearCart()">クリア</button>
     </div>
@@ -403,6 +428,22 @@
 
 </div><!-- /app -->
 </div><!-- /page-wrapper -->
+
+<!-- Toast -->
+<div id="toast"></div>
+<div id="sync-indicator"></div>
+
+<!-- GitHub Setup Modal -->
+<div id="gh-setup-overlay">
+  <div id="gh-setup">
+    <h2>🔗 GitHub連携設定</h2>
+    <p>商品データ・売上データをGitHubに保存します。<br>Personal Access Token（repoスコープ）を入力してください。</p>
+    <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+    <p id="gh-status"></p>
+    <button id="btn-gh-save" onclick="saveGhToken()">接続して保存</button>
+    <button onclick="closeGhSetup()" style="background:var(--surface2);color:var(--text);border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;">あとで設定する</button>
+  </div>
+</div>
 
 <!-- Price Setting Modal -->
 <div id="price-modal-overlay" onclick="if(event.target===this)closePriceModal()">
@@ -683,8 +724,7 @@ let receivedAmount = '';
 let mode = 'received';
 let janInput = '';
 let manualPrice = '';
-let salesLog = [];
-try { salesLog = JSON.parse(localStorage.getItem('salesLog') || '[]'); } catch(e) {}
+let salesLog = []; // GitHub/localStorageからINITで読み込む
 let taxRate = 0;
 let cameraStream = null;
 let lastScanTime = 0;
@@ -1044,7 +1084,7 @@ function clearCart() {
 }
 
 // ===== CHECKOUT =====
-function checkout() {
+async function checkout() {
   if (cart.length === 0) return;
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const tax = Math.floor(subtotal * taxRate / 100);
@@ -1054,11 +1094,11 @@ function checkout() {
   const record = {
     datetime: now.toLocaleString('ja-JP'),
     items: cart.map(i => ({ name: i.name, model: i.model, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
-    subtotal, tax, total, received, change: received - total
+    subtotal, tax, total, received, change: received - total, paymentMethod: '現金'
   };
   salesLog.push(record);
-  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
   clearCart();
+  await saveSalesToGitHub();
 }
 
 // ===== NUMPAD =====
@@ -1329,7 +1369,7 @@ function renderClSummary() {
   document.getElementById('btn-cl-checkout').disabled = clCart.length === 0;
 }
 
-function clCheckout() {
+async function clCheckout() {
   if (clCart.length === 0) return;
   const subtotal = clCart.reduce((s, i) => s + i.price * i.qty, 0);
   const tax = Math.floor(subtotal * clTaxRate / 100);
@@ -1341,9 +1381,9 @@ function clCheckout() {
     subtotal, tax, total, received: 0, change: 0, paymentMethod: '現金なし'
   };
   salesLog.push(record);
-  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
   clearClCart();
   beep('ok');
+  await saveSalesToGitHub();
 }
 
 // ===== JANなし商品保存 =====
@@ -1366,36 +1406,213 @@ function saveNewProduct() {
   renderSummary();
 }
 
-// ===== PRODUCTS localStorage 永続化 =====
-// ビルトイン商品はコードに持つ。ユーザー追加分のみlocalStorageに保存する方針。
-// 起動時にlocalStorageの追加商品をPRODUCTSにマージする。
-function saveProductsToStorage() {
-  // PRODUCTSの中でユーザーが追加・編集した商品を保存
-  // ここではPRODUCTS全体をlocalStorageに保存（上書き含む）
-  try { localStorage.setItem('customProducts', JSON.stringify(PRODUCTS)); } catch(e) {}
+// ===== GITHUB API =====
+const GH_OWNER = 'inaho-co';
+const GH_REPO  = 'inaho';
+const GH_PRODUCTS_PATH = 'products.json';
+const GH_SALES_PATH    = 'sales.json';
+
+function getGhToken() {
+  return localStorage.getItem('ghToken') || '';
 }
-function loadProductsFromStorage() {
+
+// トースト表示
+function showToast(msg, type='', duration=3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show' + (type ? ' ' + type : '');
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.className = ''; }, duration);
+}
+
+// 同期インジケーター
+function setSyncStatus(status, msg) {
+  const el = document.getElementById('sync-indicator');
+  el.className = status;
+  el.textContent = msg;
+  if (status === 'ok') setTimeout(() => { el.className = ''; }, 3000);
+}
+
+// GitHub APIでファイルを取得（内容＋SHA）
+async function ghGetFile(path) {
+  const token = getGhToken();
+  if (!token) return null;
+  const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const content = JSON.parse(atob(data.content.replace(/\n/g,'')));
+  return { content, sha: data.sha };
+}
+
+// GitHub APIでファイルを保存
+async function ghPutFile(path, content, sha, message) {
+  const token = getGhToken();
+  if (!token) return false;
+  const body = {
+    message: message || 'Update ' + path,
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+    sha: sha
+  };
+  const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
+
+// ===== GitHub商品DB保存 =====
+let _productsSha = null;
+
+async function saveProductsToStorage() {
+  // localStorageにも保存
+  try { localStorage.setItem('customProducts', JSON.stringify(PRODUCTS)); } catch(e) {}
+  // GitHubにも保存
+  if (!getGhToken()) return;
+  setSyncStatus('syncing', '⏳ 同期中...');
+  try {
+    if (!_productsSha) {
+      const f = await ghGetFile(GH_PRODUCTS_PATH);
+      if (f) _productsSha = f.sha;
+    }
+    const ok = await ghPutFile(GH_PRODUCTS_PATH, PRODUCTS, _productsSha, '商品DB更新');
+    if (ok) {
+      // 最新SHAを再取得
+      const f = await ghGetFile(GH_PRODUCTS_PATH);
+      if (f) _productsSha = f.sha;
+      setSyncStatus('ok', '✅ 同期完了');
+    } else {
+      setSyncStatus('err', '❌ 同期失敗');
+      showToast('⚠️ GitHub同期に失敗しました', 'error');
+    }
+  } catch(e) {
+    setSyncStatus('err', '❌ エラー');
+    showToast('⚠️ GitHub同期エラー: ' + e.message, 'error');
+  }
+}
+
+async function loadProductsFromStorage() {
+  // まずlocalStorageから（即時表示）
   try {
     const saved = JSON.parse(localStorage.getItem('customProducts') || 'null');
-    if (saved) {
-      Object.assign(PRODUCTS, saved); // マージ（組み込み商品は上書きされる場合あり）
+    if (saved) Object.assign(PRODUCTS, saved);
+  } catch(e) {}
+  // GitHubから最新を取得
+  if (!getGhToken()) return;
+  setSyncStatus('syncing', '⏳ 読み込み中...');
+  try {
+    const f = await ghGetFile(GH_PRODUCTS_PATH);
+    if (f && f.content && Object.keys(f.content).length > 0) {
+      Object.assign(PRODUCTS, f.content);
+      _productsSha = f.sha;
+      try { localStorage.setItem('customProducts', JSON.stringify(PRODUCTS)); } catch(e) {}
+      setSyncStatus('ok', '✅ 商品DB読込完了');
+    } else if (f) {
+      _productsSha = f.sha;
+      setSyncStatus('ok', '✅ 接続OK');
+    }
+  } catch(e) {
+    setSyncStatus('err', '❌ 読込エラー');
+  }
+}
+
+// ===== GitHub売上保存 =====
+let _salesSha = null;
+
+async function saveSalesToGitHub() {
+  if (!getGhToken()) {
+    try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
+    return;
+  }
+  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
+  setSyncStatus('syncing', '⏳ 同期中...');
+  try {
+    if (!_salesSha) {
+      const f = await ghGetFile(GH_SALES_PATH);
+      if (f) _salesSha = f.sha;
+    }
+    const ok = await ghPutFile(GH_SALES_PATH, salesLog, _salesSha, '売上更新');
+    if (ok) {
+      const f = await ghGetFile(GH_SALES_PATH);
+      if (f) _salesSha = f.sha;
+      setSyncStatus('ok', '✅ 同期完了');
+    } else {
+      setSyncStatus('err', '❌ 同期失敗');
+      showToast('⚠️ 売上のGitHub同期に失敗しました', 'error');
+    }
+  } catch(e) {
+    setSyncStatus('err', '❌ エラー');
+  }
+}
+
+async function loadSalesFromGitHub() {
+  if (!getGhToken()) return;
+  try {
+    const f = await ghGetFile(GH_SALES_PATH);
+    if (f && Array.isArray(f.content) && f.content.length > 0) {
+      salesLog = f.content;
+      _salesSha = f.sha;
+      try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
+    } else if (f) {
+      _salesSha = f.sha;
     }
   } catch(e) {}
 }
 
+// ===== GitHub セットアップ =====
+function openGhSetup() {
+  const token = getGhToken();
+  document.getElementById('gh-token-input').value = token ? '（設定済み）' : '';
+  document.getElementById('gh-status').textContent = token ? '✅ 現在GitHubと連携中です' : '';
+  document.getElementById('gh-setup-overlay').classList.add('open');
+}
+function closeGhSetup() {
+  document.getElementById('gh-setup-overlay').classList.remove('open');
+}
+async function saveGhToken() {
+  const input = document.getElementById('gh-token-input').value.trim();
+  if (!input || input === '（設定済み）') { closeGhSetup(); return; }
+  document.getElementById('gh-status').textContent = '🔄 接続確認中...';
+  // 接続テスト
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`, {
+      headers: { 'Authorization': 'token ' + input }
+    });
+    if (res.ok) {
+      localStorage.setItem('ghToken', input);
+      document.getElementById('gh-status').textContent = '✅ 接続成功！';
+      document.getElementById('btn-gh-setting').textContent = '🔗GitHub✅';
+      setTimeout(async () => {
+        closeGhSetup();
+        showToast('✅ GitHub連携完了！データを同期します', 'success');
+        await loadProductsFromStorage();
+        await loadSalesFromGitHub();
+        renderCart();
+        renderSummary();
+      }, 800);
+    } else {
+      document.getElementById('gh-status').textContent = '❌ 接続失敗。トークンを確認してください。';
+    }
+  } catch(e) {
+    document.getElementById('gh-status').textContent = '❌ エラー: ' + e.message;
+  }
+}
+
 // ===== 売上 個別削除 / 全件削除 =====
-function deleteSale(idx) {
+async function deleteSale(idx) {
   if (!confirm('この売上記録を削除しますか？')) return;
   salesLog.splice(idx, 1);
-  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
-  renderSalesModal(); // 旧モーダルが開いていれば再描画
+  renderSalesModal();
+  await saveSalesToGitHub();
 }
-function clearAllSales() {
+async function clearAllSales() {
   if (!confirm('売上履歴を全件削除しますか？この操作は元に戻せません。')) return;
   salesLog = [];
-  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
   renderSalesModal();
   closeSalesModal();
+  await saveSalesToGitHub();
 }
 
 // ===== DB MODAL =====
@@ -1506,27 +1723,43 @@ function toggleSaleDetail(tbody, idx, parentTr, r) {
   parentTr.insertAdjacentElement('afterend', detailTr);
 }
 
-function dbDeleteSale(idx) {
+async function dbDeleteSale(idx) {
   if (!confirm('この売上記録を削除しますか？')) return;
   salesLog.splice(idx, 1);
-  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
   renderDbSales();
+  await saveSalesToGitHub();
 }
 
-function dbClearAllSales() {
+async function dbClearAllSales() {
   if (!confirm('売上履歴を全件削除しますか？この操作は元に戻せません。')) return;
   salesLog = [];
-  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
   renderDbSales();
+  await saveSalesToGitHub();
 }
 
 // ===== INIT =====
-loadProductsFromStorage(); // 保存済み商品データを読み込む
-renderCart();
-renderSummary();
-renderInputDisplay();
-renderClCart();
-renderClSummary();
+(async () => {
+  // トークン設定済みならボタン表示を更新
+  if (getGhToken()) {
+    const btn = document.getElementById('btn-gh-setting');
+    if (btn) btn.textContent = '🔗GitHub✅';
+  }
+  // localStorageから売上を先読み
+  try { salesLog = JSON.parse(localStorage.getItem('salesLog') || '[]'); } catch(e) {}
+  // 商品DB読み込み（GitHub優先）
+  await loadProductsFromStorage();
+  // 売上DB読み込み（GitHub優先）
+  await loadSalesFromGitHub();
+  renderCart();
+  renderSummary();
+  renderInputDisplay();
+  renderClCart();
+  renderClSummary();
+  // トークン未設定なら初回セットアップ画面を表示
+  if (!getGhToken()) {
+    setTimeout(() => openGhSetup(), 800);
+  }
+})();
 
 // デバッグ情報を画面に表示
 (async () => {
@@ -1541,7 +1774,7 @@ renderClSummary();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v39'; }
+  if (ver) { ver.textContent = 'v40'; }
 })();
 </script>
 </body>
