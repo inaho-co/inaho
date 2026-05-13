@@ -29,7 +29,8 @@
 
   /* CART PANEL */
   #cart-panel { display: flex; flex-direction: column; width: 52%; border-right: 1px solid var(--border); background: var(--surface); }
-  .panel-header { display: flex; align-items: center; gap: 6px; padding: 6px 10px; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .panel-header { display: flex; flex-direction: column; gap: 4px; padding: 5px 10px; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .panel-header-row { display: flex; align-items: center; gap: 6px; }
   #cart-header { background: var(--teal); }
   #scan-header { background: var(--indigo); }
   .panel-header .spacer { flex: 1; }
@@ -345,12 +346,14 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v50</span>
-      <span class="spacer"></span>
-      <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
-      <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
-      <button class="btn-sm" onclick="openDbModal()">DB管理</button>
-      <button class="btn-sm" onclick="clearCart()">クリア</button>
+      <div class="panel-header-row">
+        <span id="ver-box">v51</span>
+        <span class="spacer"></span>
+        <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
+        <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
+        <button class="btn-sm" onclick="openDbModal()">DB管理</button>
+        <button class="btn-sm" onclick="clearCart()">クリア</button>
+      </div>
     </div>
     <div id="cart-list">
       <div class="empty-cart" id="empty-msg">
@@ -1982,7 +1985,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v50'; }
+  if (ver) { ver.textContent = 'v51'; }
 })();
 </script>
 </body>
