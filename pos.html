@@ -155,6 +155,36 @@
   .cl-manual-form input { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 6px; box-sizing: border-box; }
   .cl-add-btn { width: 100%; padding: 10px; background: #7c3aed; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
 
+  /* DB MODAL */
+  #db-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
+  #db-modal-overlay.open { display: flex; }
+  #db-modal { background: white; border-radius: 16px; width: 96%; max-width: 600px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; }
+  #db-modal-header { background: #0f172a; color: white; padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  #db-modal-header h2 { font-size: 16px; font-weight: 800; flex: 1; margin: 0; }
+  .db-tabs { display: flex; gap: 0; flex-shrink: 0; border-bottom: 2px solid var(--border); }
+  .db-tab { flex: 1; padding: 10px; border: none; background: var(--surface2); font-size: 13px; font-weight: 700; cursor: pointer; color: var(--text2); border-bottom: 3px solid transparent; }
+  .db-tab.active { background: white; color: var(--text); border-bottom-color: var(--indigo); }
+  .db-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .db-panel { display: none; padding: 10px; }
+  .db-panel.active { display: block; }
+  .db-search { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 8px; }
+  .db-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .db-table th { text-align: left; padding: 6px 4px; border-bottom: 2px solid var(--border); color: var(--text2); font-size: 11px; position: sticky; top: 0; background: white; }
+  .db-table td { padding: 6px 4px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .db-table tr:hover td { background: #f8fafc; }
+  .db-edit-input { width: 100%; padding: 3px 5px; border: 1px solid var(--indigo); border-radius: 4px; font-size: 12px; box-sizing: border-box; }
+  .db-price-input { width: 70px; padding: 3px 5px; border: 1px solid var(--indigo); border-radius: 4px; font-size: 12px; text-align: right; }
+  .db-del-btn { background: #fee2e2; color: var(--red); border: none; border-radius: 5px; padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .db-del-btn:active { background: #fca5a5; }
+  .db-save-btn { background: #ccfbf1; color: var(--teal); border: none; border-radius: 5px; padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .db-save-btn:active { background: #99f6e4; }
+  .db-footer { flex-shrink: 0; padding: 10px 14px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+  .db-footer button { flex: 1; padding: 11px; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  #btn-db-close { background: var(--surface2); color: var(--text); }
+  .sales-del-btn { background: #fee2e2; color: var(--red); border: none; border-radius: 5px; padding: 3px 7px; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .sales-del-btn:active { background: #fca5a5; }
+  #btn-sales-clear-all { background: #fee2e2; color: var(--red); }
+
   /* PRICE SETTING MODAL */
   #price-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
   #price-modal-overlay.open { display: flex; }
@@ -252,11 +282,13 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v38</span>
+      <span id="ver-box">v39</span>
       <span class="spacer"></span>
       <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
       &nbsp;
       <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
+      &nbsp;
+      <button class="btn-sm" onclick="openDbModal()">DB管理</button>
       &nbsp;
       <button class="btn-sm" onclick="clearCart()">クリア</button>
     </div>
@@ -415,7 +447,54 @@
     <div id="modal-list"><p style="color:#94a3b8;font-size:13px">まだ売上がありません</p></div>
     <div class="modal-btns">
       <button id="btn-export" onclick="exportCSV()">CSVで出力</button>
+      <button id="btn-sales-clear-all" onclick="clearAllSales()">全件削除</button>
       <button id="btn-modal-close" onclick="closeSalesModal()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- DB Management Modal -->
+<div id="db-modal-overlay" onclick="if(event.target===this)closeDbModal()">
+  <div id="db-modal">
+    <div id="db-modal-header">
+      <h2>🗄️ データ管理</h2>
+      <button onclick="closeDbModal()" style="background:rgba(255,255,255,0.15);border:none;color:white;border-radius:8px;padding:5px 10px;font-size:13px;font-weight:700;cursor:pointer;">✕ 閉じる</button>
+    </div>
+    <div class="db-tabs">
+      <button class="db-tab active" onclick="switchDbTab('products')">📦 商品DB</button>
+      <button class="db-tab" onclick="switchDbTab('sales')">💴 売上履歴</button>
+    </div>
+    <div class="db-content">
+      <!-- 商品DBパネル -->
+      <div class="db-panel active" id="db-panel-products">
+        <input class="db-search" id="db-search" type="text" placeholder="🔍 商品名・型式・JANで検索..." oninput="renderDbProducts()">
+        <div id="db-products-count" style="font-size:11px;color:var(--text2);margin-bottom:6px;"></div>
+        <table class="db-table" id="db-products-table">
+          <thead><tr>
+            <th style="width:32%">商品名</th>
+            <th style="width:22%">型式</th>
+            <th style="width:14%">定価</th>
+            <th style="width:20%">JAN</th>
+            <th style="width:12%"></th>
+          </tr></thead>
+          <tbody id="db-products-body"></tbody>
+        </table>
+      </div>
+      <!-- 売上履歴パネル -->
+      <div class="db-panel" id="db-panel-sales">
+        <div id="db-sales-summary" style="font-size:13px;padding:8px 4px;"></div>
+        <table class="db-table">
+          <thead><tr>
+            <th>日時</th><th>合計</th><th>支払</th><th>件数</th><th></th>
+          </tr></thead>
+          <tbody id="db-sales-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="db-footer">
+      <button onclick="dbClearAllSales()" style="background:#fee2e2;color:#ef4444;">売上全件削除</button>
+      <button onclick="exportCSV()" style="background:#e0e7ff;color:#4f46e5;">CSV出力</button>
+      <button id="btn-db-close" onclick="closeDbModal()">閉じる</button>
     </div>
   </div>
 </div>
@@ -1086,19 +1165,19 @@ function renderSalesModal() {
     return;
   }
   const total = salesLog.reduce((s, r) => s + r.total, 0);
+  const rows = [...salesLog].map((r, i) => `<tr>
+    <td style="font-size:11px;">${r.datetime}</td>
+    <td>¥${r.total.toLocaleString()}</td>
+    <td style="font-size:11px;color:${r.paymentMethod==='現金なし'?'#7c3aed':'#0d9488'}">${r.paymentMethod||'現金'}</td>
+    <td>${r.paymentMethod==='現金なし'?'-':'¥'+r.received.toLocaleString()}</td>
+    <td style="color:${r.change>=0?'#22c55e':'#ef4444'}">${r.paymentMethod==='現金なし'?'-':'¥'+r.change.toLocaleString()}</td>
+    <td><button class="sales-del-btn" onclick="deleteSale(${i})">削除</button></td>
+  </tr>`).join('');
   el.innerHTML = `
     <p style="font-size:13px;margin-bottom:8px">件数: <b>${salesLog.length}件</b>　合計売上: <b style="color:#0d9488">¥${total.toLocaleString()}</b></p>
     <table>
-      <thead><tr><th>日時</th><th>合計</th><th>支払</th><th>預かり</th><th>お釣り</th></tr></thead>
-      <tbody>
-        ${salesLog.map(r => `<tr>
-          <td>${r.datetime}</td>
-          <td>¥${r.total.toLocaleString()}</td>
-          <td style="font-size:11px;color:${r.paymentMethod==='現金なし'?'#7c3aed':'#0d9488'}">${r.paymentMethod||'現金'}</td>
-          <td>${r.paymentMethod==='現金なし'?'-':'¥'+r.received.toLocaleString()}</td>
-          <td style="color:${r.change>=0?'#22c55e':'#ef4444'}">${r.paymentMethod==='現金なし'?'-':'¥'+r.change.toLocaleString()}</td>
-        </tr>`).join('')}
-      </tbody>
+      <thead><tr><th>日時</th><th>合計</th><th>支払</th><th>預かり</th><th>お釣り</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
     </table>
   `;
 }
@@ -1273,10 +1352,9 @@ function saveNewProduct() {
   const model = document.getElementById('notfound-model').value.trim();
   if (!name) { alert('商品名を入力してください'); return; }
   if (!unknownCode) { alert('JANコードが取得できていません'); return; }
-  // 既存に追加（セッション中のみ有効）
   PRODUCTS[unknownCode] = { jan: unknownCode, name: name, model: model, price: 0 };
-  alert(`✅ 保存しました\nJAN: ${unknownCode}\n商品名: ${name}\n型式: ${model}\n※価格は0円で登録されました。カート追加後に「編集」で変更できます。`);
-  // 保存後そのまま追加
+  saveProductsToStorage(); // localStorage に永続保存
+  alert(`✅ 保存しました\nJAN: ${unknownCode}\n商品名: ${name}\n型式: ${model}\n※価格は0円で登録されました。DB管理→商品DBで編集できます。`);
   const product = PRODUCTS[unknownCode];
   showResultFound(product);
   addToCart(product);
@@ -1288,7 +1366,162 @@ function saveNewProduct() {
   renderSummary();
 }
 
+// ===== PRODUCTS localStorage 永続化 =====
+// ビルトイン商品はコードに持つ。ユーザー追加分のみlocalStorageに保存する方針。
+// 起動時にlocalStorageの追加商品をPRODUCTSにマージする。
+function saveProductsToStorage() {
+  // PRODUCTSの中でユーザーが追加・編集した商品を保存
+  // ここではPRODUCTS全体をlocalStorageに保存（上書き含む）
+  try { localStorage.setItem('customProducts', JSON.stringify(PRODUCTS)); } catch(e) {}
+}
+function loadProductsFromStorage() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('customProducts') || 'null');
+    if (saved) {
+      Object.assign(PRODUCTS, saved); // マージ（組み込み商品は上書きされる場合あり）
+    }
+  } catch(e) {}
+}
+
+// ===== 売上 個別削除 / 全件削除 =====
+function deleteSale(idx) {
+  if (!confirm('この売上記録を削除しますか？')) return;
+  salesLog.splice(idx, 1);
+  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
+  renderSalesModal(); // 旧モーダルが開いていれば再描画
+}
+function clearAllSales() {
+  if (!confirm('売上履歴を全件削除しますか？この操作は元に戻せません。')) return;
+  salesLog = [];
+  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
+  renderSalesModal();
+  closeSalesModal();
+}
+
+// ===== DB MODAL =====
+let dbTab = 'products';
+
+function openDbModal() {
+  document.getElementById('db-modal-overlay').classList.add('open');
+  switchDbTab('products');
+}
+function closeDbModal() {
+  document.getElementById('db-modal-overlay').classList.remove('open');
+}
+function switchDbTab(tab) {
+  dbTab = tab;
+  document.querySelectorAll('.db-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'products') || (i === 1 && tab === 'sales'));
+  });
+  document.getElementById('db-panel-products').classList.toggle('active', tab === 'products');
+  document.getElementById('db-panel-sales').classList.toggle('active', tab === 'sales');
+  if (tab === 'products') renderDbProducts();
+  else renderDbSales();
+}
+
+// ----- 商品DB -----
+function renderDbProducts() {
+  const q = (document.getElementById('db-search').value || '').toLowerCase();
+  const keys = Object.keys(PRODUCTS).filter(k => {
+    if (!q) return true;
+    const p = PRODUCTS[k];
+    return p.name.toLowerCase().includes(q) || (p.model||'').toLowerCase().includes(q) || k.includes(q);
+  });
+  document.getElementById('db-products-count').textContent = `${keys.length} 件`;
+  const tbody = document.getElementById('db-products-body');
+  tbody.innerHTML = '';
+  keys.forEach(jan => {
+    const p = PRODUCTS[jan];
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="db-edit-input" data-jan="${jan}" data-field="name" value="${escHtml(p.name)}" onchange="dbUpdateField('${jan}','name',this.value)"></td>
+      <td><input class="db-edit-input" data-jan="${jan}" data-field="model" value="${escHtml(p.model||'')}" onchange="dbUpdateField('${jan}','model',this.value)"></td>
+      <td><input class="db-price-input" data-jan="${jan}" data-field="price" type="number" value="${p.price}" min="0" onchange="dbUpdateField('${jan}','price',this.value)"></td>
+      <td style="font-size:10px;color:var(--text3);">${jan}</td>
+      <td><button class="db-del-btn" onclick="dbDeleteProduct('${jan}')">削除</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function dbUpdateField(jan, field, val) {
+  if (!PRODUCTS[jan]) return;
+  if (field === 'price') PRODUCTS[jan].price = parseInt(val) || 0;
+  else PRODUCTS[jan][field] = val;
+  saveProductsToStorage();
+}
+
+function dbDeleteProduct(jan) {
+  const p = PRODUCTS[jan];
+  if (!confirm(`「${p.name}」を削除しますか？`)) return;
+  delete PRODUCTS[jan];
+  saveProductsToStorage();
+  renderDbProducts();
+}
+
+// ----- 売上履歴（DBモーダル内） -----
+function renderDbSales() {
+  const total = salesLog.reduce((s, r) => s + r.total, 0);
+  document.getElementById('db-sales-summary').innerHTML =
+    salesLog.length === 0
+      ? '<span style="color:var(--text3)">売上データなし</span>'
+      : `<b>${salesLog.length}件</b>　合計: <b style="color:#0d9488">¥${total.toLocaleString()}</b>`;
+  const tbody = document.getElementById('db-sales-body');
+  tbody.innerHTML = '';
+  [...salesLog].reverse().forEach((r, revIdx) => {
+    const idx = salesLog.length - 1 - revIdx;
+    const itemCount = r.items.reduce((s, i) => s + i.qty, 0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-size:11px;">${r.datetime}</td>
+      <td>¥${r.total.toLocaleString()}</td>
+      <td style="font-size:11px;color:${r.paymentMethod==='現金なし'?'#7c3aed':'#0d9488'}">${r.paymentMethod||'現金'}</td>
+      <td style="font-size:11px;">${itemCount}点</td>
+      <td><button class="db-del-btn" onclick="dbDeleteSale(${idx})">削除</button></td>
+    `;
+    // 展開ボタン付き
+    tr.style.cursor = 'pointer';
+    tr.addEventListener('click', e => {
+      if (e.target.classList.contains('db-del-btn')) return;
+      toggleSaleDetail(tbody, idx, tr, r);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleSaleDetail(tbody, idx, parentTr, r) {
+  const existingDetail = tbody.querySelector(`.sale-detail-${idx}`);
+  if (existingDetail) { existingDetail.remove(); return; }
+  const detailTr = document.createElement('tr');
+  detailTr.className = `sale-detail-${idx}`;
+  detailTr.style.background = '#f8fafc';
+  const itemRows = r.items.map(i =>
+    `<div style="padding:3px 8px;font-size:12px;">・${i.name}${i.model?' ['+i.model+']':''} ¥${i.price.toLocaleString()} × ${i.qty} = ¥${i.subtotal.toLocaleString()}</div>`
+  ).join('');
+  detailTr.innerHTML = `<td colspan="5" style="padding:4px 8px;">${itemRows}${r.paymentMethod!=='現金なし'?`<div style="padding:3px 8px;font-size:12px;color:#64748b">預かり ¥${r.received.toLocaleString()} / お釣り ¥${r.change.toLocaleString()}</div>`:''}</td>`;
+  parentTr.insertAdjacentElement('afterend', detailTr);
+}
+
+function dbDeleteSale(idx) {
+  if (!confirm('この売上記録を削除しますか？')) return;
+  salesLog.splice(idx, 1);
+  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
+  renderDbSales();
+}
+
+function dbClearAllSales() {
+  if (!confirm('売上履歴を全件削除しますか？この操作は元に戻せません。')) return;
+  salesLog = [];
+  try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
+  renderDbSales();
+}
+
 // ===== INIT =====
+loadProductsFromStorage(); // 保存済み商品データを読み込む
 renderCart();
 renderSummary();
 renderInputDisplay();
@@ -1308,7 +1541,7 @@ renderClSummary();
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v38'; }
+  if (ver) { ver.textContent = 'v39'; }
 })();
 </script>
 </body>
