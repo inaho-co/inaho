@@ -29,11 +29,12 @@
 
   /* CART PANEL */
   #cart-panel { display: flex; flex-direction: column; width: 52%; border-right: 1px solid var(--border); background: var(--surface); }
-  .panel-header { display: flex; align-items: center; gap: 8px; padding: 12px 16px; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .panel-header { display: flex; align-items: center; gap: 6px; padding: 6px 10px; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
   #cart-header { background: var(--teal); }
   #scan-header { background: var(--indigo); }
   .panel-header .spacer { flex: 1; }
   .btn-sm { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
 
   #cart-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text3); }
@@ -345,16 +346,14 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v48</span>
+      <span id="ver-box">v49</span>
       <span class="spacer"></span>
-      <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
-      &nbsp;
-      <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
-      &nbsp;
-      <button class="btn-sm" onclick="openDbModal()">DB管理</button>
-      &nbsp;
-      <button class="btn-sm" id="btn-gh-setting" onclick="openGhSetup()">🔗GitHub</button>
-      &nbsp;
+      <div class="btn-grid">
+        <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
+        <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
+        <button class="btn-sm" onclick="openDbModal()">DB管理</button>
+        <button class="btn-sm" id="btn-gh-setting" onclick="openGhSetup()">🔗GitHub</button>
+      </div>
       <button class="btn-sm" onclick="clearCart()">クリア</button>
     </div>
     <div id="cart-list">
@@ -1987,7 +1986,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v48'; }
+  if (ver) { ver.textContent = 'v49'; }
 })();
 </script>
 </body>
