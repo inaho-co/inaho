@@ -344,7 +344,7 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v44</span>
+      <span id="ver-box">v45</span>
       <span class="spacer"></span>
       <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
       &nbsp;
@@ -1465,6 +1465,7 @@ function renderClCart() {
   clCart.forEach((item, idx) => {
     const row = document.createElement('div');
     row.className = 'cart-item';
+    row.dataset.clIdx = idx;
 
     const info = document.createElement('div');
     info.className = 'cart-item-info';
@@ -1473,17 +1474,27 @@ function renderClCart() {
 
     const qtyCtrl = document.createElement('div');
     qtyCtrl.className = 'qty-controls';
+
     const minusBtn = document.createElement('button');
     minusBtn.className = 'qty-btn minus';
     minusBtn.textContent = '−';
-    minusBtn.addEventListener('click', () => clChangeQtyByIdx(idx, -1));
+    minusBtn.dataset.idx = idx;
+    minusBtn.addEventListener('click', function() {
+      clChangeQtyByIdx(parseInt(this.dataset.idx), -1);
+    });
+
     const qtySpan = document.createElement('span');
     qtySpan.className = 'qty-num';
     qtySpan.textContent = item.qty;
+
     const plusBtn = document.createElement('button');
     plusBtn.className = 'qty-btn plus';
     plusBtn.textContent = '＋';
-    plusBtn.addEventListener('click', () => clChangeQtyByIdx(idx, 1));
+    plusBtn.dataset.idx = idx;
+    plusBtn.addEventListener('click', function() {
+      clChangeQtyByIdx(parseInt(this.dataset.idx), 1);
+    });
+
     qtyCtrl.appendChild(minusBtn);
     qtyCtrl.appendChild(qtySpan);
     qtyCtrl.appendChild(plusBtn);
@@ -1947,7 +1958,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v44'; }
+  if (ver) { ver.textContent = 'v45'; }
 })();
 </script>
 </body>
