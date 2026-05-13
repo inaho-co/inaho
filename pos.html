@@ -270,36 +270,70 @@
       </div>
       <!-- 入力エリア -->
       <div class="cl-right">
-        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:2px;">均一価格から追加</div>
-        <div class="cl-quick-btns">
-          <button class="cl-quick-btn" style="background:#ccfbf1;color:#0d9488;" onclick="addClQuick(600)">¥600</button>
-          <button class="cl-quick-btn" style="background:#e0e7ff;color:#4f46e5;" onclick="addClQuick(1000)">¥1,000</button>
-          <button class="cl-quick-btn" style="background:#fef9c3;color:#ca8a04;" onclick="addClQuick(2000)">¥2,000</button>
+        <!-- モード切替タブ -->
+        <div style="display:flex;border-radius:8px;overflow:hidden;flex-shrink:0;">
+          <button id="cl-tab-scan" onclick="setClInputMode('scan')" style="flex:1;padding:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#7c3aed;color:white;">📷 スキャン</button>
+          <button id="cl-tab-quick" onclick="setClInputMode('quick')" style="flex:1;padding:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--surface2);color:var(--text);">💴 均一・手入力</button>
         </div>
-        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-top:6px;margin-bottom:2px;">手入力で追加</div>
-        <div class="cl-manual-form">
-          <input id="cl-name" type="text" placeholder="商品名（任意）">
-          <input id="cl-model" type="text" placeholder="型式（任意）">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-            <span style="font-size:13px;color:var(--text2);">金額:</span>
-            <span id="cl-price-display" style="font-size:20px;font-weight:700;flex:1;color:#7c3aed;">¥0</span>
+
+        <!-- スキャンエリア -->
+        <div id="cl-scan-area" style="display:flex;flex-direction:column;flex:1;overflow:hidden;gap:6px;">
+          <div style="position:relative;height:160px;flex-shrink:0;background:#000;border-radius:8px;overflow:hidden;">
+            <div id="cl-camera-container" style="width:100%;height:100%;"></div>
+            <div id="cl-camera-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000;">
+              <button onclick="startClCamera()" style="display:flex;flex-direction:column;align-items:center;gap:6px;color:white;background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="36" height="36"><path d="M3 9V6a2 2 0 0 1 2-2h3M15 4h3a2 2 0 0 1 2 2v3M21 15v3a2 2 0 0 1-2 2h-3M9 20H6a2 2 0 0 1-2-2v-3"/><rect x="7" y="7" width="10" height="10"/></svg>
+                スキャン開始
+              </button>
+            </div>
+            <button id="cl-btn-cancel" onclick="stopClCamera()" style="display:none;position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);color:white;border:none;border-radius:8px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;">キャンセル</button>
+            <span id="cl-scan-status" style="position:absolute;top:4px;left:6px;font-size:10px;color:rgba(255,255,255,0.9);background:rgba(0,0,0,0.5);padding:2px 5px;border-radius:4px;"></span>
           </div>
-          <button class="cl-add-btn" onclick="addClManual()">＋ カートに追加</button>
+          <!-- スキャン結果 -->
+          <div id="cl-scan-result" style="background:var(--surface2);border-radius:8px;padding:8px;font-size:13px;flex-shrink:0;">
+            <span style="color:var(--text3);">スキャンしてください</span>
+          </div>
+          <!-- スキャン時の均一価格クイックボタン（JANなし用） -->
+          <div id="cl-notfound-btns" style="display:none;gap:5px;flex-wrap:wrap;">
+            <div style="font-size:11px;color:var(--red);font-weight:700;width:100%;">✗ 未登録 → 価格を選んで追加</div>
+            <button onclick="addClQuick(600)"  style="flex:1;padding:7px 4px;background:#ccfbf1;color:#0d9488;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">¥600</button>
+            <button onclick="addClQuick(1000)" style="flex:1;padding:7px 4px;background:#e0e7ff;color:#4f46e5;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">¥1,000</button>
+            <button onclick="addClQuick(2000)" style="flex:1;padding:7px 4px;background:#fef9c3;color:#ca8a04;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">¥2,000</button>
+          </div>
         </div>
-        <!-- テンキー -->
-        <div class="numpad-grid" style="flex:1;">
-          <button class="np-btn" onclick="clNumKey('7')">7</button>
-          <button class="np-btn" onclick="clNumKey('8')">8</button>
-          <button class="np-btn" onclick="clNumKey('9')">9</button>
-          <button class="np-btn" onclick="clNumKey('4')">4</button>
-          <button class="np-btn" onclick="clNumKey('5')">5</button>
-          <button class="np-btn" onclick="clNumKey('6')">6</button>
-          <button class="np-btn" onclick="clNumKey('1')">1</button>
-          <button class="np-btn" onclick="clNumKey('2')">2</button>
-          <button class="np-btn" onclick="clNumKey('3')">3</button>
-          <button class="np-btn clear" onclick="clNumKey('C')">C</button>
-          <button class="np-btn" onclick="clNumKey('0')">0</button>
-          <button class="np-btn" onclick="clNumKey('⌫')">⌫</button>
+
+        <!-- 均一・手入力エリア -->
+        <div id="cl-quick-area" style="display:none;flex-direction:column;flex:1;overflow:hidden;gap:6px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);">均一価格から追加</div>
+          <div class="cl-quick-btns">
+            <button class="cl-quick-btn" style="background:#ccfbf1;color:#0d9488;" onclick="addClQuick(600)">¥600</button>
+            <button class="cl-quick-btn" style="background:#e0e7ff;color:#4f46e5;" onclick="addClQuick(1000)">¥1,000</button>
+            <button class="cl-quick-btn" style="background:#fef9c3;color:#ca8a04;" onclick="addClQuick(2000)">¥2,000</button>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--text2);">手入力で追加</div>
+          <div class="cl-manual-form" style="flex-shrink:0;">
+            <input id="cl-name" type="text" placeholder="商品名（任意）">
+            <input id="cl-model" type="text" placeholder="型式（任意）">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="font-size:13px;color:var(--text2);">金額:</span>
+              <span id="cl-price-display" style="font-size:20px;font-weight:700;flex:1;color:#7c3aed;">¥0</span>
+            </div>
+            <button class="cl-add-btn" onclick="addClManual()">＋ カートに追加</button>
+          </div>
+          <div class="numpad-grid" style="flex:1;">
+            <button class="np-btn" onclick="clNumKey('7')">7</button>
+            <button class="np-btn" onclick="clNumKey('8')">8</button>
+            <button class="np-btn" onclick="clNumKey('9')">9</button>
+            <button class="np-btn" onclick="clNumKey('4')">4</button>
+            <button class="np-btn" onclick="clNumKey('5')">5</button>
+            <button class="np-btn" onclick="clNumKey('6')">6</button>
+            <button class="np-btn" onclick="clNumKey('1')">1</button>
+            <button class="np-btn" onclick="clNumKey('2')">2</button>
+            <button class="np-btn" onclick="clNumKey('3')">3</button>
+            <button class="np-btn clear" onclick="clNumKey('C')">C</button>
+            <button class="np-btn" onclick="clNumKey('0')">0</button>
+            <button class="np-btn" onclick="clNumKey('⌫')">⌫</button>
+          </div>
         </div>
       </div>
     </div>
@@ -310,7 +344,7 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v43</span>
+      <span id="ver-box">v44</span>
       <span class="spacer"></span>
       <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
       &nbsp;
@@ -1263,9 +1297,89 @@ function switchPage(page) {
   if (page === 'main') {
     mainPage.style.display = 'flex';
     clPage.classList.remove('active');
+    stopClCamera();
   } else {
     mainPage.style.display = 'none';
     clPage.classList.add('active');
+    // デフォルトはスキャンモード
+    setClInputMode('scan');
+  }
+}
+
+// ===== CASHLESS INPUT MODE =====
+let clInputMode = 'scan';
+let clHtml5QrCode = null;
+
+function setClInputMode(mode) {
+  clInputMode = mode;
+  document.getElementById('cl-tab-scan').style.background  = mode === 'scan'  ? '#7c3aed' : 'var(--surface2)';
+  document.getElementById('cl-tab-scan').style.color       = mode === 'scan'  ? 'white'   : 'var(--text)';
+  document.getElementById('cl-tab-quick').style.background = mode === 'quick' ? '#7c3aed' : 'var(--surface2)';
+  document.getElementById('cl-tab-quick').style.color      = mode === 'quick' ? 'white'   : 'var(--text)';
+  document.getElementById('cl-scan-area').style.display  = mode === 'scan'  ? 'flex' : 'none';
+  document.getElementById('cl-quick-area').style.display = mode === 'quick' ? 'flex' : 'none';
+  if (mode !== 'scan') stopClCamera();
+}
+
+async function startClCamera() {
+  document.getElementById('cl-scan-status').textContent = '起動中...';
+  document.getElementById('cl-camera-overlay').style.display = 'none';
+  document.getElementById('cl-btn-cancel').style.display = 'block';
+  try {
+    clHtml5QrCode = new Html5Qrcode('cl-camera-container');
+    await clHtml5QrCode.start(
+      { facingMode: 'environment' },
+      { fps: 15 },
+      (decodedText) => {
+        const now = Date.now();
+        if (now - lastScanTime < 1500) return;
+        lastScanTime = now;
+        handleClScannedCode(decodedText);
+      },
+      () => {}
+    );
+    document.getElementById('cl-scan-status').textContent = 'スキャン中...';
+  } catch(e) {
+    document.getElementById('cl-camera-overlay').style.display = 'flex';
+    document.getElementById('cl-btn-cancel').style.display = 'none';
+    document.getElementById('cl-scan-status').textContent = '';
+    alert('カメラエラー: ' + e);
+  }
+}
+
+async function stopClCamera() {
+  if (clHtml5QrCode) {
+    try { await clHtml5QrCode.stop(); clHtml5QrCode.clear(); } catch(e) {}
+    clHtml5QrCode = null;
+  }
+  document.getElementById('cl-camera-overlay').style.display = 'flex';
+  document.getElementById('cl-btn-cancel').style.display = 'none';
+  document.getElementById('cl-scan-status').textContent = '';
+}
+
+function handleClScannedCode(code) {
+  stopClCamera();
+  const product = PRODUCTS[code];
+  const resultEl = document.getElementById('cl-scan-result');
+  const notfoundEl = document.getElementById('cl-notfound-btns');
+  if (product) {
+    beep('ok');
+    if (navigator.vibrate) navigator.vibrate(100);
+    const sellPrice = priceSettings[product.price] !== undefined ? priceSettings[product.price] : product.price;
+    // カートに追加
+    const existing = clCart.find(i => i.jan === product.jan);
+    if (existing) { existing.qty++; } else {
+      clCart.push({ jan: product.jan, name: product.name, model: product.model, price: sellPrice, qty: 1 });
+    }
+    resultEl.innerHTML = `<span style="color:var(--green);font-weight:700;">✓ 追加</span> <b>${product.name}</b> <span style="color:var(--text2);">${product.model}</span> <span style="color:var(--indigo);font-weight:700;">¥${sellPrice.toLocaleString()}</span>`;
+    notfoundEl.style.display = 'none';
+    renderClCart();
+    renderClSummary();
+    setTimeout(() => startClCamera(), 800);
+  } else {
+    beep('ng');
+    resultEl.innerHTML = `<span style="color:var(--red);font-weight:700;">✗ 未登録</span> <span style="color:var(--text2);font-size:11px;">${code}</span>`;
+    notfoundEl.style.display = 'flex';
   }
 }
 
@@ -1327,7 +1441,10 @@ function clearClCart() {
 
 function clChangeQty(jan, delta) {
   const idx = clCart.findIndex(i => i.jan === jan);
-  if (idx < 0) return;
+  clChangeQtyByIdx(idx, delta);
+}
+function clChangeQtyByIdx(idx, delta) {
+  if (idx < 0 || idx >= clCart.length) return;
   clCart[idx].qty += delta;
   if (clCart[idx].qty <= 0) clCart.splice(idx, 1);
   renderClCart();
@@ -1345,22 +1462,39 @@ function renderClCart() {
   }
   empty.style.display = 'none';
   list.innerHTML = '';
-  clCart.forEach(item => {
+  clCart.forEach((item, idx) => {
     const row = document.createElement('div');
     row.className = 'cart-item';
-    row.innerHTML = `
-      <div class="cart-item-info" style="flex:1;min-width:0;">
-        <div class="cart-item-name">${item.name}</div>
-        ${item.model ? `<div class="cart-item-model">${item.model}</div>` : ''}
-        <div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>
-      </div>
-      <div class="qty-controls">
-        <button class="qty-btn minus" onclick="clChangeQty('${item.jan}',-1)">−</button>
-        <span class="qty-num">${item.qty}</span>
-        <button class="qty-btn plus" onclick="clChangeQty('${item.jan}',1)">＋</button>
-      </div>
-      <div style="min-width:54px;text-align:right;font-size:13px;font-weight:700;flex-shrink:0;">¥${(item.price*item.qty).toLocaleString()}</div>
-    `;
+
+    const info = document.createElement('div');
+    info.className = 'cart-item-info';
+    info.style.cssText = 'flex:1;min-width:0;';
+    info.innerHTML = `<div class="cart-item-name">${item.name}</div>${item.model ? `<div class="cart-item-model">${item.model}</div>` : ''}<div class="cart-item-unit">¥${item.price.toLocaleString()} × ${item.qty}</div>`;
+
+    const qtyCtrl = document.createElement('div');
+    qtyCtrl.className = 'qty-controls';
+    const minusBtn = document.createElement('button');
+    minusBtn.className = 'qty-btn minus';
+    minusBtn.textContent = '−';
+    minusBtn.addEventListener('click', () => clChangeQtyByIdx(idx, -1));
+    const qtySpan = document.createElement('span');
+    qtySpan.className = 'qty-num';
+    qtySpan.textContent = item.qty;
+    const plusBtn = document.createElement('button');
+    plusBtn.className = 'qty-btn plus';
+    plusBtn.textContent = '＋';
+    plusBtn.addEventListener('click', () => clChangeQtyByIdx(idx, 1));
+    qtyCtrl.appendChild(minusBtn);
+    qtyCtrl.appendChild(qtySpan);
+    qtyCtrl.appendChild(plusBtn);
+
+    const subtotal = document.createElement('div');
+    subtotal.style.cssText = 'min-width:54px;text-align:right;font-size:13px;font-weight:700;flex-shrink:0;';
+    subtotal.textContent = '¥' + (item.price * item.qty).toLocaleString();
+
+    row.appendChild(info);
+    row.appendChild(qtyCtrl);
+    row.appendChild(subtotal);
     list.appendChild(row);
   });
 }
@@ -1813,7 +1947,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v43'; }
+  if (ver) { ver.textContent = 'v44'; }
 })();
 </script>
 </body>
