@@ -344,7 +344,7 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v45</span>
+      <span id="ver-box">v46</span>
       <span class="spacer"></span>
       <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
       &nbsp;
@@ -1408,10 +1408,13 @@ function clNumKey(key) {
 
 function addClQuick(basePrice) {
   const price = priceSettings[basePrice] !== undefined ? priceSettings[basePrice] : basePrice;
-  const item = { jan: 'cl_' + Date.now(), name: '均一商品', model: '¥' + price + '均一', price: price, qty: 1 };
   // 同じ価格の均一商品はまとめる
-  const existing = clCart.find(i => i.price === price && i.name === '均一商品');
-  if (existing) { existing.qty++; } else { clCart.push(item); }
+  const existing = clCart.find(i => i.name === '均一商品' && i.price === price);
+  if (existing) {
+    existing.qty++;
+  } else {
+    clCart.push({ jan: 'cl_quick_' + price, name: '均一商品', model: '¥' + basePrice + '均一', price: price, qty: 1 });
+  }
   beep('ok');
   renderClCart();
   renderClSummary();
@@ -1454,14 +1457,13 @@ function clChangeQtyByIdx(idx, delta) {
 function renderClCart() {
   const list = document.getElementById('cl-cart-list');
   const empty = document.getElementById('cl-empty-msg');
+  // 既存のカート行だけ削除（empty-msgは残す）
+  Array.from(list.querySelectorAll('.cart-item')).forEach(r => r.remove());
   if (clCart.length === 0) {
-    list.innerHTML = '';
-    list.appendChild(empty);
     empty.style.display = 'flex';
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = '';
   clCart.forEach((item, idx) => {
     const row = document.createElement('div');
     row.className = 'cart-item';
@@ -1958,7 +1960,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v45'; }
+  if (ver) { ver.textContent = 'v46'; }
 })();
 </script>
 </body>
