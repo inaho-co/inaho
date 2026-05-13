@@ -75,6 +75,11 @@
   #scan-panel { display: flex; flex-direction: column; width: 48%; background: var(--surface); overflow: hidden; }
   #camera-area { position: relative; height: 200px; flex-shrink: 0; background: #000; overflow: hidden; }
   #camera-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* html5-qrcodeが挿入するエラーテキスト・余計なUI を非表示 */
+  #camera-video-container > span,
+  #camera-video-container > p,
+  #camera-video-container img[alt="Info icon"],
+  #camera-video-container div[style*="text-align: center"] { display: none !important; }
   #camera-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; }
   #btn-scan-start { display: flex; flex-direction: column; align-items: center; gap: 8px; color: white; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 700; }
   #btn-scan-start svg { width: 40px; height: 40px; }
@@ -305,7 +310,7 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v40</span>
+      <span id="ver-box">v43</span>
       <span class="spacer"></span>
       <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
       &nbsp;
@@ -533,6 +538,7 @@
       </div>
     </div>
     <div class="db-footer">
+      <button id="btn-db-gh-save" onclick="ghSaveAllProducts()" style="background:#ccfbf1;color:#0d9488;">☁️ 全件保存</button>
       <button onclick="dbClearAllSales()" style="background:#fee2e2;color:#ef4444;">売上全件削除</button>
       <button onclick="exportCSV()" style="background:#e0e7ff;color:#4f46e5;">CSV出力</button>
       <button id="btn-db-close" onclick="closeDbModal()">閉じる</button>
@@ -1437,13 +1443,20 @@ function setSyncStatus(status, msg) {
 async function ghGetFile(path) {
   const token = getGhToken();
   if (!token) return null;
-  const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
-    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const content = JSON.parse(atob(data.content.replace(/\n/g,'')));
-  return { content, sha: data.sha };
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`, {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    // content が空の場合（{}や[]）も安全に処理
+    const raw = atob(data.content.replace(/\n/g,''));
+    let content;
+    try { content = JSON.parse(raw); } catch(e) { content = path.endsWith('sales.json') ? [] : {}; }
+    return { content, sha: data.sha };
+  } catch(e) {
+    return null;
+  }
 }
 
 // GitHub APIでファイルを保存
@@ -1502,19 +1515,16 @@ async function loadProductsFromStorage() {
   // GitHubから最新を取得
   if (!getGhToken()) return;
   setSyncStatus('syncing', '⏳ 読み込み中...');
-  try {
-    const f = await ghGetFile(GH_PRODUCTS_PATH);
-    if (f && f.content && Object.keys(f.content).length > 0) {
+  const f = await ghGetFile(GH_PRODUCTS_PATH);
+  if (f) {
+    if (f.content && typeof f.content === 'object' && Object.keys(f.content).length > 0) {
       Object.assign(PRODUCTS, f.content);
-      _productsSha = f.sha;
       try { localStorage.setItem('customProducts', JSON.stringify(PRODUCTS)); } catch(e) {}
-      setSyncStatus('ok', '✅ 商品DB読込完了');
-    } else if (f) {
-      _productsSha = f.sha;
-      setSyncStatus('ok', '✅ 接続OK');
     }
-  } catch(e) {
-    setSyncStatus('err', '❌ 読込エラー');
+    _productsSha = f.sha;
+    setSyncStatus('ok', '✅ 接続OK');
+  } else {
+    setSyncStatus('err', '❌ 読込エラー（トークン確認）');
   }
 }
 
@@ -1549,16 +1559,45 @@ async function saveSalesToGitHub() {
 
 async function loadSalesFromGitHub() {
   if (!getGhToken()) return;
-  try {
-    const f = await ghGetFile(GH_SALES_PATH);
-    if (f && Array.isArray(f.content) && f.content.length > 0) {
+  const f = await ghGetFile(GH_SALES_PATH);
+  if (f) {
+    if (Array.isArray(f.content) && f.content.length > 0) {
       salesLog = f.content;
-      _salesSha = f.sha;
       try { localStorage.setItem('salesLog', JSON.stringify(salesLog)); } catch(e) {}
-    } else if (f) {
-      _salesSha = f.sha;
     }
-  } catch(e) {}
+    _salesSha = f.sha;
+  }
+}
+
+// ===== 商品DB 全件GitHub保存 =====
+async function ghSaveAllProducts() {
+  if (!getGhToken()) { alert('先にGitHub連携を設定してください'); return; }
+  const btn = document.getElementById('btn-db-gh-save');
+  if (btn) btn.textContent = '⏳ 保存中...';
+  setSyncStatus('syncing', '⏳ 保存中...');
+  try {
+    // 最新SHAを取得
+    const f = await ghGetFile(GH_PRODUCTS_PATH);
+    if (f) _productsSha = f.sha;
+    const ok = await ghPutFile(GH_PRODUCTS_PATH, PRODUCTS, _productsSha, '商品DB全件保存');
+    if (ok) {
+      // 保存後SHAを更新
+      const f2 = await ghGetFile(GH_PRODUCTS_PATH);
+      if (f2) _productsSha = f2.sha;
+      try { localStorage.setItem('customProducts', JSON.stringify(PRODUCTS)); } catch(e) {}
+      setSyncStatus('ok', '✅ 全件保存完了');
+      showToast(`✅ ${Object.keys(PRODUCTS).length}件の商品をGitHubに保存しました`, 'success', 4000);
+      if (btn) btn.textContent = '☁️ 全件保存';
+    } else {
+      setSyncStatus('err', '❌ 保存失敗');
+      showToast('⚠️ 保存に失敗しました', 'error');
+      if (btn) btn.textContent = '☁️ 全件保存';
+    }
+  } catch(e) {
+    setSyncStatus('err', '❌ エラー');
+    showToast('⚠️ エラー: ' + e.message, 'error');
+    if (btn) btn.textContent = '☁️ 全件保存';
+  }
 }
 
 // ===== GitHub セットアップ =====
@@ -1774,7 +1813,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v40'; }
+  if (ver) { ver.textContent = 'v43'; }
 })();
 </script>
 </body>
