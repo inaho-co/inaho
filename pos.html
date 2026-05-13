@@ -29,12 +29,12 @@
 
   /* CART PANEL */
   #cart-panel { display: flex; flex-direction: column; width: 60%; border-right: 1px solid var(--border); background: var(--surface); }
-  .panel-header { display: flex; flex-direction: column; gap: 4px; padding: 5px 10px; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
-  .panel-header-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .panel-header { display: flex; flex-direction: column; gap: 4px; padding: 6px 10px; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .panel-header-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
   #cart-header { background: var(--teal); }
   #scan-header { background: var(--indigo); }
-  .panel-header .spacer { flex: 1; }
-  .btn-sm { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+  .panel-header .spacer { display: none; }
+  .btn-sm { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 13px; font-weight: 700; padding: 7px 4px; border-radius: 8px; cursor: pointer; white-space: nowrap; text-align: center; }
 
   #cart-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text3); }
@@ -253,7 +253,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v55</span>
+  <span id="ver-box">v56</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -363,11 +363,10 @@
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
       <div class="panel-header-row">
-        <span class="spacer"></span>
-        <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
-        <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
-        <button class="btn-sm" onclick="openDbModal()">DB管理</button>
-        <button class="btn-sm" onclick="clearCart()">クリア</button>
+        <button class="btn-sm" onclick="openPriceModal()">💴 金額設定</button>
+        <button class="btn-sm" onclick="openSalesModal()">📋 売上履歴</button>
+        <button class="btn-sm" onclick="openDbModal()">🗄️ DB管理</button>
+        <button class="btn-sm" onclick="clearCart()" style="background:rgba(239,68,68,0.5);">🗑️ クリア</button>
       </div>
     </div>
     <div id="cart-list">
@@ -593,6 +592,7 @@
     </div>
     <div class="db-footer">
       <button id="btn-db-gh-save" onclick="ghSaveAllProducts()" style="background:#ccfbf1;color:#0d9488;">☁️ 全件保存</button>
+      <button onclick="resetProductsToDefault()" style="background:#fef9c3;color:#92400e;" title="文字化けした商品DBをHTMLの初期データでリセットしGitHubに保存">🔄 文字化けリセット</button>
       <button onclick="dbClearAllSales()" style="background:#fee2e2;color:#ef4444;">売上全件削除</button>
       <button onclick="exportCSV()" style="background:#e0e7ff;color:#4f46e5;">CSV出力</button>
       <button id="btn-db-close" onclick="closeDbModal()">閉じる</button>
@@ -1751,6 +1751,38 @@ async function ghPutFile(path, content, sha, message) {
   return res.ok;
 }
 
+// ===== 商品DBリセット（文字化け対策） =====
+// HTMLに埋め込まれた初期データはこの関数が呼ばれる時点でPRODUCTSに残っているものを使う
+// （localStorageの文字化けキャッシュをクリアして再起動するのが一番確実だが、
+//   ここでは直接GitHubに正しいデータを書き直す）
+const PRODUCTS_DEFAULT_KEYS = Object.keys(window._PRODUCTS_INIT || {});
+
+async function resetProductsToDefault() {
+  if (!confirm('商品DBの文字化けをリセットします。\nHTMLに埋め込まれた初期データでGitHubを上書きします。\n※手動で追加した商品は消えます。続けますか？')) return;
+  // localStorageの文字化けキャッシュを削除
+  localStorage.removeItem('customProducts');
+  // GitHubの最新SHAを取得して上書き
+  const btn = document.querySelector('[onclick="resetProductsToDefault()"]');
+  if (btn) btn.textContent = '⏳ リセット中...';
+  try {
+    const f = await ghGetFile(GH_PRODUCTS_PATH);
+    if (f) _productsSha = f.sha;
+    const ok = await ghPutFile(GH_PRODUCTS_PATH, PRODUCTS, _productsSha, '商品DB文字化けリセット');
+    if (ok) {
+      const f2 = await ghGetFile(GH_PRODUCTS_PATH);
+      if (f2) _productsSha = f2.sha;
+      localStorage.setItem('customProducts', JSON.stringify(PRODUCTS));
+      showToast('✅ 文字化けリセット完了！商品DBを正しく保存しました', 'success', 4000);
+      renderDbProducts();
+    } else {
+      showToast('❌ リセット失敗。GitHubトークンを確認してください', 'error');
+    }
+  } catch(e) {
+    showToast('❌ エラー: ' + e.message, 'error');
+  }
+  if (btn) btn.textContent = '🔄 文字化けリセット';
+}
+
 // ===== GitHub商品DB保存 =====
 let _productsSha = null;
 
@@ -1783,9 +1815,19 @@ async function saveProductsToStorage() {
 
 async function loadProductsFromStorage() {
   // まずlocalStorageから（即時表示）
+  // ただし文字化けデータは使わない
   try {
     const saved = JSON.parse(localStorage.getItem('customProducts') || 'null');
-    if (saved) Object.assign(PRODUCTS, saved);
+    if (saved) {
+      const isMojibake = s => /[ÃÂÅ]/.test(String(s||''));
+      const allGood = Object.values(saved).every(p => !isMojibake(p.name));
+      if (allGood) {
+        Object.assign(PRODUCTS, saved);
+      } else {
+        // 文字化けキャッシュは削除してHTMLの正しいデータを使う
+        localStorage.removeItem('customProducts');
+      }
+    }
   } catch(e) {}
   // GitHubから最新を取得
   if (!getGhToken()) return;
@@ -1793,7 +1835,17 @@ async function loadProductsFromStorage() {
   const f = await ghGetFile(GH_PRODUCTS_PATH);
   if (f) {
     if (f.content && typeof f.content === 'object' && Object.keys(f.content).length > 0) {
-      Object.assign(PRODUCTS, f.content);
+      // 文字化けチェック：名前に「Ã」「Â」「Å」などが含まれるエントリは除外
+      const isMojibake = s => /[ÃÂÅ]/.test(String(s||''));
+      const cleaned = {};
+      Object.keys(f.content).forEach(k => {
+        const p = f.content[k];
+        if (!isMojibake(p.name) && !isMojibake(p.model)) {
+          cleaned[k] = p;
+        }
+        // 文字化けエントリはHTMLに埋め込まれた正しいデータをそのまま使う
+      });
+      Object.assign(PRODUCTS, cleaned);
       try { localStorage.setItem('customProducts', JSON.stringify(PRODUCTS)); } catch(e) {}
     }
     _productsSha = f.sha;
@@ -2088,7 +2140,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v55'; }
+  if (ver) { ver.textContent = 'v56'; }
 })();
 </script>
 </body>
