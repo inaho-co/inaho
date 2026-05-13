@@ -28,13 +28,13 @@
   #app { display: flex; flex: 1; overflow: hidden; }
 
   /* CART PANEL */
-  #cart-panel { display: flex; flex-direction: column; width: 52%; border-right: 1px solid var(--border); background: var(--surface); }
+  #cart-panel { display: flex; flex-direction: column; width: 60%; border-right: 1px solid var(--border); background: var(--surface); }
   .panel-header { display: flex; flex-direction: column; gap: 4px; padding: 5px 10px; color: white; font-weight: 700; font-size: 15px; flex-shrink: 0; }
   .panel-header-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
   #cart-header { background: var(--teal); }
   #scan-header { background: var(--indigo); }
   .panel-header .spacer { flex: 1; }
-  .btn-sm { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 10px; padding: 3px 5px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+  .btn-sm { background: rgba(255,255,255,0.2); border: none; color: white; font-size: 12px; padding: 4px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
 
   #cart-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--text3); }
@@ -88,7 +88,6 @@
   #btn-scan-cancel { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 8px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; display: none; }
   #scan-status { font-size: 11px; color: rgba(255,255,255,0.9); position: absolute; top: 6px; left: 8px; background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px; }
   #debug-box { font-size: 11px; color: #64748b; padding: 4px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; min-height: 20px; }
-  #ver-box { font-size: 10px; color: white; font-weight: 700; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 5px; flex-shrink: 0; }
 
   #scan-result { padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); flex-shrink: 0; min-height: 70px; }
   .result-idle { color: var(--text3); font-size: 13px; display: flex; align-items: center; gap: 6px; }
@@ -110,6 +109,21 @@
   .mode-tab.received.active { background: var(--teal); color: white; }
   .mode-tab.manual { background: var(--surface2); color: var(--text); }
   .mode-tab.manual.active { background: #7c3aed; color: white; }
+  .mode-tab.search { background: var(--surface2); color: var(--text); }
+  .mode-tab.search.active { background: #0891b2; color: white; }
+
+  /* 商品名検索エリア */
+  #search-area { display: none; flex-direction: column; gap: 6px; padding: 4px 0; flex: 1; min-height: 0; overflow: hidden; }
+  #search-area.active { display: flex; }
+  #name-search-input { width: 100%; padding: 8px 10px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px; box-sizing: border-box; flex-shrink: 0; }
+  #name-search-input:focus { border-color: #0891b2; outline: none; }
+  #search-results { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; }
+  .search-result-item { display: flex; align-items: center; padding: 8px 6px; border-bottom: 1px solid var(--border); cursor: pointer; gap: 8px; }
+  .search-result-item:active { background: #f0f9ff; }
+  .search-result-name { font-size: 14px; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .search-result-model { font-size: 11px; color: var(--text2); white-space: nowrap; }
+  .search-result-price { font-size: 14px; font-weight: 700; color: var(--indigo); white-space: nowrap; flex-shrink: 0; }
+  .search-no-result { color: var(--text3); font-size: 13px; padding: 12px 4px; text-align: center; }
   .input-display { display: flex; align-items: center; gap: 8px; padding: 4px 2px; flex-shrink: 0; }
   .input-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .input-val.placeholder { color: var(--text3); font-weight: 400; }
@@ -136,7 +150,8 @@
   #btn-modal-close { background: var(--surface2); color: var(--text); }
 
   /* PAGE TABS */
-  #page-tabs { display: flex; background: #1e293b; flex-shrink: 0; }
+  #page-tabs { display: flex; align-items: center; background: #1e293b; flex-shrink: 0; padding-left: 8px; }
+  #page-tabs #ver-box { font-size: 11px; color: white; font-weight: 700; background: rgba(255,255,255,0.15); padding: 2px 6px; border-radius: 5px; flex-shrink: 0; margin-right: 4px; }
   .page-tab { flex: 1; padding: 10px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; color: rgba(255,255,255,0.55); background: transparent; border-bottom: 3px solid transparent; }
   .page-tab.active { color: white; border-bottom-color: var(--teal); }
 
@@ -238,6 +253,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
+  <span id="ver-box">v55</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -347,7 +363,6 @@
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
       <div class="panel-header-row">
-        <span id="ver-box">v52</span>
         <span class="spacer"></span>
         <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
         <button class="btn-sm" onclick="openSalesModal()">売上履歴</button>
@@ -429,6 +444,7 @@
     <div id="numpad-area">
       <div class="mode-tabs">
         <button class="mode-tab jan" onclick="setMode('jan')">JANコード</button>
+        <button class="mode-tab search" onclick="setMode('search')">商品名</button>
         <button class="mode-tab received active" onclick="setMode('received')">預かり金</button>
         <button class="mode-tab manual" onclick="setMode('manual')">手入力</button>
       </div>
@@ -445,6 +461,11 @@
           <span id="manual-price-display" style="font-size:18px;font-weight:700;flex:1;">¥0</span>
           <button onclick="addManualItem()" style="background:#4f46e5;color:white;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">追加</button>
         </div>
+      </div>
+      <!-- 商品名検索エリア -->
+      <div id="search-area">
+        <input id="name-search-input" type="text" placeholder="🔍 商品名・型式で検索..." oninput="renderNameSearch()" autocomplete="off">
+        <div id="search-results"></div>
       </div>
       <div class="numpad-grid">
         <button class="np-btn" onclick="numKey('7')">7</button>
@@ -1141,6 +1162,8 @@ function renderSummary() {
 
 function clearCart() {
   cart = []; receivedAmount = ''; janInput = ''; manualPrice = '';
+  const si = document.getElementById('name-search-input');
+  if (si) si.value = '';
   setMode('jan');
   document.getElementById('result-idle').style.display = 'flex';
   document.getElementById('result-found').style.display = 'none';
@@ -1172,7 +1195,22 @@ function setMode(m) {
   document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
   document.querySelector('.mode-tab.' + m).classList.add('active');
   document.getElementById('manual-form').style.display = m === 'manual' ? 'block' : 'none';
+  const searchArea = document.getElementById('search-area');
+  if (searchArea) searchArea.classList.toggle('active', m === 'search');
   if (m === 'manual') { manualPrice = ''; renderManualPrice(); }
+  if (m === 'search') {
+    // 検索フォームにフォーカス
+    setTimeout(() => {
+      const inp = document.getElementById('name-search-input');
+      if (inp) inp.focus();
+    }, 50);
+    renderNameSearch();
+  }
+  // 検索モード中はテンキーを非表示にして検索エリアを広げる
+  const numpadGrid = document.querySelector('#numpad-area .numpad-grid');
+  const inputDisplay = document.querySelector('#numpad-area .input-display');
+  if (numpadGrid) numpadGrid.style.display = m === 'search' ? 'none' : '';
+  if (inputDisplay) inputDisplay.style.display = m === 'search' ? 'none' : '';
   renderInputDisplay();
   renderSummary();
 }
@@ -1199,7 +1237,63 @@ function addManualItem() {
   document.getElementById('manual-name').focus();
 }
 
+// ===== 商品名検索 =====
+function renderNameSearch() {
+  const inp = document.getElementById('name-search-input');
+  const q = (inp ? inp.value : '').trim().toLowerCase();
+  const container = document.getElementById('search-results');
+  if (!container) return;
+
+  const keys = Object.keys(PRODUCTS);
+  const matches = q
+    ? keys.filter(k => {
+        const p = PRODUCTS[k];
+        return p.name.toLowerCase().includes(q) || (p.model||'').toLowerCase().includes(q);
+      })
+    : keys;
+
+  if (matches.length === 0) {
+    container.innerHTML = '<div class="search-no-result">該当する商品がありません</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  // 最大30件表示
+  matches.slice(0, 30).forEach(jan => {
+    const p = PRODUCTS[jan];
+    const sellPrice = priceSettings[p.price] !== undefined ? priceSettings[p.price] : p.price;
+    const div = document.createElement('div');
+    div.className = 'search-result-item';
+    div.innerHTML = `
+      <div style="flex:1;min-width:0;">
+        <div class="search-result-name">${escHtml(p.name)}</div>
+        <div class="search-result-model">${escHtml(p.model||'')}${p.model?' / ':''}JAN:${jan}</div>
+      </div>
+      <div class="search-result-price">¥${sellPrice.toLocaleString()}</div>
+    `;
+    div.addEventListener('click', () => {
+      beep('ok');
+      if (navigator.vibrate) navigator.vibrate(80);
+      showResultFound(p);
+      addToCart(p);
+      renderCart();
+      renderSummary();
+      setMode('received');
+      // 検索欄をクリア
+      if (inp) inp.value = '';
+    });
+    container.appendChild(div);
+  });
+  if (matches.length > 30) {
+    const more = document.createElement('div');
+    more.className = 'search-no-result';
+    more.textContent = `他 ${matches.length - 30} 件（検索を絞り込んでください）`;
+    container.appendChild(more);
+  }
+}
+
 function numKey(key) {
+  if (mode === 'search') return; // 商品名検索中はテンキー無効
   if (mode === 'jan') {
     if (key === 'C') janInput = '';
     else if (key === '⌫') janInput = janInput.slice(0, -1);
@@ -1239,6 +1333,10 @@ function renderInputDisplay() {
     }
   } else if (mode === 'manual') {
     disp.textContent = '商品名と金額を入力';
+    disp.className = 'input-val placeholder';
+    enterBtn.style.display = 'none';
+  } else if (mode === 'search') {
+    disp.textContent = '商品名検索';
     disp.className = 'input-val placeholder';
     enterBtn.style.display = 'none';
   } else {
@@ -1622,7 +1720,12 @@ async function ghGetFile(path) {
     if (!res.ok) return null;
     const data = await res.json();
     // content が空の場合（{}や[]）も安全に処理
-    const raw = atob(data.content.replace(/\n/g,''));
+    // UTF-8マルチバイト文字（日本語等）を正しくデコードするためTextDecoderを使用
+    const base64 = data.content.replace(/\n/g,'');
+    const binaryStr = atob(base64);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+    const raw = new TextDecoder('utf-8').decode(bytes);
     let content;
     try { content = JSON.parse(raw); } catch(e) { content = path.endsWith('sales.json') ? [] : {}; }
     return { content, sha: data.sha };
@@ -1985,7 +2088,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v52'; }
+  if (ver) { ver.textContent = 'v55'; }
 })();
 </script>
 </body>
