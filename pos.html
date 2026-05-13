@@ -345,7 +345,7 @@
   <!-- LEFT: Cart Panel -->
   <div id="cart-panel">
     <div class="panel-header" id="cart-header">
-      <span id="ver-box">v47</span>
+      <span id="ver-box">v48</span>
       <span class="spacer"></span>
       <button class="btn-sm" onclick="openPriceModal()">金額設定</button>
       &nbsp;
@@ -966,16 +966,20 @@ function makeCartRow(item, idx) {
   // 上段：商品名・型式・単価
   const info = document.createElement('div');
   info.className = 'cart-item-info';
+  const nameRow = document.createElement('div');
+  nameRow.style.cssText = 'display:flex;align-items:baseline;gap:6px;min-width:0;';
   const nameEl = document.createElement('div');
   nameEl.className = 'cart-item-name';
+  nameEl.style.flexShrink = '0';
   nameEl.textContent = item.name;
-  info.appendChild(nameEl);
+  nameRow.appendChild(nameEl);
   if (item.model) {
     const modelEl = document.createElement('div');
     modelEl.className = 'cart-item-model';
     modelEl.textContent = item.model;
-    info.appendChild(modelEl);
+    nameRow.appendChild(modelEl);
   }
+  info.appendChild(nameRow);
   const unitEl = document.createElement('div');
   unitEl.className = 'cart-item-unit';
   unitEl.textContent = '¥' + item.price.toLocaleString() + ' × ' + item.qty;
@@ -1983,7 +1987,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v47'; }
+  if (ver) { ver.textContent = 'v48'; }
 })();
 </script>
 </body>
