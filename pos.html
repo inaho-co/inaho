@@ -253,7 +253,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v57</span>
+  <span id="ver-box">v58</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -570,11 +570,11 @@
         <div id="db-products-count" style="font-size:11px;color:var(--text2);margin-bottom:6px;"></div>
         <table class="db-table" id="db-products-table">
           <thead><tr>
-            <th style="width:32%">商品名</th>
-            <th style="width:22%">型式</th>
-            <th style="width:14%">定価</th>
-            <th style="width:20%">JAN</th>
-            <th style="width:12%"></th>
+            <th style="width:24%">商品名</th>
+            <th style="width:17%">型式</th>
+            <th style="width:11%">定価</th>
+            <th style="width:38%">JAN</th>
+            <th style="width:10%"></th>
           </tr></thead>
           <tbody id="db-products-body"></tbody>
         </table>
@@ -2024,7 +2024,7 @@ function renderDbProducts() {
       <td><input class="db-edit-input" data-jan="${jan}" data-field="name" value="${escHtml(p.name)}" onchange="dbUpdateField('${jan}','name',this.value)"></td>
       <td><input class="db-edit-input" data-jan="${jan}" data-field="model" value="${escHtml(p.model||'')}" onchange="dbUpdateField('${jan}','model',this.value)"></td>
       <td><input class="db-price-input" data-jan="${jan}" data-field="price" type="number" value="${p.price}" min="0" onchange="dbUpdateField('${jan}','price',this.value)"></td>
-      <td><input class="db-edit-input" data-jan="${jan}" data-field="jan" value="${escHtml(jan)}" style="font-size:10px;" onchange="dbUpdateJan('${jan}',this.value,this)"></td>
+      <td><input class="db-edit-input" data-jan="${jan}" data-field="jan" value="${escHtml(jan)}" style="font-size:12px;width:100%;" onchange="dbUpdateJan('${jan}',this.value,this)"></td>
       <td><button class="db-del-btn" onclick="dbDeleteProduct('${jan}')">削除</button></td>
     `;
     tbody.appendChild(tr);
@@ -2174,7 +2174,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v57'; }
+  if (ver) { ver.textContent = 'v58'; }
 })();
 </script>
 </body>
