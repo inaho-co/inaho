@@ -253,7 +253,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v56</span>
+  <span id="ver-box">v57</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -1197,6 +1197,10 @@ function setMode(m) {
   document.getElementById('manual-form').style.display = m === 'manual' ? 'block' : 'none';
   const searchArea = document.getElementById('search-area');
   if (searchArea) searchArea.classList.toggle('active', m === 'search');
+  // 商品名検索タブに切り替えたとき、未登録商品の入力画面を閉じる
+  if (m === 'search') {
+    document.getElementById('result-notfound').style.display = 'none';
+  }
   if (m === 'manual') { manualPrice = ''; renderManualPrice(); }
   if (m === 'search') {
     // 検索フォームにフォーカス
@@ -2020,7 +2024,7 @@ function renderDbProducts() {
       <td><input class="db-edit-input" data-jan="${jan}" data-field="name" value="${escHtml(p.name)}" onchange="dbUpdateField('${jan}','name',this.value)"></td>
       <td><input class="db-edit-input" data-jan="${jan}" data-field="model" value="${escHtml(p.model||'')}" onchange="dbUpdateField('${jan}','model',this.value)"></td>
       <td><input class="db-price-input" data-jan="${jan}" data-field="price" type="number" value="${p.price}" min="0" onchange="dbUpdateField('${jan}','price',this.value)"></td>
-      <td style="font-size:10px;color:var(--text3);">${jan}</td>
+      <td><input class="db-edit-input" data-jan="${jan}" data-field="jan" value="${escHtml(jan)}" style="font-size:10px;" onchange="dbUpdateJan('${jan}',this.value,this)"></td>
       <td><button class="db-del-btn" onclick="dbDeleteProduct('${jan}')">削除</button></td>
     `;
     tbody.appendChild(tr);
@@ -2036,6 +2040,36 @@ function dbUpdateField(jan, field, val) {
   if (field === 'price') PRODUCTS[jan].price = parseInt(val) || 0;
   else PRODUCTS[jan][field] = val;
   saveProductsToStorage();
+}
+
+function dbUpdateJan(oldJan, newJan, inputEl) {
+  newJan = newJan.trim();
+  if (!newJan || newJan === oldJan) return;
+  if (!/^\d+$/.test(newJan)) {
+    alert('JANコードは数字のみ入力してください');
+    inputEl.value = oldJan;
+    return;
+  }
+  if (PRODUCTS[newJan]) {
+    alert('そのJANコードはすでに登録されています');
+    inputEl.value = oldJan;
+    return;
+  }
+  const prod = Object.assign({}, PRODUCTS[oldJan], { jan: newJan });
+  delete PRODUCTS[oldJan];
+  PRODUCTS[newJan] = prod;
+  saveProductsToStorage();
+  // data-jan属性と onchange を新しいJANで更新
+  const row = inputEl.closest('tr');
+  if (row) {
+    row.querySelectorAll('[data-jan]').forEach(el => {
+      el.dataset.jan = newJan;
+    });
+    const delBtn = row.querySelector('.db-del-btn');
+    if (delBtn) delBtn.setAttribute('onclick', `dbDeleteProduct('${newJan}')`);
+    inputEl.setAttribute('onchange', `dbUpdateJan('${newJan}',this.value,this)`);
+  }
+  showToast('JANコードを変更しました', 'success');
 }
 
 function dbDeleteProduct(jan) {
@@ -2140,7 +2174,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v56'; }
+  if (ver) { ver.textContent = 'v57'; }
 })();
 </script>
 </body>
