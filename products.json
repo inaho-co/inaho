@@ -1079,12 +1079,6 @@
     "model": "HBH-P3K",
     "price": 600
   },
-  "model:HRN-2550": {
-    "jan": "",
-    "name": "HEIZO　ラチェット式ベルト荷締め機",
-    "model": "HRN-2550",
-    "price": 600
-  },
   "model:HMT-M3T": {
     "jan": "",
     "name": "HEIZO　マグネットトレイ丸型3PCS",
@@ -1803,6 +1797,12 @@
     "jan": "4580796381034",
     "name": "BASE モンキーレンチPro　ショートワイド150ｍｍ",
     "model": "BPM-S15",
+    "price": 600
+  },
+  "4571528211057": {
+    "jan": "4571528211057",
+    "name": "HEIZO　ラチェット式ベルト荷締め機",
+    "model": "HRN-2550",
     "price": 600
   }
 }
