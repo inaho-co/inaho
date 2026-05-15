@@ -1055,12 +1055,6 @@
     "model": "HWP-175",
     "price": 600
   },
-  "model:25KL-50M": {
-    "jan": "",
-    "name": "HEIZO　KABUロック5.0ｍ",
-    "model": "25KL-50M",
-    "price": 600
-  },
   "model:25KL-75M": {
     "jan": "",
     "name": "HEIZO KABUロック7.5ｍ",
@@ -1095,12 +1089,6 @@
     "jan": "",
     "name": "BASE ｼｮｰﾄﾊﾝﾏｰ 160mm",
     "model": "BSH-160",
-    "price": 600
-  },
-  "model:BKR-160": {
-    "jan": "",
-    "name": "BASE 強力パワーラジオペンチPro　160㎜",
-    "model": "BKR-160",
     "price": 600
   },
   "model:BBH-200": {
@@ -1803,6 +1791,24 @@
     "jan": "4571528211057",
     "name": "HEIZO　ラチェット式ベルト荷締め機",
     "model": "HRN-2550",
+    "price": 600
+  },
+  "4580796381027": {
+    "jan": "4580796381027",
+    "name": "BASE 強力パワーラジオペンチPro　160㎜",
+    "model": "BKR-160",
+    "price": 600
+  },
+  "model:BKR-160": {
+    "jan": "",
+    "name": "BASE 強力パワーラジオペンチPro　160㎜",
+    "model": "BKR-160",
+    "price": 600
+  },
+  "4571528210999": {
+    "jan": "4571528210999",
+    "name": "HEIZO　KABUロック5.0ｍ",
+    "model": "25KL-50M",
     "price": 600
   }
 }
