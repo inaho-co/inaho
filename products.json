@@ -935,12 +935,6 @@
     "model": "HWS-M12",
     "price": 1000
   },
-  "model:HWC-200": {
-    "jan": "",
-    "name": "HEIZO　ワイヤーロープカッター200ｍｍ",
-    "model": "HWC-200",
-    "price": 1000
-  },
   "model:DFK-100": {
     "jan": "",
     "name": "INAHO　万能Fケンマ100",
@@ -1804,5 +1798,11 @@
     "name": "HEIZO　ホットグルーガンミニ75",
     "model": "HGG-M75",
     "price": 600
+  },
+  "4571528210968": {
+    "jan": "4571528210968",
+    "name": "HEIZO　ワイヤーロープカッター200ｍｍ",
+    "model": "HWC-200",
+    "price": 1000
   }
 }
