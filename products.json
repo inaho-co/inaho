@@ -1019,12 +1019,6 @@
     "model": "HMR-250",
     "price": 600
   },
-  "model:HGH-150": {
-    "jan": "",
-    "name": "HEIZO ゴムハンマーコンビ　1.5LB",
-    "model": "HGH-150",
-    "price": 600
-  },
   "model:HSR-150": {
     "jan": "",
     "name": "HEIZO ショックレスハンマー　1.5LB",
@@ -1809,6 +1803,12 @@
     "jan": "4571528210999",
     "name": "HEIZO　KABUロック5.0ｍ",
     "model": "25KL-50M",
+    "price": 600
+  },
+  "4571528210869": {
+    "jan": "4571528210869",
+    "name": "HEIZO ゴムハンマーコンビ　1.5LB",
+    "model": "HGH-150",
     "price": 600
   }
 }
