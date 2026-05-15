@@ -1103,12 +1103,6 @@
     "model": "BSH-160",
     "price": 600
   },
-  "model:BPM-S15": {
-    "jan": "",
-    "name": "BASE モンキーレンチPro　ショートワイド150ｍｍ",
-    "model": "BPM-S15",
-    "price": 600
-  },
   "model:BKR-160": {
     "jan": "",
     "name": "BASE 強力パワーラジオペンチPro　160㎜",
@@ -1803,6 +1797,12 @@
     "jan": "4536619600868",
     "name": "HEIZO ﾋﾟｯｸﾂｰﾙｾｯﾄ 4PC",
     "model": "KI-N4",
+    "price": 600
+  },
+  "4580796381034": {
+    "jan": "4580796381034",
+    "name": "BASE モンキーレンチPro　ショートワイド150ｍｍ",
+    "model": "BPM-S15",
     "price": 600
   }
 }
