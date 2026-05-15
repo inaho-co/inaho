@@ -935,12 +935,6 @@
     "model": "HWS-M12",
     "price": 1000
   },
-  "model:DFK-100": {
-    "jan": "",
-    "name": "INAHO　万能Fケンマ100",
-    "model": "DFK-100",
-    "price": 1000
-  },
   "model:HKR-F35": {
     "jan": "",
     "name": "HEIZOクロスレンチフォールド350",
@@ -1041,12 +1035,6 @@
     "jan": "",
     "name": "HEIZO ウオーターポンププライヤー250ｍｍジョイスラロック",
     "model": "HWP-25L",
-    "price": 600
-  },
-  "model:HWP-175": {
-    "jan": "",
-    "name": "HEIZO　ウオーターポンププライヤー175ｍｍ",
-    "model": "HWP-175",
     "price": 600
   },
   "model:25KL-75M": {
@@ -1810,5 +1798,23 @@
     "name": "HEIZO ゴムハンマーコンビ　1.5LB",
     "model": "HGH-150",
     "price": 600
+  },
+  "4571528210890": {
+    "jan": "4571528210890",
+    "name": "HEIZO　ウオーターポンププライヤー175ｍｍ",
+    "model": "HWP-175",
+    "price": 600
+  },
+  "model:HWP-175": {
+    "jan": "",
+    "name": "HEIZO　ウオーターポンププライヤー175ｍｍ",
+    "model": "HWP-175",
+    "price": 600
+  },
+  "451510211002": {
+    "jan": "451510211002",
+    "name": "INAHO　万能Fケンマ100",
+    "model": "DFK-100",
+    "price": 1000
   }
 }
