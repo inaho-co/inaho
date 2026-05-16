@@ -184,5 +184,37 @@
     "received": 5100,
     "change": 4000,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 13:01:43",
+    "items": [
+      {
+        "name": "HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ30㎜×2M",
+        "model": "SB-302",
+        "price": 600,
+        "qty": 2,
+        "subtotal": 1200
+      },
+      {
+        "name": "HEIZO　ホットグルーガンミニ75",
+        "model": "HGG-M75",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      },
+      {
+        "name": "BASE 強力ﾊﾟﾜｰﾆｯﾊﾟｰ Pro 175mm  平刃",
+        "model": "BKN-175",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 2400,
+    "tax": 0,
+    "total": 2400,
+    "received": 2400,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
