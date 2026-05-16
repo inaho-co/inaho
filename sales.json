@@ -324,5 +324,30 @@
     "received": 1000,
     "change": 400,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 16:44:47",
+    "items": [
+      {
+        "name": "BASE 銀軸ｿｹｯﾄｾｯﾄ 5本組",
+        "model": "BGS-05P",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "HEIZO ｽﾊﾟｲﾗﾙ型ﾁﾀﾝｺｰﾃｨﾝｸﾞｽﾃｯﾌﾟﾄﾞﾘﾙ10段 4-22mm",
+        "model": "SI-N422",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 2200,
+    "tax": 0,
+    "total": 2200,
+    "received": 2200,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
