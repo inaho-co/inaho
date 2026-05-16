@@ -252,5 +252,23 @@
     "received": 5200,
     "change": 4000,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 14:27:33",
+    "items": [
+      {
+        "name": "包丁",
+        "model": "出刃",
+        "price": 2500,
+        "qty": 1,
+        "subtotal": 2500
+      }
+    ],
+    "subtotal": 2500,
+    "tax": 0,
+    "total": 2500,
+    "received": 2500,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
