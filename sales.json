@@ -306,5 +306,23 @@
     "received": 1100,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 15:44:23",
+    "items": [
+      {
+        "name": "Kazi-Tu 剪定はさみ　210ｍｍ",
+        "model": "KSH-210",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 600,
+    "tax": 0,
+    "total": 600,
+    "received": 1000,
+    "change": 400,
+    "paymentMethod": "現金"
   }
 ]
