@@ -116,5 +116,37 @@
     "received": 1200,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 11:45:48",
+    "items": [
+      {
+        "name": "HEIZO ｽﾊﾟｲﾗﾙ型ﾁﾀﾝｺｰﾃｨﾝｸﾞｽﾃｯﾌﾟﾄﾞﾘﾙ10段 4-22mm",
+        "model": "SI-N422",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "富士手袋　ラバーダブルシェルパ8677",
+        "model": "LL",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "包丁",
+        "model": "BR刺身",
+        "price": 2500,
+        "qty": 1,
+        "subtotal": 2500
+      }
+    ],
+    "subtotal": 4700,
+    "tax": 0,
+    "total": 4700,
+    "received": 5000,
+    "change": 300,
+    "paymentMethod": "現金"
   }
 ]
