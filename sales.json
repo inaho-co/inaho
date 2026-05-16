@@ -23,5 +23,30 @@
     "received": 2000,
     "change": 300,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 10:21:59",
+    "items": [
+      {
+        "name": "Kazi-Tu 太枝切はさみ 600mm",
+        "model": "KFH-600",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "HEIZO ｽﾊﾟｲﾗﾙ型ﾁﾀﾝｺｰﾃｨﾝｸﾞｽﾃｯﾌﾟﾄﾞﾘﾙ10段 4-22mm",
+        "model": "SI-N422",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 2200,
+    "tax": 0,
+    "total": 2200,
+    "received": 5200,
+    "change": 3000,
+    "paymentMethod": "現金"
   }
 ]
