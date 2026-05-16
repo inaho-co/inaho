@@ -253,7 +253,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v58</span>
+  <span id="ver-box">v59</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -426,9 +426,10 @@
         <div class="code" id="res-code"></div>
         <!-- 商品名・型式入力 & 保存 -->
         <div style="margin-top:8px;background:#f8fafc;border-radius:8px;padding:8px;border:1px solid #e2e8f0;">
-          <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;">商品名・型式を入力して保存できます</div>
+          <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px;">商品名・型式・定価を入力して保存できます</div>
           <input id="notfound-name" type="text" placeholder="商品名" style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;margin-bottom:4px;box-sizing:border-box;">
-          <input id="notfound-model" type="text" placeholder="型式" style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;margin-bottom:6px;box-sizing:border-box;">
+          <input id="notfound-model" type="text" placeholder="型式" style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;margin-bottom:4px;box-sizing:border-box;">
+          <input id="notfound-price" type="number" placeholder="定価（円）" min="0" style="width:100%;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;margin-bottom:6px;box-sizing:border-box;">
           <button onclick="saveNewProduct()" style="width:100%;padding:7px;background:#0d9488;color:white;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;">💾 商品情報を保存</button>
         </div>
         <div id="quick-price-btns" style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
@@ -1670,11 +1671,13 @@ async function clCheckout() {
 function saveNewProduct() {
   const name = document.getElementById('notfound-name').value.trim();
   const model = document.getElementById('notfound-model').value.trim();
+  const price = parseInt(document.getElementById('notfound-price').value) || 0;
   if (!name) { alert('商品名を入力してください'); return; }
   if (!unknownCode) { alert('JANコードが取得できていません'); return; }
-  PRODUCTS[unknownCode] = { jan: unknownCode, name: name, model: model, price: 0 };
+  PRODUCTS[unknownCode] = { jan: unknownCode, name: name, model: model, price: price };
   saveProductsToStorage(); // localStorage に永続保存
-  alert(`✅ 保存しました\nJAN: ${unknownCode}\n商品名: ${name}\n型式: ${model}\n※価格は0円で登録されました。DB管理→商品DBで編集できます。`);
+  const priceMsg = price > 0 ? `定価: ¥${price.toLocaleString()}` : '※価格は0円で登録されました。DB管理→商品DBで編集できます。';
+  alert(`✅ 保存しました\nJAN: ${unknownCode}\n商品名: ${name}\n型式: ${model}\n${priceMsg}`);
   const product = PRODUCTS[unknownCode];
   showResultFound(product);
   addToCart(product);
@@ -1682,6 +1685,7 @@ function saveNewProduct() {
   document.getElementById('result-notfound').style.display = 'none';
   document.getElementById('notfound-name').value = '';
   document.getElementById('notfound-model').value = '';
+  document.getElementById('notfound-price').value = '';
   renderCart();
   renderSummary();
 }
