@@ -253,7 +253,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v59</span>
+  <span id="ver-box">v60</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -1373,18 +1373,22 @@ function renderSalesModal() {
     return;
   }
   const total = salesLog.reduce((s, r) => s + r.total, 0);
-  const rows = [...salesLog].map((r, i) => `<tr>
+  const rows = [...salesLog].map((r, i) => {
+    const itemDetail = r.items.map(item =>
+      `<div style="font-size:11px;color:#475569;padding:1px 0 1px 8px;">・${item.name}${item.model?' ['+item.model+']':''} ¥${item.price.toLocaleString()} × ${item.qty}</div>`
+    ).join('');
+    return `<tr>
     <td style="font-size:11px;">${r.datetime}</td>
     <td>¥${r.total.toLocaleString()}</td>
     <td style="font-size:11px;color:${r.paymentMethod==='現金なし'?'#7c3aed':'#0d9488'}">${r.paymentMethod||'現金'}</td>
-    <td>${r.paymentMethod==='現金なし'?'-':'¥'+r.received.toLocaleString()}</td>
-    <td style="color:${r.change>=0?'#22c55e':'#ef4444'}">${r.paymentMethod==='現金なし'?'-':'¥'+r.change.toLocaleString()}</td>
+    <td style="padding:4px 6px;">${itemDetail}</td>
     <td><button class="sales-del-btn" onclick="deleteSale(${i})">削除</button></td>
-  </tr>`).join('');
+  </tr>`;
+  }).join('');
   el.innerHTML = `
     <p style="font-size:13px;margin-bottom:8px">件数: <b>${salesLog.length}件</b>　合計売上: <b style="color:#0d9488">¥${total.toLocaleString()}</b></p>
     <table>
-      <thead><tr><th>日時</th><th>合計</th><th>支払</th><th>預かり</th><th>お釣り</th><th></th></tr></thead>
+      <thead><tr><th>日時</th><th>合計</th><th>支払</th><th>明細</th><th></th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
@@ -2123,7 +2127,7 @@ function toggleSaleDetail(tbody, idx, parentTr, r) {
   const itemRows = r.items.map(i =>
     `<div style="padding:3px 8px;font-size:12px;">・${i.name}${i.model?' ['+i.model+']':''} ¥${i.price.toLocaleString()} × ${i.qty} = ¥${i.subtotal.toLocaleString()}</div>`
   ).join('');
-  detailTr.innerHTML = `<td colspan="5" style="padding:4px 8px;">${itemRows}${r.paymentMethod!=='現金なし'?`<div style="padding:3px 8px;font-size:12px;color:#64748b">預かり ¥${r.received.toLocaleString()} / お釣り ¥${r.change.toLocaleString()}</div>`:''}</td>`;
+  detailTr.innerHTML = `<td colspan="5" style="padding:4px 8px;">${itemRows}</td>`;
   parentTr.insertAdjacentElement('afterend', detailTr);
 }
 
