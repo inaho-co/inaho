@@ -270,5 +270,23 @@
     "received": 2500,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 15:05:01",
+    "items": [
+      {
+        "name": "HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ50㎜×3M",
+        "model": "SB-503",
+        "price": 2200,
+        "qty": 1,
+        "subtotal": 2200
+      }
+    ],
+    "subtotal": 2200,
+    "tax": 0,
+    "total": 2200,
+    "received": 2200,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
