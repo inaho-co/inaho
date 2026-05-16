@@ -98,5 +98,23 @@
     "received": 2300,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 11:35:11",
+    "items": [
+      {
+        "name": "ﾔﾏｼｮｳ ひざらくらくﾊﾟｯﾄﾞ",
+        "model": "HP-01",
+        "price": 600,
+        "qty": 2,
+        "subtotal": 1200
+      }
+    ],
+    "subtotal": 1200,
+    "tax": 0,
+    "total": 1200,
+    "received": 1200,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
