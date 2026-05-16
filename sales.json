@@ -288,5 +288,23 @@
     "received": 2200,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 15:12:46",
+    "items": [
+      {
+        "name": "HEIZOｽﾊﾟｲﾗﾙ型ﾁﾀﾝｺｰﾃｨﾝｸﾞｽﾃｯﾌﾟﾄﾞﾘﾙ14段 4-30mm",
+        "model": "SI-N430",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 1100,
+    "tax": 0,
+    "total": 1100,
+    "received": 1100,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
