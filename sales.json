@@ -66,5 +66,37 @@
     "received": 1000,
     "change": 400,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 11:27:20",
+    "items": [
+      {
+        "name": "HEIZO ﾁﾀﾝｺｰﾃｨﾝｸﾞ ﾀﾞｲﾔﾓﾝﾄﾞｼｬｰﾌﾟﾅｰ 200mm",
+        "model": "HDS-200",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      },
+      {
+        "name": "Kazi-Tu 刈払鎌 刃長180mm",
+        "model": "KKK-180",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "Kazi-Tu 剪定はさみ　210ｍｍ",
+        "model": "KSH-210",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 2300,
+    "tax": 0,
+    "total": 2300,
+    "received": 2300,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
