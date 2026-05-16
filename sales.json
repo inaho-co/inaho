@@ -166,5 +166,23 @@
     "received": 3000,
     "change": 500,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/16 12:51:26",
+    "items": [
+      {
+        "name": "INAHO 強力型刈込鋏",
+        "model": "KW-919",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 1100,
+    "tax": 0,
+    "total": 1100,
+    "received": 5100,
+    "change": 4000,
+    "paymentMethod": "現金"
   }
 ]
