@@ -103,8 +103,7 @@
   #numpad-area { flex: 1; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
   .mode-tabs { display: flex; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
   .mode-tab { flex: 1; padding: 8px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; }
-  .mode-tab.jan { background: var(--surface2); color: var(--text); }
-  .mode-tab.jan.active { background: var(--indigo); color: white; }
+
   .mode-tab.received { background: var(--surface2); color: var(--text); }
   .mode-tab.received.active { background: var(--teal); color: white; }
   .mode-tab.manual { background: var(--surface2); color: var(--text); }
@@ -253,7 +252,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v60</span>
+  <span id="ver-box">v61</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -443,7 +442,6 @@
 
     <div id="numpad-area">
       <div class="mode-tabs">
-        <button class="mode-tab jan" onclick="setMode('jan')">JANコード</button>
         <button class="mode-tab search" onclick="setMode('search')">商品名</button>
         <button class="mode-tab received active" onclick="setMode('received')">預かり金</button>
         <button class="mode-tab manual" onclick="setMode('manual')">手入力</button>
@@ -1165,7 +1163,7 @@ function clearCart() {
   cart = []; receivedAmount = ''; janInput = ''; manualPrice = '';
   const si = document.getElementById('name-search-input');
   if (si) si.value = '';
-  setMode('jan');
+  setMode('received');
   document.getElementById('result-idle').style.display = 'flex';
   document.getElementById('result-found').style.display = 'none';
   document.getElementById('result-notfound').style.display = 'none';
@@ -1299,11 +1297,7 @@ function renderNameSearch() {
 
 function numKey(key) {
   if (mode === 'search') return; // 商品名検索中はテンキー無効
-  if (mode === 'jan') {
-    if (key === 'C') janInput = '';
-    else if (key === '⌫') janInput = janInput.slice(0, -1);
-    else janInput += key;
-  } else if (mode === 'manual') {
+  if (mode === 'manual') {
     if (key === 'C') manualPrice = '';
     else if (key === '⌫') manualPrice = manualPrice.slice(0, -1);
     else {
@@ -1326,17 +1320,7 @@ function numKey(key) {
 function renderInputDisplay() {
   const disp = document.getElementById('input-display');
   const enterBtn = document.getElementById('btn-enter');
-  if (mode === 'jan') {
-    if (janInput) {
-      disp.textContent = janInput;
-      disp.className = 'input-val';
-      enterBtn.style.display = 'block';
-    } else {
-      disp.textContent = 'JANコードを入力';
-      disp.className = 'input-val placeholder';
-      enterBtn.style.display = 'none';
-    }
-  } else if (mode === 'manual') {
+  if (mode === 'manual') {
     disp.textContent = '商品名と金額を入力';
     disp.className = 'input-val placeholder';
     enterBtn.style.display = 'none';
