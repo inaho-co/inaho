@@ -84,5 +84,23 @@
     "received": 10000,
     "change": 8300,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 10:52:43",
+    "items": [
+      {
+        "name": "HEIZO ｽﾊﾟｲﾗﾙ型ﾁﾀﾝｺｰﾃｨﾝｸﾞｽﾃｯﾌﾟﾄﾞﾘﾙ10段 4-22mm",
+        "model": "SI-N422",
+        "price": 1100,
+        "qty": 9,
+        "subtotal": 9900
+      }
+    ],
+    "subtotal": 9900,
+    "tax": 0,
+    "total": 9900,
+    "received": 10000,
+    "change": 100,
+    "paymentMethod": "現金"
   }
 ]
