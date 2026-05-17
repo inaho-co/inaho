@@ -252,7 +252,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v65</span>
+  <span id="ver-box">v66</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -453,7 +453,7 @@
         </button>
       </div>
       <div id="manual-form" style="display:none; padding:4px 0; flex-shrink:0;">
-        <input id="manual-name" type="text" placeholder="商品名（任意）" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:6px;box-sizing:border-box;">
+        <input id="manual-name" type="text" placeholder="商品名（任意）" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:6px;box-sizing:border-box;" autocomplete="off">
         <!-- 価格ボタン -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
           <button onclick="addManualByPrice(1100)" style="padding:10px 4px;background:#ccfbf1;color:#0d9488;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥1,100</button>
@@ -2199,6 +2199,13 @@ async function dbClearAllSales() {
   if (!getGhToken()) {
     setTimeout(() => openGhSetup(), 800);
   }
+  // 手入力欄：Enterキーでページリロードを防ぐ（IME確定は通す）
+  const manualNameInput = document.getElementById('manual-name');
+  if (manualNameInput) {
+    manualNameInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.isComposing) e.preventDefault();
+    });
+  }
 })();
 
 // デバッグ情報を画面に表示
@@ -2214,7 +2221,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v65'; }
+  if (ver) { ver.textContent = 'v66'; }
 })();
 </script>
 </body>
