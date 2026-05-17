@@ -474,5 +474,30 @@
     "received": 1100,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 13:36:27",
+    "items": [
+      {
+        "name": "BASE LED内臓ﾋﾟｯｸｱｯﾌﾟﾂｰﾙ 570mm",
+        "model": "BMP-L57",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      },
+      {
+        "name": "HEIZO 石頭ﾊﾝﾏｰ 黒ﾍｯﾄﾞ 1.0kg",
+        "model": "HSH-280",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 1200,
+    "tax": 0,
+    "total": 1200,
+    "received": 1200,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
