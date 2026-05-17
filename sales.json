@@ -281,5 +281,44 @@
     "received": 1100,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 12:03:27",
+    "items": [
+      {
+        "name": "HEIZO ﾎﾞﾙﾄｸﾘｯﾊﾟｰ 450mm",
+        "model": "HBC-450",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "BASE 水平器 400mm 強力ﾏｸﾞﾈｯﾄ付き",
+        "model": "BLR-40M",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "HEIZO ｽﾘﾝｸﾞﾍﾞﾙﾄ50㎜×4M",
+        "model": "SB-504",
+        "price": 2200,
+        "qty": 1,
+        "subtotal": 2200
+      },
+      {
+        "name": "INAHO 強力型刈込鋏",
+        "model": "KW-919",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 5500,
+    "tax": 0,
+    "total": 5500,
+    "received": 10000,
+    "change": 4500,
+    "paymentMethod": "現金"
   }
 ]
