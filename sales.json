@@ -102,5 +102,23 @@
     "received": 10000,
     "change": 100,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 10:53:19",
+    "items": [
+      {
+        "name": "Kazi-Tu 太枝切はさみ 600mm",
+        "model": "KFH-600",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 1100,
+    "tax": 0,
+    "total": 1100,
+    "received": 1100,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
