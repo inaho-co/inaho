@@ -195,5 +195,30 @@
     "received": 6100,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 11:51:38",
+    "items": [
+      {
+        "name": "富士手袋　ラバーダブルシェルパ8677",
+        "model": "M",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "Kazi-Tu 芽切りはさみ 200mm",
+        "model": "KMH-200",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 1700,
+    "tax": 0,
+    "total": 1700,
+    "received": 2000,
+    "change": 300,
+    "paymentMethod": "現金"
   }
 ]
