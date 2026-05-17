@@ -438,5 +438,23 @@
     "received": 2000,
     "change": 900,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 12:54:12",
+    "items": [
+      {
+        "name": "HEIZO ｿｹｯﾄﾚﾝﾁｾｯﾄ12本ｾｯﾄ差込角9.5㎜ / 3/8\"",
+        "model": "WA-D12",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 1100,
+    "tax": 0,
+    "total": 1100,
+    "received": 5100,
+    "change": 4000,
+    "paymentMethod": "現金"
   }
 ]
