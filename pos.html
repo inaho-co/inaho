@@ -252,7 +252,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v64</span>
+  <span id="ver-box">v65</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -461,12 +461,7 @@
           <button onclick="addManualByPrice(2200)" style="padding:10px 4px;background:#fef9c3;color:#ca8a04;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥2,200</button>
           <button onclick="addManualByPrice(2500)" style="padding:10px 4px;background:#fce7f3;color:#be185d;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥2,500</button>
         </div>
-        <!-- 金額テンキー入力（従来） -->
-        <div style="display:flex;gap:6px;align-items:center;">
-          <span style="font-size:14px;color:#64748b;">金額:</span>
-          <span id="manual-price-display" style="font-size:18px;font-weight:700;flex:1;">¥0</span>
-          <button onclick="addManualItem()" style="background:#4f46e5;color:white;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;">追加</button>
-        </div>
+        <span id="manual-price-display" style="display:none;">¥0</span>
       </div>
       <!-- 商品名検索エリア -->
       <div id="search-area">
@@ -1217,11 +1212,12 @@ function setMode(m) {
     }, 50);
     renderNameSearch();
   }
-  // 検索モード中はテンキーを非表示にして検索エリアを広げる
+  // 検索・手入力モード中はテンキーと入力ディスプレイを非表示
   const numpadGrid = document.querySelector('#numpad-area .numpad-grid');
   const inputDisplay = document.querySelector('#numpad-area .input-display');
-  if (numpadGrid) numpadGrid.style.display = m === 'search' ? 'none' : '';
-  if (inputDisplay) inputDisplay.style.display = m === 'search' ? 'none' : '';
+  const hideNumpad = (m === 'search' || m === 'manual');
+  if (numpadGrid) numpadGrid.style.display = hideNumpad ? 'none' : '';
+  if (inputDisplay) inputDisplay.style.display = hideNumpad ? 'none' : '';
   renderInputDisplay();
   renderSummary();
 }
@@ -2218,7 +2214,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v64'; }
+  if (ver) { ver.textContent = 'v65'; }
 })();
 </script>
 </body>
