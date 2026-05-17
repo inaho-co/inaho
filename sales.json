@@ -363,5 +363,44 @@
     "received": 10200,
     "change": 8000,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 12:25:53",
+    "items": [
+      {
+        "name": "HEIZO ショックレスハンマー　1.5LB",
+        "model": "HSR-150",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      },
+      {
+        "name": "包丁",
+        "model": "BR刺身",
+        "price": 2500,
+        "qty": 1,
+        "subtotal": 2500
+      },
+      {
+        "name": "Kazi-Tu 斧 ｱｯｸｽ 335",
+        "model": "KOA-335",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "Kazi-Tu　ガーデンハンディレーキ250ｍｍ",
+        "model": "KHR-S25",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 4800,
+    "tax": 0,
+    "total": 4800,
+    "received": 4800,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
