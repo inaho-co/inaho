@@ -402,5 +402,23 @@
     "received": 4800,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 12:29:01",
+    "items": [
+      {
+        "name": "BASE LED内臓ﾋﾟｯｸｱｯﾌﾟﾂｰﾙ 570mm",
+        "model": "BMP-L57",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 600,
+    "tax": 0,
+    "total": 600,
+    "received": 600,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
