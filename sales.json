@@ -220,5 +220,30 @@
     "received": 2000,
     "change": 300,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 11:56:18",
+    "items": [
+      {
+        "name": "包丁",
+        "model": "BRサントク",
+        "price": 2500,
+        "qty": 1,
+        "subtotal": 2500
+      },
+      {
+        "name": "HEIZO　ホットグルーガンミニ75",
+        "model": "HGG-M75",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 3100,
+    "tax": 0,
+    "total": 3100,
+    "received": 10000,
+    "change": 6900,
+    "paymentMethod": "現金"
   }
 ]
