@@ -252,7 +252,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v66</span>
+  <span id="ver-box">v67</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -453,13 +453,22 @@
         </button>
       </div>
       <div id="manual-form" style="display:none; padding:4px 0; flex-shrink:0;">
-        <input id="manual-name" type="text" placeholder="商品名（任意）" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:6px;box-sizing:border-box;" autocomplete="off">
-        <!-- 価格ボタン -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
-          <button onclick="addManualByPrice(1100)" style="padding:10px 4px;background:#ccfbf1;color:#0d9488;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥1,100</button>
-          <button onclick="addManualByPrice(600)"  style="padding:10px 4px;background:#e0e7ff;color:#4f46e5;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥600</button>
-          <button onclick="addManualByPrice(2200)" style="padding:10px 4px;background:#fef9c3;color:#ca8a04;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥2,200</button>
-          <button onclick="addManualByPrice(2500)" style="padding:10px 4px;background:#fce7f3;color:#be185d;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥2,500</button>
+        <!-- 価格ボタン（3列×2行＋その他） -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;">
+          <button onclick="addManualByPrice(1100)" style="padding:12px 4px;background:#ccfbf1;color:#0d9488;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">¥1,100</button>
+          <button onclick="addManualByPrice(600)"  style="padding:12px 4px;background:#e0e7ff;color:#4f46e5;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">¥600</button>
+          <button onclick="addManualByPrice(2200)" style="padding:12px 4px;background:#fef9c3;color:#ca8a04;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">¥2,200</button>
+          <button onclick="addManualByPrice(2500)" style="padding:12px 4px;background:#fce7f3;color:#be185d;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">¥2,500</button>
+          <button onclick="toggleOtherForm()" style="padding:12px 4px;background:#f1f5f9;color:#475569;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;grid-column:span 2;">その他…</button>
+        </div>
+        <!-- その他フォーム（展開式） -->
+        <div id="manual-other-form" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;gap:6px;flex-direction:column;">
+          <input id="manual-name" type="text" placeholder="商品名（任意）" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;" autocomplete="off">
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span style="font-size:13px;color:#64748b;flex-shrink:0;">金額 ¥</span>
+            <input id="manual-other-price" type="number" inputmode="numeric" placeholder="0" min="0" style="flex:1;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-size:16px;font-weight:700;box-sizing:border-box;">
+            <button onclick="addManualOther()" style="background:#4f46e5;color:white;border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">追加</button>
+          </div>
         </div>
         <span id="manual-price-display" style="display:none;">¥0</span>
       </div>
@@ -1203,7 +1212,14 @@ function setMode(m) {
   if (m === 'search') {
     document.getElementById('result-notfound').style.display = 'none';
   }
-  if (m === 'manual') { manualPrice = ''; renderManualPrice(); }
+  if (m === 'manual') {
+    manualPrice = '';
+    renderManualPrice();
+  } else {
+    // 手入力以外に切り替えたらその他フォームを閉じる
+    const otherForm = document.getElementById('manual-other-form');
+    if (otherForm) otherForm.style.display = 'none';
+  }
   if (m === 'search') {
     // 検索フォームにフォーカス
     setTimeout(() => {
@@ -1228,15 +1244,35 @@ function renderManualPrice() {
 }
 
 function addManualByPrice(price) {
-  const name = document.getElementById('manual-name').value.trim() || '手入力商品';
+  const item = { jan: 'manual_' + Date.now(), name: '手入力商品', model: '', price: price, qty: 1 };
+  cart.push(item);
+  renderCart();
+  renderSummary();
+  beep('ok');
+}
+
+function toggleOtherForm() {
+  const form = document.getElementById('manual-other-form');
+  const isOpen = form.style.display !== 'none';
+  form.style.display = isOpen ? 'none' : 'flex';
+  if (!isOpen) {
+    document.getElementById('manual-name').value = '';
+    document.getElementById('manual-other-price').value = '';
+    document.getElementById('manual-name').focus();
+  }
+}
+
+function addManualOther() {
+  const name  = document.getElementById('manual-name').value.trim() || '手入力商品';
+  const price = parseInt(document.getElementById('manual-other-price').value) || 0;
+  if (price <= 0) { alert('金額を入力してください'); return; }
   const item = { jan: 'manual_' + Date.now(), name: name, model: '', price: price, qty: 1 };
   cart.push(item);
   document.getElementById('manual-name').value = '';
-  manualPrice = '';
-  renderManualPrice();
+  document.getElementById('manual-other-price').value = '';
+  document.getElementById('manual-name').focus();
   renderCart();
   renderSummary();
-  document.getElementById('manual-name').focus();
   beep('ok');
 }
 
@@ -2221,7 +2257,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v66'; }
+  if (ver) { ver.textContent = 'v67'; }
 })();
 </script>
 </body>
