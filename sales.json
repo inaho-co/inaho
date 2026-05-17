@@ -338,5 +338,30 @@
     "received": 600,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 12:24:08",
+    "items": [
+      {
+        "name": "富士手袋　天牛　減振手袋　0015",
+        "model": "M",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "Kazi-Tu 折込式鋸 240 中目",
+        "model": "KON-240",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 2200,
+    "tax": 0,
+    "total": 2200,
+    "received": 10200,
+    "change": 8000,
+    "paymentMethod": "現金"
   }
 ]
