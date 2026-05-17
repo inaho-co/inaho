@@ -263,5 +263,23 @@
     "received": 1100,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 11:58:51",
+    "items": [
+      {
+        "name": "BASE　ダイヤモンドシャープナー　270ｍｍ",
+        "model": "BDS-270",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 1100,
+    "tax": 0,
+    "total": 1100,
+    "received": 1100,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
