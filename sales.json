@@ -138,5 +138,37 @@
     "received": 2200,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 11:17:51",
+    "items": [
+      {
+        "name": "富士手袋　ラバーダブルシェルパ8677",
+        "model": "M",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "HEIZO 鋼弾 両頭ﾋﾞｯﾄ+2*110 10本組 ﾏｸﾞﾈｯﾄ入り",
+        "model": "HBG-110-10",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "BASE 強力ﾊﾟﾜｰﾍﾟﾝﾁ Pro 200mm",
+        "model": "BKP-200",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 2800,
+    "tax": 0,
+    "total": 2800,
+    "received": 3000,
+    "change": 200,
+    "paymentMethod": "現金"
   }
 ]
