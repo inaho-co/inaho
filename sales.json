@@ -1,1 +1,63 @@
-[]
+[
+  {
+    "datetime": "2026/5/17 9:27:35",
+    "items": [
+      {
+        "name": "INAHO 強力型刈込鋏",
+        "model": "KW-919",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 1100,
+    "tax": 0,
+    "total": 1100,
+    "received": 2000,
+    "change": 900,
+    "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 9:27:48",
+    "items": [
+      {
+        "name": "包丁",
+        "model": "BR刺身",
+        "price": 2500,
+        "qty": 1,
+        "subtotal": 2500
+      }
+    ],
+    "subtotal": 2500,
+    "tax": 0,
+    "total": 2500,
+    "received": 2500,
+    "change": 0,
+    "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 10:13:04",
+    "items": [
+      {
+        "name": "BASE LED内臓ﾋﾟｯｸｱｯﾌﾟﾂｰﾙ 570mm",
+        "model": "BMP-L57",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      },
+      {
+        "name": "INAHO 強力型刈込鋏",
+        "model": "KW-919",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 1700,
+    "tax": 0,
+    "total": 1700,
+    "received": 2000,
+    "change": 300,
+    "paymentMethod": "現金"
+  }
+]
