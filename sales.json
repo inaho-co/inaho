@@ -556,5 +556,23 @@
     "received": 3000,
     "change": 700,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 14:43:07",
+    "items": [
+      {
+        "name": "富士手袋　ウレタン手袋　5380　10P",
+        "model": "L",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 1100,
+    "tax": 0,
+    "total": 1100,
+    "received": 1100,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
