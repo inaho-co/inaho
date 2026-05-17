@@ -252,7 +252,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v68</span>
+  <span id="ver-box">v69</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -454,12 +454,12 @@
       </div>
       <div id="manual-form" style="display:none; padding:4px 0; flex-shrink:0;">
         <!-- 価格ボタン（3列×2行＋その他） -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px;">
-          <button onclick="addManualByPrice(1100)" style="padding:12px 4px;background:#ccfbf1;color:#0d9488;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">¥1,100</button>
-          <button onclick="addManualByPrice(600)"  style="padding:12px 4px;background:#e0e7ff;color:#4f46e5;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">¥600</button>
-          <button onclick="addManualByPrice(2200)" style="padding:12px 4px;background:#fef9c3;color:#ca8a04;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">¥2,200</button>
-          <button onclick="addManualByPrice(2500)" style="padding:12px 4px;background:#fce7f3;color:#be185d;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">¥2,500</button>
-          <button onclick="toggleOtherForm()" style="padding:12px 4px;background:#f1f5f9;color:#475569;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;grid-column:span 2;">その他…</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+          <button onclick="addManualByPrice(1100)" style="padding:12px 4px;background:#ccfbf1;color:#0d9488;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥1,100</button>
+          <button onclick="addManualByPrice(600)"  style="padding:12px 4px;background:#e0e7ff;color:#4f46e5;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥600</button>
+          <button onclick="addManualByPrice(2200)" style="padding:12px 4px;background:#fef9c3;color:#ca8a04;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥2,200</button>
+          <button onclick="addManualByPrice(2500)" style="padding:12px 4px;background:#fce7f3;color:#be185d;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">¥2,500</button>
+          <button onclick="toggleOtherForm()" style="padding:12px 4px;background:#f1f5f9;color:#475569;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;grid-column:span 2;">その他…</button>
         </div>
         <!-- その他フォーム（展開式） -->
         <div id="manual-other-form" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;gap:6px;flex-direction:column;">
@@ -2256,7 +2256,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v68'; }
+  if (ver) { ver.textContent = 'v69'; }
 })();
 </script>
 </body>
