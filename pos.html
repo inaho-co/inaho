@@ -252,7 +252,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v62</span>
+  <span id="ver-box">v63</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -1359,18 +1359,24 @@ function renderSalesModal() {
   const total = salesLog.reduce((s, r) => s + r.total, 0);
   const totalQty = salesLog.reduce((s, r) => s + r.items.reduce((ss, it) => ss + it.qty, 0), 0);
 
-  // 各販売価格帯の個数集計（priceSettingsの実際の販売価格で分類）
-  const p600  = priceSettings[600];
-  const p1000 = priceSettings[1000];
-  const p2000 = priceSettings[2000];
-  let qty600 = 0, qty1000 = 0, qty2000 = 0;
+  // 価格ごとに個数・小計を集計（全商品対応）
+  const priceMap = {}; // { price: { qty, subtotal } }
   salesLog.forEach(r => {
     r.items.forEach(it => {
-      if (it.price === p600)  qty600  += it.qty;
-      else if (it.price === p1000) qty1000 += it.qty;
-      else if (it.price === p2000) qty2000 += it.qty;
+      if (!priceMap[it.price]) priceMap[it.price] = { qty: 0, subtotal: 0 };
+      priceMap[it.price].qty      += it.qty;
+      priceMap[it.price].subtotal += it.price * it.qty;
     });
   });
+  // 価格の低い順に並べる
+  const priceRows = Object.keys(priceMap)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="color:#475569;">¥${p.toLocaleString()}</span>
+        <span><b>${priceMap[p].qty}個</b>　<span style="color:#94a3b8;font-size:12px;">¥${priceMap[p].subtotal.toLocaleString()}</span></span>
+      </div>`).join('');
 
   const rows = [...salesLog].map((r, i) => {
     const itemDetail = r.items.map(item =>
@@ -1391,22 +1397,11 @@ function renderSalesModal() {
         <span style="font-weight:700;">合計売上</span>
         <span style="font-size:17px;font-weight:800;color:#0d9488;">¥${total.toLocaleString()}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #bbf7d0;padding-bottom:6px;margin-bottom:2px;">
         <span style="color:#475569;">件数 / 総販売数</span>
         <span><b>${salesLog.length}件</b> / <b>${totalQty}個</b></span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="color:#475569;">¥${p600.toLocaleString()} 均一</span>
-        <span><b>${qty600}個</b>　<span style="color:#94a3b8;font-size:12px;">¥${(p600*qty600).toLocaleString()}</span></span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="color:#475569;">¥${p1000.toLocaleString()} 均一</span>
-        <span><b>${qty1000}個</b>　<span style="color:#94a3b8;font-size:12px;">¥${(p1000*qty1000).toLocaleString()}</span></span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="color:#475569;">¥${p2000.toLocaleString()} 均一</span>
-        <span><b>${qty2000}個</b>　<span style="color:#94a3b8;font-size:12px;">¥${(p2000*qty2000).toLocaleString()}</span></span>
-      </div>
+      ${priceRows}
     </div>
     <table>
       <thead><tr><th>日時</th><th>合計</th><th>支払</th><th>明細</th><th></th></tr></thead>
@@ -2203,7 +2198,7 @@ async function dbClearAllSales() {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
   const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v62'; }
+  if (ver) { ver.textContent = 'v63'; }
 })();
 </script>
 </body>
