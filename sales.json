@@ -170,5 +170,30 @@
     "received": 3000,
     "change": 200,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/5/17 11:37:42",
+    "items": [
+      {
+        "name": "HEIZO ｿｹｯﾄﾚﾝﾁｾｯﾄ12本ｾｯﾄ差込角9.5㎜ / 3/8\"",
+        "model": "WA-D12",
+        "price": 1100,
+        "qty": 5,
+        "subtotal": 5500
+      },
+      {
+        "name": "HEIZO ﾋﾟｯｸﾂｰﾙｾｯﾄ 4PC",
+        "model": "KI-N4",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 6100,
+    "tax": 0,
+    "total": 6100,
+    "received": 6100,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
