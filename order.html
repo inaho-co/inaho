@@ -125,7 +125,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
       <button onclick="clearAll()" style="width:100%;padding:10px;font-size:15px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">全クリア</button>
     </div>
   </div>
-  <div class="mf"><label>発注作成者</label><input type="text" id="order-author" placeholder="氏名を入力"></div>
+  <div class="mf"><label>発注作成者</label>
+    <select id="order-author" style="width:100%;font-size:16px;padding:10px;border:1px solid #d0d0d0;border-radius:8px;background:#fafafa;color:#1a1a1a;-webkit-appearance:none;">
+      <option value="">選択してください</option>
+      <option value="長谷川">長谷川</option>
+      <option value="梅田">梅田</option>
+      <option value="福富">福富</option>
+      <option value="阿部">阿部</option>
+    </select>
+  </div>
 </div>
 
 <div class="store-section">
@@ -1130,10 +1138,10 @@ function showCenterNotice(msg){
 }
 
 // メタフィールド変更時にlocalStorageへ保存
-['order-date','order-author','store-0','store-1','store-2','order-comment'].forEach(function(id){
+['order-date','store-0','store-1','store-2','order-comment'].forEach(function(id){
   document.getElementById(id).addEventListener('input', saveMetaToStorage);
 });
-['delivery-0','delivery-1','delivery-2'].forEach(function(id){
+['order-author','delivery-0','delivery-1','delivery-2'].forEach(function(id){
   document.getElementById(id).addEventListener('change', saveMetaToStorage);
 });
 
