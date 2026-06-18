@@ -109,10 +109,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 #tab-history{display:none;padding:0 14px;}
 #tab-input{display:block;}
 #tab-confirm{display:block;padding:0;}
+.author-btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.author-btn{padding:16px 8px;font-size:18px;font-weight:600;border:2px solid #d0d0d0;border-radius:12px;background:#f8f8f8;color:#1a1a1a;cursor:pointer;text-align:center;}
+.author-btn.selected{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+.draft-btn{background:#fff;color:#555;border:1px solid #aaa;}
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.5</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.6</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -168,6 +172,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
     <div id="order-list" style="margin-bottom:4px;padding:0 14px;"></div>
   </div>
   <div style="padding:10px 14px 4px;">
+    <button class="action-btn draft-btn" onclick="openDraftModal()" style="margin-bottom:8px;">下書き</button>
     <button class="action-btn" id="save-tmp-btn" onclick="openSaveTmpModal()" style="background:#fff;color:#1a1a1a;border:1px solid #1a1a1a;">保存</button>
     <button class="action-btn" onclick="openTmpList()" style="background:#fff;color:#555;border:1px solid #aaa;margin-bottom:8px;">保存リスト</button>
     <div class="mf" style="margin-bottom:8px;">
@@ -267,6 +272,42 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
   </div>
 </div>
 
+<!-- 発注者選択モーダル -->
+<div class="overlay" id="author-select-overlay">
+  <div class="modal">
+    <h3>発注者を選んでください</h3>
+    <div class="author-btn-grid">
+      <button class="author-btn" id="author-btn-長谷川" onclick="selectAuthor('長谷川')">長谷川</button>
+      <button class="author-btn" id="author-btn-梅田" onclick="selectAuthor('梅田')">梅田</button>
+      <button class="author-btn" id="author-btn-福富" onclick="selectAuthor('福富')">福富</button>
+      <button class="author-btn" id="author-btn-阿部" onclick="selectAuthor('阿部')">阿部</button>
+    </div>
+  </div>
+</div>
+
+<!-- 下書き復元確認モーダル（起動時） -->
+<div class="overlay" id="draft-check-overlay">
+  <div class="modal">
+    <h3>前回の入力データがあります</h3>
+    <div class="modal-sub" id="draft-check-sub">復元しますか？</div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="discardDraft()">キャンセル</button>
+      <button class="mbtn-ok" onclick="restoreFromDraft()">復元</button>
+    </div>
+  </div>
+</div>
+
+<!-- 下書きモーダル（「下書き」ボタンから） -->
+<div class="overlay" id="draft-overlay" onclick="closeDraftIfBg(event)">
+  <div class="modal">
+    <h3 style="margin-bottom:12px;">下書き（自動保存）</h3>
+    <div id="draft-modal-body"></div>
+    <div style="margin-top:12px;">
+      <button class="mbtn-cancel" style="width:100%;padding:11px;" onclick="document.getElementById('draft-overlay').classList.remove('open')">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 <div class="center-notice" id="center-notice"></div>
 
@@ -279,10 +320,28 @@ const qty = {inaho:{0:{},1:{},2:{}}, sankyo:{0:{},1:{},2:{}}};
 
 // localStorage キー
 const QTY_STORAGE_KEY = 'order-app-qty';
+const META_STORAGE_KEY = 'order-app-meta';
+const AUTHOR_STORAGE_KEY = 'order-app-author';
+const AUTHORS = ['長谷川', '梅田', '福富', '阿部'];
+
+let currentAuthor = '';
+let currentDraftData = null;
 
 // qty を localStorage に保存
 function saveQtyToStorage() {
   localStorage.setItem(QTY_STORAGE_KEY, JSON.stringify(qty));
+}
+
+// メタ情報（発注日・店舗名・配送区分・備考）を localStorage に保存
+function saveMetaToStorage() {
+  const meta = {
+    orderDate: document.getElementById('order-date').value,
+    orderAuthor: document.getElementById('order-author').value,
+    stores: [0,1,2].map(function(i){ return document.getElementById('store-'+i).value; }),
+    deliveries: [0,1,2].map(function(i){ return document.getElementById('delivery-'+i).value; }),
+    comment: document.getElementById('order-comment').value
+  };
+  localStorage.setItem(META_STORAGE_KEY, JSON.stringify(meta));
 }
 
 // 起動時に localStorage から qty を復元
@@ -298,7 +357,29 @@ function loadQtyFromStorage() {
     });
   } catch(e) {}
 }
+
+// 起動時に localStorage からメタ情報を復元
+function loadMetaFromStorage() {
+  try {
+    const saved = localStorage.getItem(META_STORAGE_KEY);
+    if (!saved) return;
+    const meta = JSON.parse(saved);
+    if (meta.orderDate) document.getElementById('order-date').value = meta.orderDate;
+    if (meta.orderAuthor) document.getElementById('order-author').value = meta.orderAuthor;
+    if (meta.stores) meta.stores.forEach(function(v,i){
+      document.getElementById('store-'+i).value = v||'';
+      updateStoreTab(i);
+    });
+    if (meta.deliveries) meta.deliveries.forEach(function(v,i){
+      document.getElementById('delivery-'+i).value = v||'';
+      updateDeliveryStyle(i);
+    });
+    if (meta.comment !== undefined) document.getElementById('order-comment').value = meta.comment||'';
+  } catch(e) {}
+}
+
 loadQtyFromStorage();
+loadMetaFromStorage();
 
 let supplier = 'inaho';
 let storeIdx = 0;
@@ -323,6 +404,7 @@ async function loadOosFromServer() {
       }));
       oosLoaded = true;
       renderList();
+      openAuthorSelectModal();
       return;
     }catch(e){
       if(i<3) await new Promise(function(r){setTimeout(r,4000);});
@@ -331,6 +413,7 @@ async function loadOosFromServer() {
         oosLoaded = true;
         oosFailed = true;
         renderList();
+        openAuthorSelectModal();
       }
     }
   }
@@ -555,8 +638,10 @@ function doClear(){
     updateStoreTab(i);
   }
   saveQtyToStorage();
+  localStorage.removeItem(META_STORAGE_KEY);
   document.getElementById('clear-overlay').classList.remove('open');
   document.getElementById('order-comment').value='';
+  deleteDraftFromServer();
   renderList(); updateSummary(); refreshHasData(); resetSaveBtn(); initDeliveryStyles();
   showToast('全クリアしました');
 }
@@ -775,11 +860,12 @@ async function openTmpList(){
 }
 
 function renderTmpList(orders){
-  if(!orders.length){
+  const filtered=orders.filter(function(o){ return !o.label||!o.label.startsWith('__draft__'); });
+  if(!filtered.length){
     document.getElementById('tmp-list-body').innerHTML='<div style="text-align:center;padding:20px;color:#aaa;">保存データなし</div>';
     return;
   }
-  const html=orders.slice().reverse().map(function(o){
+  const html=filtered.slice().reverse().map(function(o){
     const label=o.label||o.date||o.id;
     const stores=o.stores?o.stores.map(function(s){return s.name;}).filter(Boolean).join('・'):'';
     return '<div style="padding:10px 0;border-bottom:1px solid #efefef;">'
@@ -860,6 +946,7 @@ async function sendMailById(id){
     if(data.success){
       // 送信成功後にデータ削除
       await fetch(SERVER+'/orders/'+id,{method:'DELETE'});
+      deleteDraftFromServer();
       showToast('メールを送信しました！');
     } else {
       showToast('送信失敗');
@@ -874,6 +961,162 @@ async function sendMail(){
   if(id) await sendMailById(id);
 }
 
+// ===== 発注者選択 =====
+function openAuthorSelectModal() {
+  const saved = localStorage.getItem(AUTHOR_STORAGE_KEY);
+  AUTHORS.forEach(function(name){
+    const btn = document.getElementById('author-btn-'+name);
+    if(btn) btn.classList.toggle('selected', name === saved);
+  });
+  document.getElementById('author-select-overlay').classList.add('open');
+}
+
+function selectAuthor(name) {
+  currentAuthor = name;
+  localStorage.setItem(AUTHOR_STORAGE_KEY, name);
+  document.getElementById('order-author').value = name;
+  document.getElementById('author-select-overlay').classList.remove('open');
+  saveMetaToStorage();
+  checkDraft(name);
+}
+
+// ===== 下書き（サーバー）=====
+async function autoSaveDraft() {
+  if (!currentAuthor || !hasAnyData()) return;
+  const label = '__draft__' + currentAuthor;
+  try {
+    const res = await fetch(SERVER+'/orders');
+    if (!res.ok) return;
+    const orders = await res.json();
+    const existing = orders.find(function(o){ return o.label === label; });
+    if (existing) await fetch(SERVER+'/orders/'+existing.id, {method:'DELETE'});
+    const payload = buildPayload();
+    payload.label = label;
+    await fetch(SERVER+'/orders', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+  } catch(e) {}
+}
+
+async function deleteDraftFromServer() {
+  if (!currentAuthor) return;
+  const label = '__draft__' + currentAuthor;
+  try {
+    const res = await fetch(SERVER+'/orders');
+    if (!res.ok) return;
+    const orders = await res.json();
+    const existing = orders.find(function(o){ return o.label === label; });
+    if (existing) await fetch(SERVER+'/orders/'+existing.id, {method:'DELETE'});
+  } catch(e) {}
+}
+
+// 起動時：下書き確認
+async function checkDraft(author) {
+  const label = '__draft__' + author;
+  try {
+    const res = await fetch(SERVER+'/orders');
+    if (!res.ok) return;
+    const orders = await res.json();
+    const draft = orders.find(function(o){ return o.label === label; });
+    if (!draft) return;
+    currentDraftData = draft;
+    const stores = (draft.stores||[]).filter(function(s){ return s.name; }).map(function(s){ return s.name; }).join('・');
+    document.getElementById('draft-check-sub').textContent = (stores ? stores + 'の' : '') + '入力データがあります。復元しますか？';
+    document.getElementById('draft-check-overlay').classList.add('open');
+  } catch(e) {}
+}
+
+function restoreFromDraft() {
+  if (!currentDraftData) return;
+  applyOrderData(currentDraftData);
+  document.getElementById('draft-check-overlay').classList.remove('open');
+  currentDraftData = null;
+  showCenterNotice('下書きを復元しました');
+}
+
+async function discardDraft() {
+  document.getElementById('draft-check-overlay').classList.remove('open');
+  if (currentDraftData) {
+    try { await fetch(SERVER+'/orders/'+currentDraftData.id, {method:'DELETE'}); } catch(e){}
+    currentDraftData = null;
+  }
+}
+
+// 「下書き」ボタン
+async function openDraftModal() {
+  if (!currentAuthor) { showToast('発注者を選択してください'); return; }
+  const body = document.getElementById('draft-modal-body');
+  body.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">読み込み中...</div>';
+  document.getElementById('draft-overlay').classList.add('open');
+  const label = '__draft__' + currentAuthor;
+  try {
+    const res = await fetch(SERVER+'/orders');
+    if (!res.ok) throw new Error();
+    const orders = await res.json();
+    const draft = orders.find(function(o){ return o.label === label; });
+    if (!draft) {
+      body.innerHTML = '<div style="text-align:center;padding:20px;color:#aaa;">下書きなし</div>';
+      return;
+    }
+    currentDraftData = draft;
+    const stores = (draft.stores||[]).filter(function(s){ return s.name; })
+      .map(function(s){ return '<div style="font-size:14px;margin-bottom:4px;">・'+s.name+(s.delivery?'（'+s.delivery+'）':'')+'</div>'; }).join('');
+    body.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:8px;">'+currentAuthor+'の自動保存データ</div>'
+      + (stores || '<div style="font-size:14px;color:#aaa;">店舗情報なし</div>')
+      + '<div style="display:flex;gap:8px;margin-top:12px;">'
+      + '<button onclick="restoreFromDraftModal()" style="flex:1;padding:10px;font-size:14px;font-weight:600;background:#1a1a1a;color:#fff;border:none;border-radius:8px;cursor:pointer;">復元</button>'
+      + '<button onclick="deleteDraftModal()" style="padding:10px 16px;font-size:14px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;">削除</button>'
+      + '</div>';
+  } catch(e) {
+    body.innerHTML = '<div style="text-align:center;padding:20px;color:#e53935;">読み込み失敗</div>';
+  }
+}
+
+function restoreFromDraftModal() {
+  if (!currentDraftData) return;
+  applyOrderData(currentDraftData);
+  document.getElementById('draft-overlay').classList.remove('open');
+  currentDraftData = null;
+  showCenterNotice('下書きを復元しました');
+}
+
+async function deleteDraftModal() {
+  if (!currentDraftData) return;
+  try { await fetch(SERVER+'/orders/'+currentDraftData.id, {method:'DELETE'}); } catch(e){}
+  currentDraftData = null;
+  document.getElementById('draft-overlay').classList.remove('open');
+  showToast('下書きを削除しました');
+}
+
+function closeDraftIfBg(e) {
+  if (e.target === document.getElementById('draft-overlay')) document.getElementById('draft-overlay').classList.remove('open');
+}
+
+// サーバーデータをフォームに反映
+function applyOrderData(o) {
+  const stores = o.stores || [];
+  for (let i = 0; i < 3; i++) {
+    document.getElementById('store-'+i).value = stores[i] ? stores[i].name||'' : '';
+    document.getElementById('delivery-'+i).value = stores[i] ? stores[i].delivery||'' : '';
+    updateStoreTab(i);
+  }
+  const q = o.quantities || {};
+  ['inaho','sankyo'].forEach(function(s){
+    [0,1,2].forEach(function(i){ qty[s][i] = (q[s]&&q[s][i])||{}; });
+  });
+  if (o.date) document.getElementById('order-date').value = o.date;
+  if (o.comment !== undefined) document.getElementById('order-comment').value = o.comment||'';
+  saveQtyToStorage();
+  saveMetaToStorage();
+  renderList(); updateSummary(); refreshHasData(); renderConfirm(); initDeliveryStyles();
+}
+
+// タブを離れたとき自動保存
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'hidden') {
+    saveMetaToStorage();
+    autoSaveDraft();
+  }
+});
+
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
@@ -885,6 +1128,14 @@ function showCenterNotice(msg){
   n.textContent=msg; n.classList.add('show');
   setTimeout(function(){n.classList.remove('show');},2500);
 }
+
+// メタフィールド変更時にlocalStorageへ保存
+['order-date','order-author','store-0','store-1','store-2','order-comment'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', saveMetaToStorage);
+});
+['delivery-0','delivery-1','delivery-2'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', saveMetaToStorage);
+});
 
 renderFilters(); renderList(); updateSummary(); renderConfirm(); initDeliveryStyles();
 </script>
