@@ -116,7 +116,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.7</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 4.8</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -868,7 +868,11 @@ async function openTmpList(){
 }
 
 function renderTmpList(orders){
-  const filtered=orders.filter(function(o){ return !o.label||!o.label.startsWith('__draft__'); });
+  const filtered=orders.filter(function(o){
+    if(!o.label||o.label.startsWith('__draft__')) return false;
+    if(currentAuthor&&o.author!==currentAuthor) return false;
+    return true;
+  });
   if(!filtered.length){
     document.getElementById('tmp-list-body').innerHTML='<div style="text-align:center;padding:20px;color:#aaa;">保存データなし</div>';
     return;
