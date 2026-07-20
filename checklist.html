@@ -87,6 +87,37 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; mi
   background: rgba(255,255,255,0.25); border: none; color: white;
   border-radius: 6px; padding: 3px 7px; font-size: 12px; cursor: pointer;
 }
+.hidden-toggle-btn {
+  background: rgba(255,255,255,0.25); border: none; color: white;
+  border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; cursor: pointer;
+  display: none; white-space: nowrap;
+}
+.hidden-toggle-btn.show { display: inline-flex; }
+
+.select-hide-bar {
+  display: none; align-items: center; justify-content: flex-end;
+  padding: 8px 12px; background: #fffbf0; border-top: 1px solid #f0f0f0;
+}
+.edit-mode .select-hide-bar.show { display: flex; }
+.select-hide-btn {
+  background: #ede9fe; color: #5b21b6; border: none; border-radius: 8px;
+  padding: 7px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.select-hide-btn:disabled { opacity: 0.4; cursor: default; }
+
+.item-select-cb {
+  width: 18px; height: 18px; flex-shrink: 0; display: none;
+}
+.edit-mode .item-select-cb { display: block; }
+
+.hidden-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px; border-bottom: 1px solid #f5f5f5; opacity: 0.6;
+}
+.hidden-row .item-text { flex: 1; font-size: 14px; color: #555; }
+.hidden-row-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.btn-restore { background: #e0f2fe; color: #0369a1; }
+.btn-purge { background: #fee2e2; color: #dc2626; }
 
 .add-item-row {
   display: flex; gap: 8px; padding: 8px 12px;
@@ -401,6 +432,8 @@ let pendingTab = null;
 let pendingMove = null;
 let pendingItemEdit = null;
 let pendingDelAll = null;
+let selectedItems = new Set();
+let hiddenViewSecs = new Set();
 let _uid = Date.now();
 const uid = () => 'u' + (_uid++);
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -497,9 +530,15 @@ function renderTab(tabId) {
     <div${globalEdit?' class="edit-mode"':''}>`;
 
   secs.forEach((sec, sIdx) => {
+    const hiddenCount = sec.items.filter(i=>i.hidden).length;
+    const showingHidden = hiddenViewSecs.has(sec.id);
+    const visibleItems = sec.items.filter(i=>!i.hidden);
+    const selCount = visibleItems.filter(i=>selectedItems.has(sec.id+'|'+i.id)).length;
+
     h += `<div class="section ${sec.color}">
       <div class="section-header" id="sh-${sec.id}">
         <span class="section-title" onclick="toggleSec('${sec.id}')">${esc(sec.name)}</span>
+        <button class="hidden-toggle-btn${hiddenCount>0?' show':''}" onclick="toggleHiddenView('${sec.id}')">👁 非表示中(${hiddenCount})</button>
         <div class="section-edit-btns">
           <button class="sec-btn" onclick="moveSec('${tabId}',${sIdx},-1)">▲</button>
           <button class="sec-btn" onclick="moveSec('${tabId}',${sIdx},1)">▼</button>
@@ -510,25 +549,51 @@ function renderTab(tabId) {
       </div>
       <div class="section-body" id="sb-${sec.id}">`;
 
-    sec.items.forEach((item, iIdx) => {
-      h += `<div class="item${item.checked?' checked':''}">
-        <div class="checkbox" onclick="toggleItem('${tabId}','${sec.id}','${item.id}')">${item.checked?'✓':''}</div>
-        <div class="item-text" onclick="toggleItem('${tabId}','${sec.id}','${item.id}')">${esc(item.text)}</div>
-        <div class="item-edit-btns">
-          <button class="item-btn btn-up"   onclick="moveItem('${tabId}','${sec.id}',${iIdx},-1)">▲</button>
-          <button class="item-btn btn-down" onclick="moveItem('${tabId}','${sec.id}',${iIdx},1)">▼</button>
-          <button class="item-btn btn-move-sec" onclick="openMove('${tabId}','${sec.id}','${item.id}')">↗</button>
-          <button class="item-btn btn-edit-item" onclick="openItemEdit('${tabId}','${sec.id}','${item.id}')">✏️</button>
-          <button class="item-btn btn-del-item" onclick="delItem('${tabId}','${sec.id}','${item.id}')">✕</button>
-        </div>
-      </div>`;
-    });
+    if (showingHidden) {
+      const hiddenItems = sec.items.filter(i=>i.hidden);
+      if (hiddenItems.length === 0) {
+        h += `<div style="padding:10px 16px;font-size:13px;color:#999;">非表示中のアイテムはありません</div>`;
+      } else {
+        hiddenItems.forEach(item => {
+          h += `<div class="hidden-row">
+            <div class="item-text">${esc(item.text)}</div>
+            <div class="hidden-row-btns">
+              <button class="item-btn btn-restore" onclick="restoreItem('${tabId}','${sec.id}','${item.id}')">↩ 戻す</button>
+              <button class="item-btn btn-purge" onclick="delItem('${tabId}','${sec.id}','${item.id}')">✕ 削除</button>
+            </div>
+          </div>`;
+        });
+      }
+    } else {
+      visibleItems.forEach((item) => {
+        const iIdx = sec.items.indexOf(item);
+        const selKey = sec.id+'|'+item.id;
+        h += `<div class="item${item.checked?' checked':''}">
+          <input type="checkbox" class="item-select-cb" ${selectedItems.has(selKey)?'checked':''} onchange="toggleSelectItem('${sec.id}','${item.id}')">
+          <div class="checkbox" onclick="toggleItem('${tabId}','${sec.id}','${item.id}')">${item.checked?'✓':''}</div>
+          <div class="item-text" onclick="toggleItem('${tabId}','${sec.id}','${item.id}')">${esc(item.text)}</div>
+          <div class="item-edit-btns">
+            <button class="item-btn btn-up"   onclick="moveItem('${tabId}','${sec.id}',${iIdx},-1)">▲</button>
+            <button class="item-btn btn-down" onclick="moveItem('${tabId}','${sec.id}',${iIdx},1)">▼</button>
+            <button class="item-btn btn-move-sec" onclick="openMove('${tabId}','${sec.id}','${item.id}')">↗</button>
+            <button class="item-btn btn-edit-item" onclick="openItemEdit('${tabId}','${sec.id}','${item.id}')">✏️</button>
+            <button class="item-btn btn-del-item" onclick="delItem('${tabId}','${sec.id}','${item.id}')">✕</button>
+          </div>
+        </div>`;
+      });
 
-    h += `<div class="add-item-row">
+      h += `<div class="select-hide-bar${selCount>0?' show':''}">
+        <button class="select-hide-btn" ${selCount===0?'disabled':''} onclick="hideSelected('${tabId}','${sec.id}')">選択した${selCount}件を非表示にする</button>
+      </div>`;
+
+      h += `<div class="add-item-row">
         <input class="add-item-input" placeholder="アイテムを追加..." id="inp-${sec.id}"
           onkeydown="if(event.key==='Enter')addItem('${tabId}','${sec.id}')">
         <button class="add-item-btn" onclick="addItem('${tabId}','${sec.id}')">＋</button>
-      </div></div></div>`;
+      </div>`;
+    }
+
+    h += `</div></div>`;
   });
 
   h += `</div><button class="add-section-btn" onclick="openAddSection('${tabId}')">＋ セクションを追加</button>`;
@@ -576,6 +641,38 @@ function addItem(tabId, secId) {
 function delItem(tabId, secId, itemId) {
   const sec = state.data[tabId].find(s=>s.id===secId);
   sec.items = sec.items.filter(i=>i.id!==itemId);
+  selectedItems.delete(secId+'|'+itemId);
+  scheduleSave(); rerender();
+}
+
+// ===== 非表示 =====
+function toggleSelectItem(secId, itemId) {
+  const key = secId+'|'+itemId;
+  if (selectedItems.has(key)) selectedItems.delete(key);
+  else selectedItems.add(key);
+  rerender();
+}
+
+function hideSelected(tabId, secId) {
+  const sec = state.data[tabId].find(s=>s.id===secId);
+  sec.items.forEach(item => {
+    if (selectedItems.has(secId+'|'+item.id)) {
+      item.hidden = true;
+      selectedItems.delete(secId+'|'+item.id);
+    }
+  });
+  scheduleSave(); rerender();
+}
+
+function toggleHiddenView(secId) {
+  if (hiddenViewSecs.has(secId)) hiddenViewSecs.delete(secId);
+  else hiddenViewSecs.add(secId);
+  rerender();
+}
+
+function restoreItem(tabId, secId, itemId) {
+  const item = state.data[tabId].find(s=>s.id===secId).items.find(i=>i.id===itemId);
+  item.hidden = false;
   scheduleSave(); rerender();
 }
 
