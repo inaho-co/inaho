@@ -1037,12 +1037,6 @@
     "model": "25GL-75M",
     "price": 600
   },
-  "model:HBH-P3K": {
-    "jan": "",
-    "name": "HEIZO　ビットホルダー3PCカラビナセット",
-    "model": "HBH-P3K",
-    "price": 600
-  },
   "model:HMT-M3T": {
     "jan": "",
     "name": "HEIZO　マグネットトレイ丸型3PCS",
@@ -1869,6 +1863,12 @@
     "jan": "4571528211033",
     "name": "HEIZO　マグネットトレイ角型",
     "model": "HMT-K24",
+    "price": 600
+  },
+  "4571528211026": {
+    "jan": "4571528211026",
+    "name": "HEIZO　ビットホルダー3PCカラビナセット",
+    "model": "HBH-P3K",
     "price": 600
   }
 }
