@@ -929,12 +929,6 @@
     "model": "HMT-G12",
     "price": 1000
   },
-  "model:HWS-M12": {
-    "jan": "",
-    "name": "HEIZO　ワイヤーストリッパーマルチ12",
-    "model": "HWS-M12",
-    "price": 1000
-  },
   "model:HKR-F35": {
     "jan": "",
     "name": "HEIZOクロスレンチフォールド350",
@@ -1840,5 +1834,11 @@
     "name": "包丁",
     "model": "出刃",
     "price": 2500
+  },
+  "4571528210944": {
+    "jan": "4571528210944",
+    "name": "HEIZO　ワイヤーストリッパーマルチ12",
+    "model": "HWS-M12",
+    "price": 1000
   }
 }
