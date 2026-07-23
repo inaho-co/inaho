@@ -1840,5 +1840,11 @@
     "name": "HEIZO　ワイヤーストリッパーマルチ12",
     "model": "HWS-M12",
     "price": 1000
+  },
+  "model:HSP-130": {
+    "jan": "",
+    "name": "HEIZO　スナップリングプライヤー130ｍｍ",
+    "model": "HSP-130",
+    "price": 600
   }
 }
