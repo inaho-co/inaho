@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "datetime": "2026/7/24 9:25:07",
+    "items": [
+      {
+        "name": "BASE ﾛﾝｸﾞﾎﾞｰﾙﾎﾟｲﾝﾄ6角棒ﾚﾝﾁ 9本組",
+        "model": "BB6-9PC",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 600,
+    "tax": 0,
+    "total": 600,
+    "received": 1000,
+    "change": 400,
+    "paymentMethod": "現金"
+  }
+]
