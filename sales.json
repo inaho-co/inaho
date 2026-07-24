@@ -70,5 +70,23 @@
     "received": 0,
     "change": 0,
     "paymentMethod": "現金なし"
+  },
+  {
+    "datetime": "2026/7/24 10:52:55",
+    "items": [
+      {
+        "name": "Kazi-Tu 剪定・仮枠用鋸350　鞘付",
+        "model": "KSN-350S",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 1100,
+    "tax": 0,
+    "total": 1100,
+    "received": 1100,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
