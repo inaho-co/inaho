@@ -252,7 +252,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v72</span>
+  <span id="ver-box">v73</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -2320,8 +2320,6 @@ async function dbClearAllSales() {
   if ('BarcodeDetector' in window) {
     try { const f = await BarcodeDetector.getSupportedFormats(); formats = f.join(', '); } catch(e) { formats = 'エラー'; }
   }
-  const ver = document.getElementById('ver-box');
-  if (ver) { ver.textContent = 'v71'; }
 })();
 </script>
 </body>
