@@ -52,5 +52,23 @@
     "received": 1200,
     "change": 0,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/7/24 10:20:21",
+    "items": [
+      {
+        "name": "均一商品",
+        "model": "¥1000均一",
+        "price": 1100,
+        "qty": 2,
+        "subtotal": 2200
+      }
+    ],
+    "subtotal": 2200,
+    "tax": 0,
+    "total": 2200,
+    "received": 0,
+    "change": 0,
+    "paymentMethod": "現金なし"
   }
 ]
