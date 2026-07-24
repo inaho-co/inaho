@@ -359,5 +359,51 @@
     "received": 0,
     "change": -4500,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/7/24 11:57:39",
+    "items": [
+      {
+        "name": "BASE 塩ﾋﾞｶｯﾀｰ420 黒仕上げ",
+        "model": "BEC-420",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "手入力商品",
+        "model": "",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "手入力商品",
+        "model": "",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "手入力商品",
+        "model": "",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      },
+      {
+        "name": "BASE 水平器 400mm 強力ﾏｸﾞﾈｯﾄ付き",
+        "model": "BLR-40M",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      }
+    ],
+    "subtotal": 5000,
+    "tax": 0,
+    "total": 5000,
+    "received": 5000,
+    "change": 0,
+    "paymentMethod": "現金"
   }
 ]
