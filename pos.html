@@ -252,7 +252,7 @@
 <div style="display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;">
 <!-- PAGE TABS -->
 <div id="page-tabs">
-  <span id="ver-box">v71</span>
+  <span id="ver-box">v72</span>
   <button class="page-tab active" onclick="switchPage('main')">🛒 通常レジ</button>
   <button class="page-tab" onclick="switchPage('cashless')">💳 現金なし</button>
 </div>
@@ -1417,6 +1417,12 @@ function renderSalesModal() {
   const total = salesLog.reduce((s, r) => s + r.total, 0);
   const totalQty = salesLog.reduce((s, r) => s + r.items.reduce((ss, it) => ss + it.qty, 0), 0);
 
+  // 現金 / 現金なし で分けて集計
+  const cashLog = salesLog.filter(r => (r.paymentMethod || '現金') !== '現金なし');
+  const cashlessLog = salesLog.filter(r => r.paymentMethod === '現金なし');
+  const cashTotal = cashLog.reduce((s, r) => s + r.total, 0);
+  const cashlessTotal = cashlessLog.reduce((s, r) => s + r.total, 0);
+
   // 価格ごとに個数・小計を集計（全商品対応）
   const priceMap = {}; // { price: { qty, subtotal } }
   // 商品名ごとに個数を集計（トップ3用）
@@ -1479,6 +1485,14 @@ function renderSalesModal() {
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #bbf7d0;padding-bottom:6px;margin-bottom:2px;">
         <span style="color:#475569;">件数 / 総販売数</span>
         <span><b>${salesLog.length}件</b> / <b>${totalQty}個</b></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:2px 0;">
+        <span style="color:#0d9488;">💴 現金</span>
+        <span><b>${cashLog.length}件</b>　¥${cashTotal.toLocaleString()}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #bbf7d0;padding-bottom:6px;margin-bottom:2px;">
+        <span style="color:#7c3aed;">💳 現金なし</span>
+        <span><b>${cashlessLog.length}件</b>　¥${cashlessTotal.toLocaleString()}</span>
       </div>
       ${priceRows}
       ${top3Html}
