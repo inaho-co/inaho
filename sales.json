@@ -551,5 +551,30 @@
     "received": 0,
     "change": -4000,
     "paymentMethod": "現金"
+  },
+  {
+    "datetime": "2026/7/24 13:14:05",
+    "items": [
+      {
+        "name": "手入力商品",
+        "model": "",
+        "price": 1100,
+        "qty": 1,
+        "subtotal": 1100
+      },
+      {
+        "name": "手入力商品",
+        "model": "",
+        "price": 600,
+        "qty": 1,
+        "subtotal": 600
+      }
+    ],
+    "subtotal": 1700,
+    "tax": 0,
+    "total": 1700,
+    "received": 0,
+    "change": -1700,
+    "paymentMethod": "現金"
   }
 ]
