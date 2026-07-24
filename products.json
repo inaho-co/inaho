@@ -929,12 +929,6 @@
     "model": "HMT-G12",
     "price": 1000
   },
-  "model:HKR-F35": {
-    "jan": "",
-    "name": "HEIZOクロスレンチフォールド350",
-    "model": "HKR-F35",
-    "price": 1000
-  },
   "model:BKH-L29": {
     "jan": "",
     "name": "BASE 金切りﾊｻﾐﾛﾝｸﾞ290 刃長80mm",
@@ -1869,6 +1863,12 @@
     "jan": "4580796381010",
     "name": "Kazi-Tu 剪定・仮枠用鋸350　鞘付",
     "model": "KSN-350S",
+    "price": 1000
+  },
+  "4571528211019": {
+    "jan": "4571528211019",
+    "name": "HEIZOクロスレンチフォールド350",
+    "model": "HKR-F35",
     "price": 1000
   }
 }
