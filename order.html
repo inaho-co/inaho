@@ -116,7 +116,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 5.1</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 5.2</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -125,14 +125,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
       <button onclick="clearAll()" style="width:100%;padding:10px;font-size:15px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">全クリア</button>
     </div>
   </div>
-  <div class="mf"><label>発注作成者</label>
-    <select id="order-author" style="width:100%;font-size:16px;padding:10px;border:1px solid #d0d0d0;border-radius:8px;background:#fafafa;color:#1a1a1a;-webkit-appearance:none;">
-      <option value="">選択してください</option>
-      <option value="長谷川">長谷川</option>
-      <option value="梅田">梅田</option>
-      <option value="福富">福富</option>
-      <option value="阿部">阿部</option>
-    </select>
+  <div class="row2">
+    <div class="mf"><label>発注作成者</label>
+      <select id="order-author" disabled style="width:100%;font-size:16px;padding:10px;border:1px solid #d0d0d0;border-radius:8px;background:#f0f0f0;color:#1a1a1a;-webkit-appearance:none;">
+        <option value="">選択してください</option>
+        <option value="長谷川">長谷川</option>
+        <option value="梅田">梅田</option>
+        <option value="福富">福富</option>
+        <option value="阿部">阿部</option>
+      </select>
+    </div>
+    <div class="mf"><label>&nbsp;</label>
+      <button onclick="openAuthorSelectModal()" style="width:100%;padding:10px;font-size:15px;color:#1565C0;border:1px solid #1565C0;border-radius:8px;background:#fff;cursor:pointer;font-weight:600;">担当者を変更</button>
+    </div>
   </div>
 </div>
 
@@ -326,21 +331,26 @@ const PRODUCTS = {"inaho": [{"kubun": "1000均", "code": "100008", "name": "HEIZ
 
 const qty = {inaho:{0:{},1:{},2:{}}, sankyo:{0:{},1:{},2:{}}};
 
-// localStorage キー
+// localStorage キー（担当者ごとに分離）
 const QTY_STORAGE_KEY = 'order-app-qty';
 const META_STORAGE_KEY = 'order-app-meta';
 const AUTHOR_STORAGE_KEY = 'order-app-author';
+const AUTHOR_SESSION_KEY = 'order-app-session-author';
 const AUTHORS = ['長谷川', '梅田', '福富', '阿部'];
+const DB_ERROR_MSG = 'データベースへの接続に失敗しました。しばらくしてから再度お試しいただくか、管理者に連絡してください';
 
 let currentAuthor = '';
 let currentDraftData = null;
 
-// qty を localStorage に保存
+function qtyStorageKey(){ return QTY_STORAGE_KEY + (currentAuthor ? '_'+currentAuthor : ''); }
+function metaStorageKey(){ return META_STORAGE_KEY + (currentAuthor ? '_'+currentAuthor : ''); }
+
+// qty を localStorage に保存（担当者ごと）
 function saveQtyToStorage() {
-  localStorage.setItem(QTY_STORAGE_KEY, JSON.stringify(qty));
+  localStorage.setItem(qtyStorageKey(), JSON.stringify(qty));
 }
 
-// メタ情報（発注日・店舗名・配送区分・備考）を localStorage に保存
+// メタ情報（発注日・店舗名・配送区分・備考）を localStorage に保存（担当者ごと）
 function saveMetaToStorage() {
   const meta = {
     orderDate: document.getElementById('order-date').value,
@@ -349,13 +359,16 @@ function saveMetaToStorage() {
     deliveries: [0,1,2].map(function(i){ return document.getElementById('delivery-'+i).value; }),
     comment: document.getElementById('order-comment').value
   };
-  localStorage.setItem(META_STORAGE_KEY, JSON.stringify(meta));
+  localStorage.setItem(metaStorageKey(), JSON.stringify(meta));
 }
 
-// 起動時に localStorage から qty を復元
+// 担当者切替時に localStorage から qty を復元
 function loadQtyFromStorage() {
+  ['inaho','sankyo'].forEach(function(s){
+    [0,1,2].forEach(function(i){ qty[s][i] = {}; });
+  });
   try {
-    const saved = localStorage.getItem(QTY_STORAGE_KEY);
+    const saved = localStorage.getItem(qtyStorageKey());
     if (!saved) return;
     const parsed = JSON.parse(saved);
     ['inaho','sankyo'].forEach(function(s){
@@ -366,28 +379,22 @@ function loadQtyFromStorage() {
   } catch(e) {}
 }
 
-// 起動時に localStorage からメタ情報を復元
+// 担当者切替時に localStorage からメタ情報を復元
 function loadMetaFromStorage() {
   try {
-    const saved = localStorage.getItem(META_STORAGE_KEY);
-    if (!saved) return;
-    const meta = JSON.parse(saved);
-    if (meta.orderDate) document.getElementById('order-date').value = meta.orderDate;
-    if (meta.orderAuthor) document.getElementById('order-author').value = meta.orderAuthor;
-    if (meta.stores) meta.stores.forEach(function(v,i){
-      document.getElementById('store-'+i).value = v||'';
+    const saved = localStorage.getItem(metaStorageKey());
+    const meta = saved ? JSON.parse(saved) : {};
+    document.getElementById('order-date').value = meta.orderDate || new Date().toISOString().split('T')[0];
+    document.getElementById('order-author').value = currentAuthor || meta.orderAuthor || '';
+    for(let i=0;i<3;i++){
+      document.getElementById('store-'+i).value = (meta.stores && meta.stores[i]) || '';
       updateStoreTab(i);
-    });
-    if (meta.deliveries) meta.deliveries.forEach(function(v,i){
-      document.getElementById('delivery-'+i).value = v||'';
+      document.getElementById('delivery-'+i).value = (meta.deliveries && meta.deliveries[i]) || '';
       updateDeliveryStyle(i);
-    });
-    if (meta.comment !== undefined) document.getElementById('order-comment').value = meta.comment||'';
+    }
+    document.getElementById('order-comment').value = meta.comment || '';
   } catch(e) {}
 }
-
-loadQtyFromStorage();
-loadMetaFromStorage();
 
 let supplier = 'inaho';
 let storeIdx = 0;
@@ -412,7 +419,7 @@ async function loadOosFromServer() {
       }));
       oosLoaded = true;
       renderList();
-      openAuthorSelectModal();
+      afterOosReady();
       return;
     }catch(e){
       if(i<3) await new Promise(function(r){setTimeout(r,4000);});
@@ -421,12 +428,26 @@ async function loadOosFromServer() {
         oosLoaded = true;
         oosFailed = true;
         renderList();
-        openAuthorSelectModal();
+        afterOosReady();
       }
     }
   }
 }
 loadOosFromServer();
+
+// OOS取得完了後：セッション内で担当者選択済みならゲートをスキップ、未選択ならゲートを表示
+function afterOosReady(){
+  const sessionAuthor = sessionStorage.getItem(AUTHOR_SESSION_KEY);
+  if (sessionAuthor) {
+    currentAuthor = sessionAuthor;
+    loadQtyFromStorage();
+    loadMetaFromStorage();
+    document.getElementById('order-author').value = sessionAuthor;
+    renderList(); updateSummary(); refreshHasData(); renderConfirm(); initDeliveryStyles();
+  } else {
+    openAuthorSelectModal();
+  }
+}
 
 function switchSupplier(s) {
   supplier = s;
@@ -848,9 +869,10 @@ async function confirmSaveTmp(){
   payload.label=name;
   try{
     const res=await fetch(SERVER+'/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok) throw new Error('status '+res.status);
     const data=await res.json();
     showToast('「'+name+'」を保存しました');
-  }catch(e){showToast('保存失敗');}
+  }catch(e){showToast(DB_ERROR_MSG);}
   btn.disabled=false; btn.textContent='保存';
 }
 
@@ -860,10 +882,11 @@ async function openTmpList(){
   document.getElementById('tmp-list-overlay').classList.add('open');
   try{
     const res=await fetch(SERVER+'/orders');
+    if(!res.ok) throw new Error('status '+res.status);
     const orders=await res.json();
     renderTmpList(orders);
   }catch(e){
-    document.getElementById('tmp-list-body').innerHTML='<div style="text-align:center;padding:20px;color:#e53935;">読み込み失敗</div>';
+    document.getElementById('tmp-list-body').innerHTML='<div style="text-align:center;padding:20px;color:#e53935;">'+DB_ERROR_MSG+'</div>';
   }
 }
 
@@ -877,6 +900,9 @@ function renderTmpList(orders){
     document.getElementById('tmp-list-body').innerHTML='<div style="text-align:center;padding:20px;color:#aaa;">保存データなし</div>';
     return;
   }
+  const warnHtml = filtered.length > 30
+    ? '<div style="padding:8px 10px;margin-bottom:8px;background:#FFF8E1;color:#E65100;border-radius:8px;font-size:12px;">保存データが増えています（'+filtered.length+'件）。不要なものは削除をご検討ください</div>'
+    : '';
   const html=filtered.slice().reverse().map(function(o){
     const label=o.label||o.date||o.id;
     const stores=o.stores?o.stores.map(function(s){return s.name;}).filter(Boolean).join('・'):'';
@@ -889,13 +915,14 @@ function renderTmpList(orders){
       +'<button onclick="deleteTmp(\''+o.id+'\')" style="padding:7px 12px;font-size:12px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;">削除</button>'
       +'</div></div>';
   }).join('');
-  document.getElementById('tmp-list-body').innerHTML=html;
+  document.getElementById('tmp-list-body').innerHTML=warnHtml+html;
 }
 
 // ロード
 async function loadTmp(id){
   try{
     const res=await fetch(SERVER+'/orders');
+    if(!res.ok) throw new Error('status '+res.status);
     const orders=await res.json();
     const o=orders.find(function(x){return x.id===id;});
     if(!o){showToast('データが見つかりません');return;}
@@ -920,18 +947,21 @@ async function loadTmp(id){
     document.getElementById('tmp-list-overlay').classList.remove('open');
     renderList(); updateSummary(); refreshHasData(); renderConfirm();
     showCenterNotice('ロードしました');
-  }catch(e){showToast('ロード失敗');}
+  }catch(e){showToast(DB_ERROR_MSG);}
 }
 
 // 削除
 async function deleteTmp(id){
+  if(!confirm('このデータを削除しますか？')) return;
   try{
-    await fetch(SERVER+'/orders/'+id,{method:'DELETE'});
+    const delRes=await fetch(SERVER+'/orders/'+id,{method:'DELETE'});
+    if(!delRes.ok) throw new Error('status '+delRes.status);
     const res=await fetch(SERVER+'/orders');
+    if(!res.ok) throw new Error('status '+res.status);
     const orders=await res.json();
     renderTmpList(orders);
     showToast('削除しました');
-  }catch(e){showToast('削除失敗');}
+  }catch(e){showToast(DB_ERROR_MSG);}
 }
 
 function closeTmpListIfBg(e){
@@ -944,9 +974,10 @@ async function saveOrder(){
   btn.disabled=true; btn.textContent='保存中...';
   try{
     const res=await fetch(SERVER+'/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(buildPayload())});
+    if(!res.ok) throw new Error('status '+res.status);
     const data=await res.json();
     return data.id;
-  }catch(e){showToast('保存失敗');btn.disabled=false;btn.textContent='メールで送信';return null;}
+  }catch(e){showToast(DB_ERROR_MSG);btn.disabled=false;btn.textContent='メールで送信';return null;}
 }
 
 async function sendMailById(id){
@@ -961,9 +992,9 @@ async function sendMailById(id){
       deleteDraftFromServer();
       showToast('メールを送信しました！');
     } else {
-      showToast('送信失敗');
+      showToast(DB_ERROR_MSG);
     }
-  }catch(e){showToast('送信エラー');}
+  }catch(e){showToast(DB_ERROR_MSG);}
   btn.textContent='メールで送信'; btn.disabled=false;
 }
 
@@ -975,7 +1006,7 @@ async function sendMail(){
 
 // ===== 発注者選択 =====
 function openAuthorSelectModal() {
-  const saved = localStorage.getItem(AUTHOR_STORAGE_KEY);
+  const saved = currentAuthor || localStorage.getItem(AUTHOR_STORAGE_KEY);
   AUTHORS.forEach(function(name){
     const btn = document.getElementById('author-btn-'+name);
     if(btn) btn.classList.toggle('selected', name === saved);
@@ -985,9 +1016,13 @@ function openAuthorSelectModal() {
 
 function selectAuthor(name) {
   currentAuthor = name;
+  sessionStorage.setItem(AUTHOR_SESSION_KEY, name);
   localStorage.setItem(AUTHOR_STORAGE_KEY, name);
-  document.getElementById('order-author').value = name;
   document.getElementById('author-select-overlay').classList.remove('open');
+  loadQtyFromStorage();
+  loadMetaFromStorage();
+  document.getElementById('order-author').value = name;
+  renderList(); updateSummary(); refreshHasData(); renderConfirm(); initDeliveryStyles();
   saveMetaToStorage();
   checkDraft(name);
 }
@@ -1078,7 +1113,7 @@ async function openDraftModal() {
       + '<button onclick="deleteDraftModal()" style="padding:10px 16px;font-size:14px;color:#e53935;border:1px solid #e53935;border-radius:8px;background:#fff;cursor:pointer;">削除</button>'
       + '</div>';
   } catch(e) {
-    body.innerHTML = '<div style="text-align:center;padding:20px;color:#e53935;">読み込み失敗</div>';
+    body.innerHTML = '<div style="text-align:center;padding:20px;color:#e53935;">'+DB_ERROR_MSG+'</div>';
   }
 }
 

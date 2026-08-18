@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>稲穂 発注管理画面</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;background:#f5f5f5;color:#1a1a1a;font-size:14px;}
+.header{background:#fff;border-bottom:1px solid #e0e0e0;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;}
+.header h1{font-size:19px;font-weight:600;}
+.ver{font-size:11px;color:#bbb;}
+.tab-bar{display:flex;background:#fff;border-bottom:1px solid #e0e0e0;}
+.tab-btn{flex:1;padding:12px 6px;font-size:14px;color:#888;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;}
+.tab-btn.active{color:#1a1a1a;border-bottom:2px solid #1a1a1a;font-weight:600;}
+.filter-section{background:#fff;border-bottom:1px solid #e0e0e0;padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.filter-row input,.filter-row select{width:100%;font-size:15px;padding:9px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fafafa;color:#1a1a1a;}
+.count-info{padding:8px 14px;font-size:12px;color:#888;}
+.list{padding:0 14px 40px;}
+.item{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:12px;margin-bottom:10px;}
+.item-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.draft-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;background:#FFF8E1;color:#E65100;}
+.item-meta{font-size:12px;color:#888;margin-top:4px;line-height:1.6;}
+.item-btns{display:flex;gap:8px;margin-top:10px;}
+.btn{flex:1;padding:9px;font-size:13px;font-weight:600;border-radius:8px;cursor:pointer;text-align:center;border:none;}
+.btn-dl{background:#1565C0;color:#fff;}
+.btn-del{background:#fff;color:#e53935;border:1px solid #e53935;}
+.btn-restore{background:#2E7D32;color:#fff;}
+.empty{text-align:center;padding:50px 14px;color:#aaa;font-size:13px;}
+.loading{text-align:center;padding:50px 14px;color:#aaa;font-size:13px;}
+.error{text-align:center;padding:50px 14px;color:#e53935;font-size:13px;}
+</style>
+</head>
+<body>
+<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.0</span></div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-btn-active" onclick="switchTab('active')">保存データ</button>
+  <button class="tab-btn" id="tab-btn-trash" onclick="switchTab('trash')">ゴミ箱</button>
+</div>
+
+<div class="filter-section">
+  <div class="filter-row">
+    <input type="text" id="f-store" placeholder="店舗名で検索" oninput="render()">
+    <select id="f-author" onchange="render()">
+      <option value="">担当者すべて</option>
+      <option value="長谷川">長谷川</option>
+      <option value="梅田">梅田</option>
+      <option value="福富">福富</option>
+      <option value="阿部">阿部</option>
+    </select>
+  </div>
+  <div class="filter-row">
+    <input type="date" id="f-date" onchange="render()">
+    <button onclick="clearFilters()" style="padding:9px;font-size:13px;color:#666;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;">絞り込み解除</button>
+  </div>
+</div>
+
+<div class="count-info" id="count-info"></div>
+<div class="list" id="list"></div>
+
+<script>
+const SERVER = 'https://order-app-c15s.onrender.com';
+let allOrders = [];
+let currentTab = 'active';
+
+function switchTab(tab){
+  currentTab = tab;
+  document.getElementById('tab-btn-active').classList.toggle('active', tab==='active');
+  document.getElementById('tab-btn-trash').classList.toggle('active', tab==='trash');
+  render();
+}
+
+function clearFilters(){
+  document.getElementById('f-store').value='';
+  document.getElementById('f-author').value='';
+  document.getElementById('f-date').value='';
+  render();
+}
+
+async function loadOrders(){
+  document.getElementById('list').innerHTML = '<div class="loading">読み込み中...</div>';
+  try{
+    const res = await fetch(SERVER+'/admin/orders');
+    if(!res.ok) throw new Error('status '+res.status);
+    allOrders = await res.json();
+    render();
+  }catch(e){
+    document.getElementById('list').innerHTML = '<div class="error">データベースへの接続に失敗しました。しばらくしてから再度お試しいただくか、時間をおいて再読み込みしてください</div>';
+    document.getElementById('count-info').textContent = '';
+  }
+}
+
+function render(){
+  const store = document.getElementById('f-store').value.trim().toLowerCase();
+  const author = document.getElementById('f-author').value;
+  const date = document.getElementById('f-date').value;
+
+  let filtered = allOrders.filter(function(o){
+    if(currentTab==='active' && o.deleted) return false;
+    if(currentTab==='trash' && !o.deleted) return false;
+    if(author && o.author!==author) return false;
+    if(date && o.date!==date) return false;
+    if(store){
+      const names = (o.stores||[]).map(function(s){return (s.name||'').toLowerCase();}).join(' ');
+      if(names.indexOf(store)===-1) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('count-info').textContent = filtered.length + '件';
+
+  if(!filtered.length){
+    document.getElementById('list').innerHTML = '<div class="empty">該当データなし</div>';
+    return;
+  }
+
+  const html = filtered.slice().reverse().map(function(o){
+    const isDraft = o.label && o.label.startsWith('__draft__');
+    const label = isDraft ? (o.author||'') + 'の下書き' : (o.label || o.date || o.id);
+    const stores = (o.stores||[]).map(function(s){return s.name;}).filter(Boolean).join('・');
+    const btns = currentTab==='trash'
+      ? '<button class="btn btn-restore" onclick="restoreOrder(\''+o.id+'\')">復元</button>'
+      : '<button class="btn btn-dl" onclick="downloadExcel(\''+o.id+'\')">Excel</button>'
+        + '<button class="btn btn-del" onclick="deleteOrder(\''+o.id+'\')">削除</button>';
+    return '<div class="item">'
+      + '<div class="item-title">'+(isDraft?'<span class="draft-badge">下書き</span>':'')+escapeHtml(label)+'</div>'
+      + '<div class="item-meta">'
+      + '担当者: '+escapeHtml(o.author||'-')+'<br>'
+      + '店舗: '+escapeHtml(stores||'-')+'<br>'
+      + '日付: '+escapeHtml(o.date||'-')+'<br>'
+      + '作成日時: '+escapeHtml(o.created_at ? o.created_at.replace('T',' ').slice(0,16) : '-')
+      + '</div>'
+      + '<div class="item-btns">'+btns+'</div>'
+      + '</div>';
+  }).join('');
+  document.getElementById('list').innerHTML = html;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function downloadExcel(id){
+  window.open(SERVER+'/orders/'+id+'/excel', '_blank');
+}
+
+async function deleteOrder(id){
+  if(!confirm('このデータをゴミ箱に移動しますか？（管理画面から復元できます）')) return;
+  try{
+    const res = await fetch(SERVER+'/orders/'+id, {method:'DELETE'});
+    if(!res.ok) throw new Error('status '+res.status);
+    await loadOrders();
+  }catch(e){
+    alert('削除に失敗しました。しばらくしてから再度お試しください');
+  }
+}
+
+async function restoreOrder(id){
+  try{
+    const res = await fetch(SERVER+'/orders/'+id+'/restore', {method:'POST'});
+    if(!res.ok) throw new Error('status '+res.status);
+    await loadOrders();
+  }catch(e){
+    alert('復元に失敗しました。しばらくしてから再度お試しください');
+  }
+}
+
+loadOrders();
+</script>
+</body>
+</html>
