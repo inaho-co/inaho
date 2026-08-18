@@ -116,7 +116,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 6.0</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 6.1</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -900,8 +900,8 @@ function renderTmpList(orders){
     document.getElementById('tmp-list-body').innerHTML='<div style="text-align:center;padding:20px;color:#aaa;">保存データなし</div>';
     return;
   }
-  const warnHtml = filtered.length > 30
-    ? '<div style="padding:8px 10px;margin-bottom:8px;background:#FFF8E1;color:#E65100;border-radius:8px;font-size:12px;">保存データが増えています（'+filtered.length+'件）。不要なものは削除をご検討ください</div>'
+  const warnHtml = filtered.length > 10
+    ? '<div style="padding:8px 10px;margin-bottom:8px;background:#FFF8E1;color:#E65100;border-radius:8px;font-size:12px;">保存データが増えています。削除してください。</div>'
     : '';
   const html=filtered.slice().reverse().map(function(o){
     const label=o.label||o.date||o.id;
