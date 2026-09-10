@@ -60,7 +60,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.4</span></div>
+<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.5</span></div>
 
 <div class="tab-bar">
   <button class="tab-btn active" id="tab-btn-active" onclick="switchTab('active')">保存データ</button>
@@ -306,7 +306,7 @@ function render(){
     return;
   }
 
-  const html = filtered.slice().reverse().map(function(o){
+  const html = filtered.slice().map(function(o){
     const isDraft = o.label && o.label.startsWith('__draft__');
     const label = isDraft ? (o.author||'') + 'の下書き' : (o.label || o.date || o.id);
     const stores = (o.stores||[]).map(function(s){return s.name;}).filter(Boolean).join('・');
