@@ -38,18 +38,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .db-table td.wrap{white-space:normal;max-width:260px;word-break:break-word;}
 .db-table .mono{font-family:ui-monospace,Menlo,Consolas,monospace;}
 .db-qty{font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;font-size:11px;max-width:340px;}
+.prod-filter{background:#fff;border-bottom:1px solid #e0e0e0;padding:10px 14px;display:flex;flex-direction:column;gap:8px;}
+.prod-filter input[type=text]{width:100%;font-size:15px;padding:9px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fafafa;color:#1a1a1a;}
+.prod-kubuns{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.kubun-btn{padding:6px 11px;font-size:12px;border:1px solid #d0d0d0;border-radius:7px;background:#fff;color:#555;cursor:pointer;}
+.kubun-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;}
+.oos-toggle{margin-left:auto;font-size:12px;color:#555;display:flex;align-items:center;gap:5px;cursor:pointer;}
+.db-table td.instock{color:#2E7D32;}
+.db-table td.outstock{color:#c62828;}
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.2</span></div>
+<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.3</span></div>
 
 <div class="tab-bar">
   <button class="tab-btn active" id="tab-btn-active" onclick="switchTab('active')">保存データ</button>
   <button class="tab-btn" id="tab-btn-trash" onclick="switchTab('trash')">ゴミ箱</button>
   <button class="tab-btn" id="tab-btn-db" onclick="switchTab('db')">一覧</button>
+  <button class="tab-btn" id="tab-btn-products" onclick="switchTab('products')">商品</button>
 </div>
 
-<div class="filter-section">
+<div class="filter-section" id="filter-section">
   <div class="filter-row">
     <input type="text" id="f-store" placeholder="店舗名で検索" oninput="render()">
     <select id="f-author" onchange="render()">
@@ -66,6 +75,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
   </div>
 </div>
 
+<div class="prod-filter" id="prod-filter" style="display:none;">
+  <input type="text" id="p-search" placeholder="品名・コード・品番で検索" oninput="renderProducts()">
+  <div class="prod-kubuns" id="p-kubuns">
+    <button class="kubun-btn active" data-k="" onclick="setKubun(this)">全て</button>
+    <button class="kubun-btn" data-k="1000均" onclick="setKubun(this)">1000均</button>
+    <button class="kubun-btn" data-k="600均" onclick="setKubun(this)">600均</button>
+    <button class="kubun-btn" data-k="EDLP" onclick="setKubun(this)">EDLP</button>
+    <label class="oos-toggle"><input type="checkbox" id="p-oos" onchange="renderProducts()">在庫なしのみ</label>
+  </div>
+</div>
+
 <div class="count-info" id="count-info"></div>
 <div class="list" id="list"></div>
 
@@ -73,13 +93,95 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 const SERVER = 'https://order-app-c15s.onrender.com';
 let allOrders = [];
 let currentTab = 'active';
+let productsData = null;
+let oosMap = {};
+let prodKubun = '';
 
 function switchTab(tab){
   currentTab = tab;
-  document.getElementById('tab-btn-active').classList.toggle('active', tab==='active');
-  document.getElementById('tab-btn-trash').classList.toggle('active', tab==='trash');
-  document.getElementById('tab-btn-db').classList.toggle('active', tab==='db');
+  ['active','trash','db','products'].forEach(function(t){
+    document.getElementById('tab-btn-'+t).classList.toggle('active', tab===t);
+  });
+  const isProd = tab==='products';
+  document.getElementById('filter-section').style.display = isProd ? 'none' : '';
+  document.getElementById('prod-filter').style.display = isProd ? '' : 'none';
+  if(isProd && !productsData){ loadProducts(); return; }
   render();
+}
+
+function setKubun(btn){
+  prodKubun = btn.getAttribute('data-k');
+  document.querySelectorAll('#p-kubuns .kubun-btn').forEach(function(b){
+    b.classList.toggle('active', b===btn);
+  });
+  renderProducts();
+}
+
+async function loadProducts(){
+  document.getElementById('list').innerHTML = '<div class="loading">読み込み中...</div>';
+  try{
+    const [pr, or] = await Promise.all([
+      fetch('発注書_商品マスタ.json'),
+      fetch(SERVER+'/out_of_stock')
+    ]);
+    if(!pr.ok) throw new Error('products '+pr.status);
+    productsData = await pr.json();
+    oosMap = {};
+    if(or.ok){
+      (await or.json()).forEach(function(e){
+        const code = Array.isArray(e) ? e[0] : e.code;
+        const date = Array.isArray(e) ? e[1] : e.date;
+        if(code) oosMap[String(code)] = date || '';
+      });
+    }
+    renderProducts();
+  }catch(e){
+    document.getElementById('list').innerHTML = '<div class="error">商品マスタの読み込みに失敗しました。時間をおいて再読み込みしてください</div>';
+    document.getElementById('count-info').textContent = '';
+  }
+}
+
+function renderProducts(){
+  if(!productsData) return;
+  const q = document.getElementById('p-search').value.trim().toLowerCase();
+  const oosOnly = document.getElementById('p-oos').checked;
+  const rows = [];
+  [['inaho','稲穂'],['sankyo','三共']].forEach(function(pair){
+    (productsData[pair[0]]||[]).forEach(function(p){
+      rows.push({sup:pair[1], kubun:p.kubun||'', code:String(p.code||''), name:p.name||'', hiban:p.hiban||''});
+    });
+  });
+  const filtered = rows.filter(function(r){
+    if(prodKubun && r.kubun!==prodKubun) return false;
+    if(oosOnly && !(r.code in oosMap)) return false;
+    if(q){
+      const hay = (r.code+' '+r.name+' '+r.hiban).toLowerCase();
+      if(hay.indexOf(q)===-1) return false;
+    }
+    return true;
+  });
+  document.getElementById('count-info').textContent = filtered.length + '件';
+  if(!filtered.length){
+    document.getElementById('list').innerHTML = '<div class="empty">該当商品なし</div>';
+    return;
+  }
+  const head = '<tr><th>仕入先</th><th>区分</th><th>コード</th><th>品名</th><th>品番</th><th>在庫</th></tr>';
+  const body = filtered.map(function(r){
+    const isOos = r.code in oosMap;
+    const stock = isOos
+      ? '在庫なし'+(oosMap[r.code] ? '（'+oosMap[r.code]+'〜）' : '')
+      : '在庫あり';
+    return '<tr>'
+      + '<td>'+escapeHtml(r.sup)+'</td>'
+      + '<td>'+escapeHtml(r.kubun)+'</td>'
+      + '<td class="mono">'+escapeHtml(r.code)+'</td>'
+      + '<td class="wrap">'+escapeHtml(r.name)+'</td>'
+      + '<td class="mono">'+escapeHtml(r.hiban)+'</td>'
+      + '<td class="'+(isOos?'outstock':'instock')+'">'+escapeHtml(stock)+'</td>'
+      + '</tr>';
+  }).join('');
+  document.getElementById('list').innerHTML =
+    '<div class="db-wrap"><table class="db-table">'+head+body+'</table></div>';
 }
 
 function renderDbTable(){
@@ -102,7 +204,7 @@ function renderDbTable(){
   }
   const head = '<tr><th>日付</th><th>種別</th><th>担当者</th><th>店舗</th>'
     + '<th>作成日時</th><th>状態</th></tr>';
-  const body = rows.slice().reverse().map(function(o){
+  const body = rows.slice().map(function(o){
     const isDraft = o.label && o.label.startsWith('__draft__');
     const stores = (o.stores||[]).map(function(s){return s.name;}).filter(Boolean).join('・') || '-';
     return '<tr'+(o.deleted?' class="deleted"':'')+'>'
@@ -139,6 +241,7 @@ async function loadOrders(){
 }
 
 function render(){
+  if(currentTab==='products'){ renderProducts(); return; }
   if(currentTab==='db'){ renderDbTable(); return; }
   const store = document.getElementById('f-store').value.trim().toLowerCase();
   const author = document.getElementById('f-author').value;
