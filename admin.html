@@ -41,12 +41,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.1</span></div>
+<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.2</span></div>
 
 <div class="tab-bar">
   <button class="tab-btn active" id="tab-btn-active" onclick="switchTab('active')">保存データ</button>
   <button class="tab-btn" id="tab-btn-trash" onclick="switchTab('trash')">ゴミ箱</button>
-  <button class="tab-btn" id="tab-btn-db" onclick="switchTab('db')">DB</button>
+  <button class="tab-btn" id="tab-btn-db" onclick="switchTab('db')">一覧</button>
 </div>
 
 <div class="filter-section">
@@ -82,22 +82,7 @@ function switchTab(tab){
   render();
 }
 
-function qtySummary(quantities){
-  const lines=[];
-  ['inaho','sankyo'].forEach(function(sup){
-    const arr=(quantities&&quantities[sup])||[];
-    arr.forEach(function(store,si){
-      const pairs=Object.keys(store||{})
-        .filter(function(c){return store[c]&&store[c]>0;})
-        .map(function(c){return c+':'+store[c];});
-      if(pairs.length) lines.push((sup==='inaho'?'稲穂':'三共')+' 店'+(si+1)+'  '+pairs.join(' '));
-    });
-  });
-  return lines.length?lines.join('\n'):'-';
-}
-
 function renderDbTable(){
-  document.getElementById('count-info').textContent = allOrders.length + '件（全行・削除済み含む）';
   const store = document.getElementById('f-store').value.trim().toLowerCase();
   const author = document.getElementById('f-author').value;
   const date = document.getElementById('f-date').value;
@@ -110,26 +95,22 @@ function renderDbTable(){
     }
     return true;
   });
+  document.getElementById('count-info').textContent = rows.length + '件（発注 / 下書き・削除済み含む）';
   if(!rows.length){
     document.getElementById('list').innerHTML = '<div class="empty">該当データなし</div>';
     return;
   }
-  const head = '<tr><th>id</th><th>種別</th><th>label</th><th>author</th><th>date</th>'
-    + '<th>comment</th><th>stores（name / delivery）</th><th>quantities（code:数量）</th>'
-    + '<th>created_at</th><th>状態</th></tr>';
-  const body = rows.slice().map(function(o){
+  const head = '<tr><th>日付</th><th>種別</th><th>担当者</th><th>店舗</th>'
+    + '<th>作成日時</th><th>状態</th></tr>';
+  const body = rows.slice().reverse().map(function(o){
     const isDraft = o.label && o.label.startsWith('__draft__');
-    const stores = (o.stores||[]).map(function(s){return (s.name||'-')+' / '+(s.delivery||'-');}).join('\n') || '-';
+    const stores = (o.stores||[]).map(function(s){return s.name;}).filter(Boolean).join('・') || '-';
     return '<tr'+(o.deleted?' class="deleted"':'')+'>'
-      + '<td class="mono">'+escapeHtml(o.id||'-')+'</td>'
-      + '<td>'+(isDraft?'下書き':'発注')+'</td>'
-      + '<td class="wrap">'+escapeHtml(o.label||'-')+'</td>'
-      + '<td>'+escapeHtml(o.author||'-')+'</td>'
       + '<td>'+escapeHtml(o.date||'-')+'</td>'
-      + '<td class="wrap">'+escapeHtml(o.comment||'-')+'</td>'
-      + '<td class="db-qty">'+escapeHtml(stores)+'</td>'
-      + '<td class="db-qty">'+escapeHtml(qtySummary(o.quantities))+'</td>'
-      + '<td class="mono">'+escapeHtml(o.created_at ? o.created_at.replace('T',' ').slice(0,19) : '-')+'</td>'
+      + '<td>'+(isDraft?'下書き':'発注')+'</td>'
+      + '<td>'+escapeHtml(o.author||'-')+'</td>'
+      + '<td class="wrap">'+escapeHtml(stores)+'</td>'
+      + '<td class="mono">'+escapeHtml(o.created_at ? o.created_at.replace('T',' ').slice(0,16) : '-')+'</td>'
       + '<td>'+(o.deleted?'削除済み':'有効')+'</td>'
       + '</tr>';
   }).join('');
