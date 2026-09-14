@@ -60,7 +60,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.5</span></div>
+<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.6</span></div>
 
 <div class="tab-bar">
   <button class="tab-btn active" id="tab-btn-active" onclick="switchTab('active')">保存データ</button>
@@ -228,7 +228,7 @@ function renderDbTable(){
       + '<td>'+(isDraft?'下書き':'発注')+'</td>'
       + '<td>'+escapeHtml(o.author||'-')+'</td>'
       + '<td class="wrap">'+escapeHtml(stores)+'</td>'
-      + '<td class="mono">'+escapeHtml(o.created_at ? o.created_at.replace('T',' ').slice(0,16) : '-')+'</td>'
+      + '<td class="mono">'+escapeHtml(formatCreatedAtJST(o.created_at))+'</td>'
       + '<td>'+(o.deleted?'削除済み':'有効')+'</td>'
       + '</tr>';
   }).join('');
@@ -320,7 +320,7 @@ function render(){
       + '担当者: '+escapeHtml(o.author||'-')+'<br>'
       + '店舗: '+escapeHtml(stores||'-')+'<br>'
       + '日付: '+escapeHtml(o.date||'-')+'<br>'
-      + '作成日時: '+escapeHtml(o.created_at ? o.created_at.replace('T',' ').slice(0,16) : '-')
+      + '作成日時: '+escapeHtml(formatCreatedAtJST(o.created_at))
       + '</div>'
       + '<div class="item-btns">'+btns+'</div>'
       + '</div>';
@@ -332,6 +332,18 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
   });
+}
+
+function formatCreatedAtJST(isoStr){
+  if(!isoStr) return '-';
+  try{
+    const iso = /[Zz]|[+-]\d\d:\d\d$/.test(isoStr) ? isoStr : isoStr + 'Z';
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return isoStr.replace('T',' ').slice(0,16);
+    return d.toLocaleString('sv-SE', {timeZone:'Asia/Tokyo'}).slice(0,16);
+  }catch(e){
+    return isoStr.replace('T',' ').slice(0,16);
+  }
 }
 
 function downloadExcel(id){
