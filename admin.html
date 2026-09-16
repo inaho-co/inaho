@@ -60,7 +60,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.6</span></div>
+<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.7</span></div>
 
 <div class="tab-bar">
   <button class="tab-btn active" id="tab-btn-active" onclick="switchTab('active')">保存データ</button>
@@ -219,17 +219,19 @@ function renderDbTable(){
     return;
   }
   const head = '<tr><th>日付</th><th>種別</th><th>担当者</th><th>店舗</th>'
-    + '<th>作成日時</th><th>状態</th></tr>';
+    + '<th>作成日時</th><th>送信日時</th><th>状態</th></tr>';
   const body = rows.slice().map(function(o){
     const isDraft = o.label && o.label.startsWith('__draft__');
     const stores = (o.stores||[]).map(function(s){return s.name;}).filter(Boolean).join('・') || '-';
+    const status = o.mail_sent_at ? '送信済み' : (o.deleted ? '手動削除' : '有効');
     return '<tr'+(o.deleted?' class="deleted"':'')+'>'
       + '<td>'+escapeHtml(o.date||'-')+'</td>'
       + '<td>'+(isDraft?'下書き':'発注')+'</td>'
       + '<td>'+escapeHtml(o.author||'-')+'</td>'
       + '<td class="wrap">'+escapeHtml(stores)+'</td>'
       + '<td class="mono">'+escapeHtml(formatCreatedAtJST(o.created_at))+'</td>'
-      + '<td>'+(o.deleted?'削除済み':'有効')+'</td>'
+      + '<td class="mono">'+escapeHtml(formatCreatedAtJST(o.mail_sent_at))+'</td>'
+      + '<td>'+status+'</td>'
       + '</tr>';
   }).join('');
   document.getElementById('list').innerHTML =
@@ -321,6 +323,7 @@ function render(){
       + '店舗: '+escapeHtml(stores||'-')+'<br>'
       + '日付: '+escapeHtml(o.date||'-')+'<br>'
       + '作成日時: '+escapeHtml(formatCreatedAtJST(o.created_at))
+      + (o.mail_sent_at ? '<br>送信日時: '+escapeHtml(formatCreatedAtJST(o.mail_sent_at)) : '')
       + '</div>'
       + '<div class="item-btns">'+btns+'</div>'
       + '</div>';
