@@ -18,7 +18,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .filter-row input,.filter-row select{width:100%;font-size:15px;padding:9px 10px;border:1px solid #d0d0d0;border-radius:8px;background:#fafafa;color:#1a1a1a;}
 .count-info{padding:8px 14px;font-size:12px;color:#888;}
 .list{padding:0 14px 40px;}
-.item{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:12px;margin-bottom:10px;}
+.item{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:12px;margin-bottom:10px;transition:background-color 1.5s ease;}
+.item.item-highlight{background-color:#fff9c4;}
 .item-title{font-size:16px;font-weight:600;display:flex;align-items:center;gap:6px;}
 .draft-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;background:#FFF8E1;color:#E65100;}
 .item-meta{font-size:12px;color:#888;margin-top:4px;line-height:1.6;}
@@ -35,6 +36,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .db-table th,.db-table td{border:1px solid #e0e0e0;padding:6px 9px;text-align:left;vertical-align:top;}
 .db-table th{background:#fafafa;font-weight:600;position:sticky;top:0;}
 .db-table tr.deleted td{background:#fff3f3;color:#b71c1c;}
+.db-table tr.db-row{cursor:pointer;}
+.db-table tr.db-row:hover td{background:#f0f7ff;}
 .db-table td.wrap{white-space:normal;max-width:260px;word-break:break-word;}
 .db-table .mono{font-family:ui-monospace,Menlo,Consolas,monospace;}
 .db-qty{font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;font-size:11px;max-width:340px;}
@@ -60,7 +63,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.8</span></div>
+<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.9</span></div>
 
 <div class="tab-bar">
   <button class="tab-btn active" id="tab-btn-active" onclick="switchTab('active')">保存データ</button>
@@ -122,6 +125,17 @@ function switchTab(tab){
   document.getElementById('prod-filter').style.display = isProd ? '' : 'none';
   if(isProd && !productsData){ loadProducts(); return; }
   render();
+}
+
+function jumpToOrder(id){
+  const o = allOrders.find(function(x){ return x.id===id; });
+  if(!o) return;
+  switchTab(o.deleted ? 'trash' : 'active');
+  const el = document.querySelector('[data-id="'+id+'"]');
+  if(!el) return;
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+  el.classList.add('item-highlight');
+  setTimeout(function(){ el.classList.remove('item-highlight'); }, 2000);
 }
 
 function setKubun(btn){
@@ -223,8 +237,8 @@ function renderDbTable(){
   const body = rows.slice().map(function(o){
     const isDraft = o.label && o.label.startsWith('__draft__');
     const stores = (o.stores||[]).map(function(s){return s.name;}).filter(Boolean).join('・') || '-';
-    const status = o.mail_sent_at ? '送信済み' : (o.deleted ? '手動削除' : '有効');
-    return '<tr'+(o.deleted?' class="deleted"':'')+'>'
+    const status = o.mail_sent_at ? '送信済み（ゴミ箱へ）' : (o.deleted ? '手動削除' : '有効');
+    return '<tr class="db-row'+(o.deleted?' deleted':'')+'" ondblclick="jumpToOrder(\''+o.id+'\')">'
       + '<td>'+escapeHtml(o.date||'-')+'</td>'
       + '<td>'+(isDraft?'下書き':'発注')+'</td>'
       + '<td>'+escapeHtml(o.author||'-')+'</td>'
@@ -317,7 +331,7 @@ function render(){
         + '<button class="btn btn-restore" onclick="restoreOrder(\''+o.id+'\')">復元</button>'
       : '<button class="btn btn-dl" onclick="downloadExcel(\''+o.id+'\')">Excel</button>'
         + '<button class="btn btn-del" onclick="deleteOrder(\''+o.id+'\')">削除</button>';
-    return '<div class="item">'
+    return '<div class="item" data-id="'+o.id+'">'
       + '<div class="item-title">'+(isDraft?'<span class="draft-badge">下書き</span>':'')+escapeHtml(label)+'</div>'
       + '<div class="item-meta">'
       + '担当者: '+escapeHtml(o.author||'-')+'<br>'
