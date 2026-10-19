@@ -116,7 +116,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 6.2</span></div>
+<div class="header"><h1>稲穂 発注入力</h1><span class="ver">ver 6.3</span></div>
 
 <div class="meta-section">
   <div class="row2">
@@ -400,7 +400,7 @@ let supplier = 'inaho';
 let storeIdx = 0;
 let filter = '全て';
 let modalCode = null;
-let OUT_OF_STOCK = new Map(); // code → date
+let OUT_OF_STOCK = new Map(); // code → {date, by}
 let oosLoaded = false;  // 在庫なし情報の読み込み完了フラグ
 let oosFailed = false;  // 在庫なし情報の取得失敗フラグ
 
@@ -414,8 +414,9 @@ async function loadOosFromServer() {
       if(!res.ok) throw new Error('status '+res.status);
       const items = await res.json();
       OUT_OF_STOCK = new Map(items.map(function(x){
-        // 旧形式（文字列）と新形式（{code,date}）両対応
-        return typeof x === 'string' ? [x, ''] : [x.code, x.date||''];
+        // 旧形式（文字列）/ 旧形式（{code,date}）/ 新形式（{code,date,by}）すべて対応
+        if(typeof x === 'string') return [x, {date:'', by:''}];
+        return [x.code, {date:x.date||'', by:x.by||''}];
       }));
       oosLoaded = true;
       renderList();
@@ -506,8 +507,9 @@ function renderList() {
   const kc={'1000均':'k1','600均':'k6','EDLP':'ke','季節':'ke'};
   const rows = list.map(function(p){
     const oos=OUT_OF_STOCK.has(p.code);
-    const oosDate=oos ? OUT_OF_STOCK.get(p.code) : '';
-    const oosDateStr=oosDate ? '（'+oosDate+'）' : '';
+    const oosInfo=oos ? OUT_OF_STOCK.get(p.code) : null;
+    const oosDateStr=oosInfo && (oosInfo.date||oosInfo.by)
+      ? '（'+[oosInfo.date,oosInfo.by].filter(Boolean).join('・')+'）' : '';
 
     const v = oos ? 0 : (qty[supplier][storeIdx][p.code] || 0);
     const hvClass = v ? 'hv' : '';
@@ -593,7 +595,7 @@ function confirmOos(){
 }
 
 async function postOos() {
-  const items=[...OUT_OF_STOCK].map(function(e){return {code:e[0], date:e[1]};});
+  const items=[...OUT_OF_STOCK].map(function(e){return {code:e[0], date:e[1].date, by:e[1].by};});
   for(let i=0; i<6; i++){
     try{
       const res = await fetch(SERVER+'/out_of_stock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:items})});
@@ -606,7 +608,7 @@ async function postOos() {
 
 async function addOos(code) {
   const today=new Date().toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'}).replace('/','/');
-  OUT_OF_STOCK.set(code, today);
+  OUT_OF_STOCK.set(code, {date:today, by:currentAuthor||''});
   ['inaho','sankyo'].forEach(function(s){[0,1,2].forEach(function(i){delete qty[s][i][code];});});
   saveQtyToStorage();
   renderList(); updateSummary(); refreshHasData(); renderConfirm();

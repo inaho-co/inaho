@@ -49,6 +49,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 .oos-toggle{margin-left:auto;font-size:12px;color:#555;display:flex;align-items:center;gap:5px;cursor:pointer;}
 .db-table td.instock{color:#2E7D32;}
 .db-table td.outstock{color:#c62828;}
+.stock-btn{padding:4px 9px;font-size:11px;font-weight:600;border-radius:6px;cursor:pointer;border:1px solid;background:#fff;white-space:nowrap;}
+.stock-btn.to-oos{color:#c62828;border-color:#c62828;}
+.stock-btn.to-instock{color:#2E7D32;border-color:#2E7D32;}
 .p-pdf-btn{padding:7px 12px;font-size:12px;font-weight:600;border:1px solid #1565C0;color:#1565C0;background:#fff;border-radius:7px;cursor:pointer;}
 #print-area{display:none;}
 @media print{
@@ -63,7 +66,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP"
 </style>
 </head>
 <body>
-<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.9</span></div>
+<div class="header"><h1>稲穂 発注管理画面</h1><span class="ver">ver 1.10</span></div>
 
 <div class="tab-bar">
   <button class="tab-btn active" id="tab-btn-active" onclick="switchTab('active')">保存データ</button>
@@ -159,8 +162,9 @@ async function loadProducts(){
     if(or.ok){
       (await or.json()).forEach(function(e){
         const code = Array.isArray(e) ? e[0] : e.code;
-        const date = Array.isArray(e) ? e[1] : e.date;
-        if(code) oosMap[String(code)] = date || '';
+        const date = Array.isArray(e) ? e[1] : (e.date || '');
+        const by = Array.isArray(e) ? '' : (e.by || '');
+        if(code) oosMap[String(code)] = {date:date, by:by};
       });
     }
     renderProducts();
@@ -195,12 +199,13 @@ function renderProducts(){
     document.getElementById('list').innerHTML = '<div class="empty">該当商品なし</div>';
     return;
   }
-  const head = '<tr><th>仕入先</th><th>区分</th><th>コード</th><th>品名</th><th>品番</th><th>在庫</th></tr>';
+  const head = '<tr><th>仕入先</th><th>区分</th><th>コード</th><th>品名</th><th>品番</th><th>在庫</th><th>操作</th></tr>';
   const body = filtered.map(function(r){
     const isOos = r.code in oosMap;
-    const stock = isOos
-      ? '在庫なし'+(oosMap[r.code] ? '（'+oosMap[r.code]+'〜）' : '')
-      : '在庫あり';
+    const stock = isOos ? '在庫なし'+oosInfoStr(oosMap[r.code]) : '在庫あり';
+    const btn = isOos
+      ? '<button class="stock-btn to-instock" data-code="'+escapeHtml(r.code)+'" data-name="'+escapeHtml(r.name)+'" data-dir="restore">在庫を復活</button>'
+      : '<button class="stock-btn to-oos" data-code="'+escapeHtml(r.code)+'" data-name="'+escapeHtml(r.name)+'" data-dir="oos">在庫なしにする</button>';
     return '<tr>'
       + '<td>'+escapeHtml(r.sup)+'</td>'
       + '<td>'+escapeHtml(r.kubun)+'</td>'
@@ -208,6 +213,7 @@ function renderProducts(){
       + '<td class="wrap">'+escapeHtml(r.name)+'</td>'
       + '<td class="mono">'+escapeHtml(r.hiban)+'</td>'
       + '<td class="'+(isOos?'outstock':'instock')+'">'+escapeHtml(stock)+'</td>'
+      + '<td>'+btn+'</td>'
       + '</tr>';
   }).join('');
   document.getElementById('list').innerHTML =
@@ -252,6 +258,43 @@ function renderDbTable(){
     '<div class="db-wrap"><table class="db-table">'+head+body+'</table></div>';
 }
 
+document.getElementById('list').addEventListener('click', function(e){
+  const btn = e.target.closest('.stock-btn');
+  if(!btn) return;
+  toggleOos(btn.dataset.code, btn.dataset.name, btn.dataset.dir==='oos');
+});
+
+function oosInfoStr(info){
+  if(!info) return '';
+  const parts = [info.date, info.by].filter(Boolean);
+  return parts.length ? '（'+parts.join('・')+'〜）' : '';
+}
+
+async function toggleOos(code, name, toOos){
+  const msg = toOos
+    ? '「'+name+'」を在庫なしにしますか？'
+    : '「'+name+'」の在庫を復活させますか？';
+  if(!confirm(msg)) return;
+  const prev = oosMap[code];
+  if(toOos){
+    const today = new Date().toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit'});
+    oosMap[code] = {date:today, by:'管理者'};
+  } else {
+    delete oosMap[code];
+  }
+  renderProducts();
+  try{
+    const items = Object.keys(oosMap).map(function(c){ return {code:c, date:oosMap[c].date, by:oosMap[c].by}; });
+    const res = await fetch(SERVER+'/out_of_stock', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({items:items})});
+    if(!res.ok) throw new Error('status '+res.status);
+  }catch(e){
+    if(toOos) delete oosMap[code];
+    else oosMap[code] = prev;
+    renderProducts();
+    alert('更新に失敗しました。しばらくしてから再度お試しください');
+  }
+}
+
 function printProducts(){
   if(!lastProdFiltered.length){ alert('該当商品がありません'); return; }
   const kubunLabel = prodKubun || '全て';
@@ -264,7 +307,7 @@ function printProducts(){
     +' ／ '+lastProdFiltered.length+'件 ／ 出力日: '+dstr;
   const rows = lastProdFiltered.map(function(r){
     const isOos = r.code in oosMap;
-    const stock = isOos ? '在庫なし'+(oosMap[r.code] ? '（'+oosMap[r.code]+'〜）' : '') : '在庫あり';
+    const stock = isOos ? '在庫なし'+oosInfoStr(oosMap[r.code]) : '在庫あり';
     return '<tr><td>'+escapeHtml(r.sup)+'</td><td>'+escapeHtml(r.kubun)+'</td>'
       + '<td>'+escapeHtml(r.code)+'</td><td>'+escapeHtml(r.name)+'</td>'
       + '<td>'+escapeHtml(r.hiban)+'</td><td>'+escapeHtml(stock)+'</td></tr>';
