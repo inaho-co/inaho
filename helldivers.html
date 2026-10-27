@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.11.0"></script>
+<script src="helldivers_data.js?v=1.12.0"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -152,7 +152,7 @@
 </div>
 
 <script>
-const VERSION = "v1.11.0";
+const VERSION = "v1.12.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -705,7 +705,23 @@ function calcWeaponTime(timing, totalShots) {
     const recalls = Math.floor((totalShots - 1) / timing.freeUses);
     return recalls * (timing.callInCooldown + timing.callInTime);
   }
+  if (timing.type === 'carryLimited') {
+    if (totalShots > timing.maxShots) return 'insufficient';
+    return timing.perShotInterval * totalShots;
+  }
   return null;
+}
+
+let simExcluded = new Set();
+
+function excludeSimWeapon(name) {
+  simExcluded.add(name);
+  renderSimResult();
+}
+
+function restoreSimWeapon(name) {
+  simExcluded.delete(name);
+  renderSimResult();
 }
 
 function renderSimResult() {
@@ -713,29 +729,48 @@ function renderSimResult() {
   if (simTargets.length === 0) { el.innerHTML = ''; return; }
   const rows = [];
   Object.keys(WEAPON_TIMING).forEach(name => {
+    if (simExcluded.has(name)) return;
     const stats = simWeaponStats(name);
     if (!stats) return;
     const shots = calcShotsNeeded(stats.pen, stats.damage, simTargets);
     if (shots === null) { rows.push({ name, na: true }); return; }
     const time = calcWeaponTime(WEAPON_TIMING[name], shots);
+    if (time === 'insufficient') { rows.push({ name, shots, insufficient: true }); return; }
     rows.push({ name, shots, time });
   });
-  rows.sort((a, b) => (a.na ? Infinity : a.time) - (b.na ? Infinity : b.time));
+  const rank = r => r.na ? 2 : r.insufficient ? 1 : 0;
+  rows.sort((a, b) => {
+    const ra = rank(a), rb = rank(b);
+    if (ra !== rb) return ra - rb;
+    return ra === 0 ? a.time - b.time : 0;
+  });
   let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;">`;
-  html += `<tr style="color:var(--sub); text-align:left;"><th>武器</th><th>必要発数</th><th>推定時間</th></tr>`;
+  html += `<tr style="color:var(--sub); text-align:left;"><th>武器</th><th>必要発数</th><th>推定時間</th><th></th></tr>`;
   rows.forEach(r => {
     html += `<tr style="border-top:1px solid var(--border);">`;
     html += `<td style="padding:5px 4px;">${r.name}</td>`;
     if (r.na) {
       html += `<td colspan="2" style="padding:5px 4px; color:var(--sub);">貫通不可（対象外）</td>`;
+    } else if (r.insufficient) {
+      html += `<td style="padding:5px 4px;">${r.shots}発</td>`;
+      html += `<td style="padding:5px 4px; color:var(--sub);">携行数不足（補充前提で未計算）</td>`;
     } else {
       html += `<td style="padding:5px 4px;">${r.shots}発</td>`;
       html += `<td style="padding:5px 4px; font-weight:bold;">${Math.round(r.time)}秒</td>`;
     }
+    html += `<td style="padding:5px 4px; text-align:right;"><button class="smallbtn" onclick="excludeSimWeapon('${r.name.replace(/'/g,"\\'")}')">除外</button></td>`;
     html += `</tr>`;
   });
   html += `</table>`;
-  html += `<p class="hint">初期携行分（最初の1マガジン/要請分）は「すでに手元にある」前提でカウントせず、弾切れ後の再要請・リロードのみを加算した目安です。チャージ・リロード秒数はソロ運用（アシスト無し）の値。エイペックス・エポックはwiki側の秒数データが不完全なため未収録。</p>`;
+  if (simExcluded.size > 0) {
+    html += `<div class="chips" style="margin-top:8px;">`;
+    html += `<span class="hint" style="width:100%;">除外中：</span>`;
+    Array.from(simExcluded).forEach(name => {
+      html += `<span class="chip"><span class="val">${name}</span><button onclick="restoreSimWeapon('${name.replace(/'/g,"\\'")}')">戻す</button></span>`;
+    });
+    html += `</div>`;
+  }
+  html += `<p class="hint">初期携行分（最初の1マガジン/要請分）は「すでに手元にある」前提でカウントせず、弾切れ後の再要請・リロードのみを加算した目安です。チャージ・リロード秒数はソロ運用（アシスト無し）の値。グレネード・セカンダリの対戦車ランク装備は携行数上限までのみ計算し、補充タイミングは未モデル化（上限を超える分は「携行数不足」と表示）。エイペックス・エポックはwiki側の秒数データが不完全なため未収録。</p>`;
   document.getElementById('simResult').innerHTML = html;
 }
 

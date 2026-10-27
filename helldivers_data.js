@@ -505,6 +505,12 @@ const WEAPON_TIMING = {
   "単発式サイロ": { type: "callLimited", freeUses: 1, callInCooldown: 180, callInTime: 7.75 }, // MS-11：1回の要請で1発のみ、再要請CD180秒
   "レベラー": { type: "callLimited", freeUses: 1, callInCooldown: 140, callInTime: 7.75 }, // EAT-411：使い捨て・1回の要請で1発のみ、再要請CD140秒
   "ブリーチングハマー": { type: "mag", magazine: 1, reload: 1.0, lockOn: 0 }, // CQC-20：チャージ1発、リロード1秒
+  "ミサイルピストル": { type: "carryLimited", maxShots: 3, perShotInterval: 2.0, damage: 1300, pen: 5 }, // P-33：携行数上限（最大3発）までで計算、補充タイミングは未モデル化
+  "ブリーチャー": { type: "carryLimited", maxShots: 2, perShotInterval: 2.0, damage: 2000, pen: 5 }, // P-34：携行数上限（最大2発）までで計算
+  "アルティメイタム": { type: "carryLimited", maxShots: 1, perShotInterval: 2.0, damage: 3000, pen: 5 }, // GP-20：携行数上限（最大1発）までで計算
+  "対戦車シーカー": { type: "carryLimited", maxShots: 3, perShotInterval: 1.5, damage: 1800, pen: 5 }, // G-60：携行数上限（最大3個）までで計算
+  "メルタマイン": { type: "carryLimited", maxShots: 4, perShotInterval: 1.5, damage: 2000, pen: 5 }, // G/40-K：携行数上限（最大4個）までで計算
+  "テルミット": { type: "carryLimited", maxShots: 3, perShotInterval: 1.5, damage: 2000, pen: 5 }, // G-123：携行数上限（最大3個）までで計算
 };
 
 const ALL_EQUIPMENT = {
