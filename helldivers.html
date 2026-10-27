@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.14.2"></script>
+<script src="helldivers_data.js?v=1.15.0"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -142,7 +142,11 @@
       <div class="chips" style="margin-bottom:8px;">
         <select id="simEnemySelect" style="margin-bottom:0; width:auto;" onchange="onSimEnemyChange()"></select>
         <select id="simPartSelect" style="margin-bottom:0; width:auto;"></select>
-        <input type="number" id="simQtyInput" min="1" value="1" style="width:60px; margin-bottom:0;">
+        <span class="chip" style="padding:4px 6px;">
+          <button class="smallbtn" onclick="stepSimQty(-1)">−</button>
+          <span id="simQtyDisplay" style="min-width:1.5em; text-align:center; display:inline-block; font-weight:bold;">1</span>
+          <button class="smallbtn" onclick="stepSimQty(1)">＋</button>
+        </span>
         <button class="btn primary" onclick="addSimTarget()">追加</button>
       </div>
       <div id="simTargetList" class="chips" style="margin-bottom:10px;"></div>
@@ -157,7 +161,7 @@
 </div>
 
 <script>
-const VERSION = "v1.14.2";
+const VERSION = "v1.15.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -656,10 +660,16 @@ function onSimEnemyChange() {
   el.innerHTML = ENEMIES[idx].parts.map((p, i) => `<option value="${i}">${p[0]}（HP${p[1]}・${TIER_LABEL[p[2]]}）</option>`).join('');
 }
 
+let simQty = 1;
+function stepSimQty(delta) {
+  simQty = Math.max(1, Math.min(99, simQty + delta));
+  document.getElementById('simQtyDisplay').textContent = simQty;
+}
+
 function addSimTarget() {
   const eIdx = Number(document.getElementById('simEnemySelect').value);
   const pIdx = Number(document.getElementById('simPartSelect').value);
-  const qty = Math.max(1, Number(document.getElementById('simQtyInput').value) || 1);
+  const qty = simQty;
   const enemy = ENEMIES[eIdx];
   const part = enemy.parts[pIdx];
   simTargets.push({ hp: part[1], tier: part[2], qty, label: `${enemy.name}「${part[0]}」×${qty}` });
