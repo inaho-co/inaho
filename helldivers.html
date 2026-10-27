@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.10.0"></script>
+<script src="helldivers_data.js?v=1.11.0"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -130,16 +130,20 @@
   </div>
 
   <div class="section" id="simSection">
-    <h2>撃破時間計算（対戦車ランク武器のみ）</h2>
-    <p class="hint" style="margin-top:0;">複数の大型敵・部位を好きな数だけ組み合わせて、対戦車ランク武器ごとの推定撃破時間をランキング表示します。</p>
-    <div class="chips" style="margin-bottom:8px;">
-      <select id="simEnemySelect" style="margin-bottom:0; width:auto;" onchange="onSimEnemyChange()"></select>
-      <select id="simPartSelect" style="margin-bottom:0; width:auto;"></select>
-      <input type="number" id="simQtyInput" min="1" value="1" style="width:60px; margin-bottom:0;">
-      <button class="btn primary" onclick="addSimTarget()">追加</button>
+    <div class="picker-head" onclick="toggleSim()" style="cursor:pointer;">
+      <h2 style="margin:0;">撃破時間計算（対戦車ランク武器のみ） <span id="simToggleIcon">▶</span></h2>
     </div>
-    <div id="simTargetList" class="chips" style="margin-bottom:10px;"></div>
-    <div id="simResult"></div>
+    <div id="simBody" style="display:none;">
+      <p class="hint" style="margin-top:0;">複数の大型敵・部位を好きな数だけ組み合わせて、対戦車ランク武器ごとの推定撃破時間をランキング表示します。</p>
+      <div class="chips" style="margin-bottom:8px;">
+        <select id="simEnemySelect" style="margin-bottom:0; width:auto;" onchange="onSimEnemyChange()"></select>
+        <select id="simPartSelect" style="margin-bottom:0; width:auto;"></select>
+        <input type="number" id="simQtyInput" min="1" value="1" style="width:60px; margin-bottom:0;">
+        <button class="btn primary" onclick="addSimTarget()">追加</button>
+      </div>
+      <div id="simTargetList" class="chips" style="margin-bottom:10px;"></div>
+      <div id="simResult"></div>
+    </div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -148,7 +152,7 @@
 </div>
 
 <script>
-const VERSION = "v1.10.0";
+const VERSION = "v1.11.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -620,6 +624,12 @@ function renderEnemyBody() {
 }
 
 // ---- 撃破時間計算（対戦車ランク武器） ----
+let simOpen = false;
+function toggleSim() {
+  simOpen = !simOpen;
+  document.getElementById('simBody').style.display = simOpen ? 'block' : 'none';
+  document.getElementById('simToggleIcon').textContent = simOpen ? '▼' : '▶';
+}
 let simTargets = [];
 
 function populateSimEnemySelect() {
