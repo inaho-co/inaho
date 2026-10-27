@@ -79,7 +79,10 @@
   <p class="note">保存したロードアウトはこの端末・このブラウザにのみ保存されます（他の端末とは共有されません）。</p>
 
   <div class="section" id="slotsSection">
-    <h2>現在のロードアウト</h2>
+    <div class="picker-head">
+      <h2 style="margin:0;">現在のロードアウト</h2>
+      <button class="btn danger" onclick="clearLoadout()">クリア</button>
+    </div>
     <div class="chips" id="slotChips"></div>
     <div class="savebar" style="margin-top:10px;">
       <input type="text" id="saveName" placeholder="保存名（例：対ターミニッド重装編成）">
@@ -264,6 +267,13 @@ function pickItem(slotType, stratIndex, idx, cat, q) {
   renderSlotChips();
   closePicker();
   renderEnemyBody();
+}
+
+function clearLoadout() {
+  loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
+  renderSlotChips();
+  renderEnemyBody();
+  showToast('ロードアウトをクリアしました');
 }
 
 function saveLoadout() {
