@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.12.1"></script>
+<script src="helldivers_data.js?v=1.13.0"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -146,6 +146,7 @@
         <button class="btn primary" onclick="addSimTarget()">追加</button>
       </div>
       <div id="simTargetList" class="chips" style="margin-bottom:10px;"></div>
+      <div class="chips" style="margin-bottom:8px;" id="simGroupToggles"></div>
       <div id="simResult"></div>
     </div>
   </div>
@@ -156,7 +157,7 @@
 </div>
 
 <script>
-const VERSION = "v1.12.1";
+const VERSION = "v1.13.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -725,6 +726,11 @@ function calcWeaponTime(timing, totalShots) {
 
 let simExcluded = new Set();
 
+const SIM_GROUPS = {
+  secondary: { label: 'セカンダリ', names: ['ミサイルピストル', 'ブリーチャー', 'アルティメイタム'] },
+  grenade: { label: 'グレネード', names: ['対戦車シーカー', 'メルタマイン', 'テルミット'] },
+};
+
 function excludeSimWeapon(name) {
   simExcluded.add(name);
   renderSimResult();
@@ -735,7 +741,26 @@ function restoreSimWeapon(name) {
   renderSimResult();
 }
 
+function toggleSimGroup(groupKey) {
+  const names = SIM_GROUPS[groupKey].names;
+  const allExcluded = names.every(n => simExcluded.has(n));
+  names.forEach(n => allExcluded ? simExcluded.delete(n) : simExcluded.add(n));
+  renderSimResult();
+}
+
+function renderSimGroupToggles() {
+  const el = document.getElementById('simGroupToggles');
+  let html = '';
+  Object.keys(SIM_GROUPS).forEach(key => {
+    const g = SIM_GROUPS[key];
+    const allExcluded = g.names.every(n => simExcluded.has(n));
+    html += `<button class="btn${allExcluded ? '' : ' primary'}" onclick="toggleSimGroup('${key}')">${g.label}枠${allExcluded ? 'を含める' : 'を除外'}</button>`;
+  });
+  el.innerHTML = html;
+}
+
 function renderSimResult() {
+  renderSimGroupToggles();
   const el = document.getElementById('simResult');
   if (simTargets.length === 0) { el.innerHTML = ''; return; }
   const rows = [];
