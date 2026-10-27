@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.12.0"></script>
+<script src="helldivers_data.js?v=1.12.1"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -123,10 +123,14 @@
   </div>
 
   <div class="section" id="enemySection">
-    <h2>大型敵図鑑（装甲貫通チェック）</h2>
-    <div class="tabbar" id="factionTabs"></div>
-    <div class="chips" id="enemyChips" style="margin:10px 0;"></div>
-    <div id="enemyBody"></div>
+    <div class="picker-head" onclick="toggleEnemy()" style="cursor:pointer;">
+      <h2 style="margin:0;">大型敵図鑑（装甲貫通チェック） <span id="enemyToggleIcon">▶</span></h2>
+    </div>
+    <div id="enemySectionBody" style="display:none;">
+      <div class="tabbar" id="factionTabs"></div>
+      <div class="chips" id="enemyChips" style="margin:10px 0;"></div>
+      <div id="enemyBody"></div>
+    </div>
   </div>
 
   <div class="section" id="simSection">
@@ -152,7 +156,7 @@
 </div>
 
 <script>
-const VERSION = "v1.12.0";
+const VERSION = "v1.12.1";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -446,6 +450,13 @@ function renderBrowseList() {
 }
 
 // ---- 敵図鑑 ----
+let enemyOpen = false;
+function toggleEnemy() {
+  enemyOpen = !enemyOpen;
+  document.getElementById('enemySectionBody').style.display = enemyOpen ? 'block' : 'none';
+  document.getElementById('enemyToggleIcon').textContent = enemyOpen ? '▼' : '▶';
+}
+
 function factionList() {
   const fs = [];
   ENEMIES.forEach(e => { if (!fs.includes(e.faction)) fs.push(e.faction); });
