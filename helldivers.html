@@ -130,7 +130,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION = "v1.8.0";
+const VERSION = "v1.8.1";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -238,7 +238,9 @@ function fieldChips(item) {
   const parts = [];
   if (item.damage !== undefined) parts.push('ダメージ ' + item.damage);
   if (item.mag !== undefined) parts.push('装弾数 ' + item.mag);
+  if (item.initMag !== undefined) parts.push('マガジン携行' + item.initMag + '/最大' + item.maxMag);
   if (item.carry !== undefined) parts.push('携行' + item.carry + '/最大' + item.maxCarry);
+  if (item.resupply !== undefined) parts.push('補充数 ' + item.resupply);
   if (item.recoil !== undefined) parts.push('反動 ' + item.recoil);
   if (item.rpm !== undefined) parts.push('連射 ' + item.rpm);
   if (item.command !== undefined) parts.push('使用回数 ' + item.uses);
