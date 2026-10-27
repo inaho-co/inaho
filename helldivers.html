@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ヘルダイバーズ2 装備選択ツール</title>
+<script src="helldivers_data.js"></script>
+<style>
+  :root {
+    --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
+    --text: #e8edf2; --sub: #9aa7b3; --accent: #ffb020; --accent2: #3aa0ff;
+    --danger: #ff5a5a; --ok: #4fd37a;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family: "Hiragino Sans","Meiryo",sans-serif; padding-bottom: 60px; }
+  h1 { font-size: 18px; padding: 14px 12px 6px; margin:0; }
+  h2 { font-size: 15px; margin: 0 0 8px; color: var(--accent); }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 10px; }
+  .note { font-size: 12px; color: var(--sub); padding: 0 12px 10px; }
+  .section { background: var(--panel); border-radius: 10px; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { background: var(--panel2); border:1px solid var(--border); border-radius: 10px; padding:8px 10px; display:flex; align-items:center; gap:8px; max-width: 100%; }
+  .chip.filled { border-color: var(--accent); }
+  .chip .lbl { font-size:11px; color: var(--sub); }
+  .chip .val { font-size:13px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px; }
+  .chip button { background:var(--accent); color:#1b1400; border:none; border-radius:6px; padding:5px 9px; font-size:12px; font-weight:bold; }
+  .tabbar { display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; }
+  .tab { flex: 0 0 auto; background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:999px; padding:7px 13px; font-size:12px; white-space:nowrap; }
+  .tab.active { background:var(--accent); color:#1b1400; border-color:var(--accent); font-weight:bold; }
+  input[type=text], input[type=search], select {
+    width:100%; background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:9px 10px; font-size:14px; margin-bottom:8px;
+  }
+  .btn { background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:9px 12px; font-size:13px; }
+  .btn.primary { background:var(--accent); color:#1b1400; border-color:var(--accent); font-weight:bold; }
+  .btn.danger { background: #3a1414; border-color: var(--danger); color: var(--danger); }
+  .itemcard { background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:8px; }
+  .itemcard.selected { border-color: var(--accent); background:#2a2416; }
+  .itemcard.disabled { opacity:0.35; }
+  .itemcard .name { font-weight:bold; font-size:14px; margin-bottom:4px; }
+  .itemcard .cat { font-size:11px; color:var(--sub); margin-bottom:6px; }
+  .statrow { display:flex; flex-wrap:wrap; gap:6px; }
+  .stat { background: var(--bg); border-radius:6px; padding:3px 8px; font-size:11px; color:var(--sub); }
+  .traits { font-size:11px; color: var(--accent2); margin-top:4px; }
+  .picker-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .closebtn { background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:6px 10px; font-size:12px; }
+  .savebar { display:flex; gap:8px; }
+  .savebar input { flex:1; margin-bottom:0; }
+  .loadout-card { background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:10px; margin-bottom:8px; }
+  .loadout-card .title { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+  .loadout-card .title b { font-size:14px; }
+  .tag { background:var(--bg); color:var(--sub); border-radius:6px; padding:3px 8px; font-size:11px; margin:2px; display:inline-block; }
+  .tag.strat { color: var(--accent2); }
+  .tag.boost { color: var(--ok); }
+  .smallbtn { background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:4px 8px; font-size:12px; margin-left:4px; }
+  .enemy-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; }
+  @media (min-width: 560px) { .enemy-grid { grid-template-columns: repeat(3, 1fr); } }
+  .part-card { background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:8px; text-align:center; cursor:pointer; }
+  .part-card.selected { border-color: var(--accent); }
+  .part-card .pname { font-size:13px; font-weight:bold; margin-bottom:3px; }
+  .part-card .psub { font-size:11px; color:var(--sub); margin:1px 0; }
+  .badge { font-size:10px; border-radius:6px; padding:2px 6px; display:inline-block; margin-top:4px; }
+  .badge.fatal { background:#3a1414; color:var(--danger); }
+  .badge.nonfatal { background:var(--bg); color:var(--sub); }
+  .lookup-group { margin-bottom:10px; }
+  .lookup-title.full { color: var(--ok); }
+  .lookup-title.half { color: var(--accent); }
+  .lookup-btn { background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:6px 10px; font-size:12px; margin:3px; }
+  .lookup-btn.full { border-color: var(--ok); }
+  .lookup-btn.half { border-color: var(--accent); }
+  .toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--accent); color:#1b1400; padding:9px 16px; border-radius:8px; font-size:13px; font-weight:bold; opacity:0; transition:opacity .3s; pointer-events:none; }
+  .toast.show { opacity:1; }
+  .hint { font-size:11px; color:var(--sub); margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ヘルダイバーズ2 装備選択ツール</h1>
+  <p class="note">保存したロードアウトはこの端末・このブラウザにのみ保存されます（他の端末とは共有されません）。</p>
+
+  <div class="section" id="slotsSection">
+    <h2>現在のロードアウト</h2>
+    <div class="chips" id="slotChips"></div>
+    <div class="savebar" style="margin-top:10px;">
+      <input type="text" id="saveName" placeholder="保存名（例：対ターミニッド重装編成）">
+      <button class="btn primary" onclick="saveLoadout()">保存</button>
+    </div>
+  </div>
+
+  <div class="section" id="pickerSection" style="display:none;"></div>
+
+  <div class="section" id="savedSection">
+    <h2>保存済みロードアウト</h2>
+    <div id="savedList"></div>
+  </div>
+
+  <div class="section" id="enemySection">
+    <h2>大型敵図鑑（装甲貫通チェック）</h2>
+    <div class="tabbar" id="factionTabs"></div>
+    <div class="chips" id="enemyChips" style="margin:10px 0;"></div>
+    <div id="enemyBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STRAT_SLOTS = 4;
+let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
+let activePicker = null; // {slotType, stratIndex}
+let activeFaction = ENEMIES[0].faction;
+let activeEnemyIdx = 0;
+let activePartIdx = null;
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function slotLabel(key) {
+  return { primary:"プライマリ武器", secondary:"セカンダリ武器", grenade:"グレネード", armor:"アーマー", booster:"ブースター" }[key];
+}
+
+function renderSlotChips() {
+  const el = document.getElementById('slotChips');
+  el.innerHTML = '';
+  ['primary','secondary','grenade','armor'].forEach(key => {
+    el.appendChild(makeChip(slotLabel(key), loadout[key] ? loadout[key].name : '未選択', () => openPicker(key)));
+  });
+  for (let i=0;i<STRAT_SLOTS;i++) {
+    const item = loadout.stratagems[i];
+    el.appendChild(makeChip('スト'+(i+1), item ? item.name : '未選択', () => openPicker('stratagem', i)));
+  }
+  el.appendChild(makeChip(slotLabel('booster'), loadout.booster ? loadout.booster.name : '未選択', () => openPicker('booster')));
+}
+
+function makeChip(label, value, onClick) {
+  const d = document.createElement('div');
+  d.className = 'chip' + (value !== '未選択' ? ' filled' : '');
+  d.innerHTML = `<span class="lbl">${label}</span><span class="val">${value}</span>`;
+  const btn = document.createElement('button');
+  btn.textContent = value === '未選択' ? '選択' : '変更';
+  btn.onclick = onClick;
+  d.appendChild(btn);
+  return d;
+}
+
+function listFor(slotType) {
+  if (slotType === 'primary') return PRIMARY_WEAPONS;
+  if (slotType === 'secondary') return SECONDARY_WEAPONS;
+  if (slotType === 'grenade') return GRENADES;
+  if (slotType === 'armor') return ARMORS;
+  if (slotType === 'booster') return BOOSTERS;
+  if (slotType === 'stratagem') return STRATAGEMS;
+  return [];
+}
+
+function categoriesFor(slotType) {
+  const items = listFor(slotType);
+  const cats = [];
+  items.forEach(i => { if (i.category && !cats.includes(i.category)) cats.push(i.category); });
+  return cats;
+}
+
+let pickerState = { cat: 'すべて', q: '' };
+
+function openPicker(slotType, stratIndex) {
+  activePicker = { slotType, stratIndex };
+  pickerState = { cat: 'すべて', q: '' };
+  renderPicker();
+  document.getElementById('pickerSection').style.display = 'block';
+  document.getElementById('pickerSection').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function closePicker() {
+  activePicker = null;
+  document.getElementById('pickerSection').style.display = 'none';
+}
+
+function currentStratagemNames(excludeIndex) {
+  const names = [];
+  loadout.stratagems.forEach((s, i) => { if (s && i !== excludeIndex) names.push(s.name); });
+  return names;
+}
+
+function renderPicker() {
+  if (!activePicker) return;
+  const { slotType, stratIndex } = activePicker;
+  const box = document.getElementById('pickerSection');
+  const cats = categoriesFor(slotType);
+  const titleMap = { primary:"プライマリ武器を選択", secondary:"セカンダリ武器を選択", grenade:"グレネードを選択",
+    armor:"アーマーを選択", booster:"ブースターを選択", stratagem:"ストラタジェムを選択（スロット"+(stratIndex+1)+"）" };
+
+  let html = `<div class="picker-head"><b>${titleMap[slotType]}</b><button class="closebtn" onclick="closePicker()">閉じる</button></div>`;
+  html += `<div class="tabbar">`;
+  html += `<button class="tab ${pickerState.cat==='すべて'?'active':''}" onclick="setPickerCat('すべて')">すべて</button>`;
+  cats.forEach(c => { html += `<button class="tab ${pickerState.cat===c?'active':''}" onclick="setPickerCat('${c}')">${c}</button>`; });
+  html += `</div>`;
+  html += `<input type="search" placeholder="名前で検索" value="${pickerState.q}" oninput="setPickerQuery(this.value)">`;
+  html += `<div id="pickerList"></div>`;
+  box.innerHTML = html;
+  renderPickerList();
+}
+
+function setPickerCat(c) { pickerState.cat = c; renderPicker(); }
+function setPickerQuery(q) { pickerState.q = q; renderPickerList(); }
+
+function fieldChips(item) {
+  const parts = [];
+  if (item.damage !== undefined) parts.push('ダメージ ' + item.damage);
+  if (item.mag !== undefined) parts.push('装弾数 ' + item.mag);
+  if (item.carry !== undefined) parts.push('携行' + item.carry + '/最大' + item.maxCarry);
+  if (item.recoil !== undefined) parts.push('反動 ' + item.recoil);
+  if (item.rpm !== undefined) parts.push('連射 ' + item.rpm);
+  if (item.command !== undefined) parts.push('使用回数 ' + item.uses);
+  if (item.cooldown !== undefined) parts.push('CT ' + item.cooldown);
+  if (item.unlockLv !== undefined) parts.push('解放Lv ' + item.unlockLv);
+  if (item.rating !== undefined) parts.push('アーマー評価 ' + item.rating);
+  if (item.cost !== undefined) parts.push('メダル ' + item.cost);
+  return parts;
+}
+
+function renderPickerList() {
+  const { slotType, stratIndex } = activePicker;
+  let items = listFor(slotType);
+  if (pickerState.cat !== 'すべて') items = items.filter(i => i.category === pickerState.cat);
+  if (pickerState.q) items = items.filter(i => i.name.includes(pickerState.q));
+  const usedElsewhere = slotType === 'stratagem' ? currentStratagemNames(stratIndex) : [];
+  const currentVal = slotType === 'stratagem' ? loadout.stratagems[stratIndex] : loadout[slotType];
+
+  let html = '';
+  items.forEach((item, idx) => {
+    const disabled = usedElsewhere.includes(item.name);
+    const selected = currentVal && currentVal.name === item.name;
+    html += `<div class="itemcard ${selected?'selected':''} ${disabled?'disabled':''}" ${disabled?'':`onclick="pickItem('${slotType}', ${stratIndex ?? 'null'}, ${idx}, '${pickerState.cat}', '${pickerState.q.replace(/'/g,"\\'")}')"`}>`;
+    html += `<div class="name">${item.name}${selected?' ✓':''}${disabled?' (使用中)':''}</div>`;
+    if (item.category) html += `<div class="cat">${item.category}</div>`;
+    const chips = fieldChips(item);
+    if (chips.length) {
+      html += `<div class="statrow">`;
+      chips.forEach(c => html += `<span class="stat">${c}</span>`);
+      html += `</div>`;
+    }
+    if (item.traits) html += `<div class="traits">${item.traits.join('・')}</div>`;
+    if (item.desc) html += `<div class="traits">${item.desc}</div>`;
+    html += `</div>`;
+  });
+  if (items.length === 0) html = '<p class="hint">該当する項目がありません</p>';
+  document.getElementById('pickerList').innerHTML = html;
+}
+
+function pickItem(slotType, stratIndex, idx, cat, q) {
+  let items = listFor(slotType);
+  if (cat !== 'すべて') items = items.filter(i => i.category === cat);
+  if (q) items = items.filter(i => i.name.includes(q));
+  const item = items[idx];
+  if (!item) return;
+  if (slotType === 'stratagem') {
+    loadout.stratagems[stratIndex] = item;
+  } else {
+    loadout[slotType] = item;
+  }
+  renderSlotChips();
+  closePicker();
+  renderEnemyBody();
+}
+
+function saveLoadout() {
+  const name = document.getElementById('saveName').value.trim();
+  if (!name) { showToast('保存名を入力してください'); return; }
+  const all = getSavedLoadouts();
+  all.push({ name, loadout: JSON.parse(JSON.stringify(loadout)), savedAt: new Date().toISOString() });
+  localStorage.setItem('hd2_loadouts', JSON.stringify(all));
+  document.getElementById('saveName').value = '';
+  renderSavedList();
+  showToast('「'+name+'」を保存しました');
+}
+
+function getSavedLoadouts() {
+  try { return JSON.parse(localStorage.getItem('hd2_loadouts') || '[]'); } catch(e) { return []; }
+}
+
+function renderSavedList() {
+  const all = getSavedLoadouts();
+  const el = document.getElementById('savedList');
+  if (all.length === 0) { el.innerHTML = '<p class="hint">まだ保存されたロードアウトはありません</p>'; return; }
+  let html = '';
+  all.forEach((entry, i) => {
+    const l = entry.loadout;
+    html += `<div class="loadout-card">`;
+    html += `<div class="title"><b>${entry.name}</b><span>`;
+    html += `<button class="smallbtn" onclick="loadLoadout(${i})">呼び出す</button>`;
+    html += `<button class="smallbtn" onclick="deleteLoadout(${i})">削除</button>`;
+    html += `</span></div>`;
+    const tags = [];
+    ['primary','secondary','grenade','armor'].forEach(k => { if (l[k]) tags.push(`<span class="tag">${l[k].name}</span>`); });
+    (l.stratagems||[]).forEach(s => { if (s) tags.push(`<span class="tag strat">${s.name}</span>`); });
+    if (l.booster) tags.push(`<span class="tag boost">${l.booster.name}</span>`);
+    html += tags.join('');
+    html += `</div>`;
+  });
+  el.innerHTML = html;
+}
+
+function loadLoadout(i) {
+  const all = getSavedLoadouts();
+  const entry = all[i];
+  if (!entry) return;
+  loadout = entry.loadout;
+  if (!loadout.stratagems) loadout.stratagems = [null,null,null,null];
+  renderSlotChips();
+  renderEnemyBody();
+  showToast('「'+entry.name+'」を呼び出しました');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function deleteLoadout(i) {
+  const all = getSavedLoadouts();
+  all.splice(i, 1);
+  localStorage.setItem('hd2_loadouts', JSON.stringify(all));
+  renderSavedList();
+}
+
+// ---- 敵図鑑 ----
+function factionList() {
+  const fs = [];
+  ENEMIES.forEach(e => { if (!fs.includes(e.faction)) fs.push(e.faction); });
+  return fs;
+}
+
+function renderFactionTabs() {
+  const fs = factionList();
+  let html = '';
+  fs.forEach(f => { html += `<button class="tab ${activeFaction===f?'active':''}" onclick="setFaction('${f}')">${f}</button>`; });
+  document.getElementById('factionTabs').innerHTML = html;
+}
+
+function setFaction(f) {
+  activeFaction = f;
+  const idxs = ENEMIES.map((e,i)=>i).filter(i => ENEMIES[i].faction === f);
+  activeEnemyIdx = idxs[0];
+  activePartIdx = null;
+  renderFactionTabs();
+  renderEnemyChips();
+  renderEnemyBody();
+}
+
+function renderEnemyChips() {
+  const el = document.getElementById('enemyChips');
+  let html = '';
+  ENEMIES.forEach((e, i) => {
+    if (e.faction !== activeFaction) return;
+    html += `<button class="tab ${activeEnemyIdx===i?'active':''}" onclick="setEnemy(${i})">${e.name}</button>`;
+  });
+  el.innerHTML = html;
+}
+
+function setEnemy(i) {
+  activeEnemyIdx = i;
+  activePartIdx = null;
+  renderEnemyChips();
+  renderEnemyBody();
+}
+
+function setPart(i) {
+  activePartIdx = i;
+  renderEnemyBody();
+}
+
+function allPenItems() {
+  return [].concat(PRIMARY_WEAPONS, SECONDARY_WEAPONS, GRENADES, STRATAGEMS).filter(i => i.pen);
+}
+
+function equipFromLookup(slot, name) {
+  const item = allPenItems().find(i => i.slot === slot && i.name === name);
+  if (!item) return;
+  if (slot === 'stratagem') {
+    const already = loadout.stratagems.findIndex(s => s && s.name === item.name);
+    if (already >= 0) { showToast('すでにスロット'+(already+1)+'に設定済みです'); return; }
+    const empty = loadout.stratagems.findIndex(s => !s);
+    if (empty < 0) { showToast('ストラタジェムは4つとも埋まっています'); return; }
+    loadout.stratagems[empty] = item;
+    showToast('「'+item.name+'」をストラタジェム'+(empty+1)+'に設定しました');
+  } else {
+    loadout[slot] = item;
+    showToast('「'+item.name+'」を'+slotLabel(slot)+'に設定しました');
+  }
+  renderSlotChips();
+  renderEnemyBody();
+}
+
+function renderEnemyBody() {
+  const enemy = ENEMIES[activeEnemyIdx];
+  if (!enemy) return;
+  let html = `<div class="enemy-grid">`;
+  enemy.parts.forEach((p, i) => {
+    const [name, hp, tier, fatal] = p;
+    html += `<div class="part-card ${activePartIdx===i?'selected':''}" onclick="setPart(${i})">`;
+    html += `<div class="pname">${name}</div>`;
+    html += `<div class="psub">HP ${hp}</div>`;
+    html += `<div class="psub">装甲 ${TIER_LABEL[tier]}</div>`;
+    html += `<span class="badge ${fatal?'fatal':'nonfatal'}">${fatal?'破壊で即撃破':'破壊しても倒れない'}</span>`;
+    html += `</div>`;
+  });
+  html += `</div>`;
+
+  if (activePartIdx !== null) {
+    const [pname, php, ptier, pfatal] = enemy.parts[activePartIdx];
+    const items = allPenItems();
+    const full = [], half = [];
+    items.forEach(it => {
+      const r = calcPenResult(it.pen, ptier);
+      if (r === 'full') full.push(it);
+      else if (r === 'half') half.push(it);
+    });
+    html += `<div class="section" style="margin-top:10px;">`;
+    html += `<p><b>${enemy.name}「${pname}」</b>（${TIER_LABEL[ptier]}・<span style="color:${pfatal?'var(--danger)':'var(--sub)'}">${pfatal?'破壊で即撃破':'破壊しても倒れない'}</span>）を貫通できる装備</p>`;
+    html += `<div class="lookup-group"><p class="lookup-title full">通常ダメージ100%で貫通</p>`;
+    if (full.length === 0) html += `<p class="hint">該当なし</p>`;
+    full.forEach(it => { html += `<button class="lookup-btn full" onclick="equipFromLookup('${it.slot}', '${it.name.replace(/'/g,"\\'")}')">${it.name}</button>`; });
+    html += `</div>`;
+    html += `<div class="lookup-group"><p class="lookup-title half">ダメージ65%に減衰（同格）</p>`;
+    if (half.length === 0) html += `<p class="hint">該当なし</p>`;
+    half.forEach(it => { html += `<button class="lookup-btn half" onclick="equipFromLookup('${it.slot}', '${it.name.replace(/'/g,"\\'")}')">${it.name}</button>`; });
+    html += `</div>`;
+    html += `<p class="hint">クリックで対応スロットに即セットされます（ストラタジェムは空いているスロットに自動配置）。ランク付けは両wikiの記載に基づく近似です。</p>`;
+    html += `</div>`;
+  } else {
+    html += `<p class="hint">部位をクリックすると、その部位を貫通できる装備が表示されます</p>`;
+  }
+  document.getElementById('enemyBody').innerHTML = html;
+}
+
+// init
+renderSlotChips();
+renderSavedList();
+renderFactionTabs();
+renderEnemyChips();
+renderEnemyBody();
+</script>
+</body>
+</html>
