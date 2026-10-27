@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.5.2"></script>
+<script src="helldivers_data.js?v=1.6.0"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -120,7 +120,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION = "v1.5.2";
+const VERSION = "v1.6.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -236,6 +236,7 @@ function fieldChips(item) {
   if (item.unlockLv !== undefined) parts.push('解放Lv ' + item.unlockLv);
   if (item.rating !== undefined) parts.push('アーマー評価 ' + item.rating);
   if (item.cost !== undefined) parts.push('メダル ' + item.cost);
+  if (item.rounds !== undefined) parts.push('1回の要請で ' + item.rounds);
   return parts;
 }
 
@@ -483,7 +484,9 @@ function lookupButton(it, partHp, rate, cls) {
   if (typeof it.damage === 'number' && it.damage > 0) {
     const eff = it.damage * rate;
     const hits = Math.ceil(partHp / eff);
-    hitLabel = `（${hits}発目安）`;
+    hitLabel = `（${hits}発目安`;
+    hitLabel += it.rounds ? `・1回で${it.rounds}／全弾命中は想定せず` : '';
+    hitLabel += `）`;
   }
   return `<button class="lookup-btn ${cls}" onclick="equipFromLookup('${it.slot}', '${it.name.replace(/'/g,"\\'")}')">${it.name}${hitLabel}</button>`;
 }
