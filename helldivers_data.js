@@ -282,9 +282,16 @@ const STRATAGEM_RAW = [
 ["ビークル","パトリオット・エクソスーツ","←↓→↑←↓↓","3回","600秒","25",4],
 ["ビークル","エマンシペーター・エクソスーツ","←↓→↑←↓↑","3回","600秒","25",4],
 ];
+// 支援武器のダメージ（helldivers.wiki.ggの詳細武器データより。主要な対戦車武器のみ収集、他は未収集）
+const STRATAGEM_DAMAGE = {
+  "使い捨て対戦車兵器": 2000, // EAT-17、直撃弾
+  "無反動ライフル": 3200, // GR-8、HEATモード直撃弾
+  "クエーサーキャノン": 2000, // LAS-99、直撃弾
+  "レールガン": 1500, // RS-422、最大チャージ（アンセーフモード）
+};
 const STRATAGEMS = STRATAGEM_RAW.map(r => ({
   category: r[0], name: r[1], command: r[2], uses: r[3], cooldown: r[4], unlockLv: r[5],
-  pen: r[6], slot: "stratagem",
+  pen: r[6], slot: "stratagem", damage: STRATAGEM_DAMAGE[r[1]] || undefined,
 }));
 
 // ---- 代表的な大型敵（装甲貫通判定用） ----
