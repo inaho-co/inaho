@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.14.1"></script>
+<script src="helldivers_data.js?v=1.14.2"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -157,7 +157,7 @@
 </div>
 
 <script>
-const VERSION = "v1.14.1";
+const VERSION = "v1.14.2";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -844,7 +844,7 @@ function renderSimResult() {
     });
     html += `</div>`;
   }
-  html += `<p class="hint">初期携行分（最初の1マガジン/要請分）は「すでに手元にある」前提でカウントせず、弾切れ後の再要請・リロードのみを加算した目安です。チャージ・リロード秒数はソロ運用（アシスト無し）の値。グレネード・セカンダリの対戦車ランク装備は携行数上限までのみ計算し、補充タイミングは未モデル化（上限を超える分は「携行数不足」と表示）。エイペックス・エポックはwiki側の秒数データが不完全なため未収録。</p>`;
+  html += `<p class="hint">初期携行分（最初の1マガジン/要請分）は「すでに手元にある」前提でカウントせず、弾切れ後の再要請・リロードのみを加算した目安です。チャージ・リロード秒数はソロ運用（アシスト無し）の値。弾薬が有限な武器（レールガン等）も、計算対象の発数が現実的な携行弾数を超えないという前提で簡略化しています。グレネード・セカンダリの対戦車ランク装備は携行数上限までのみ計算し、補充タイミングは未モデル化（上限を超える分は「携行数不足」と表示）。エイペックス・エポックはwiki側の秒数データが不完全なため未収録。</p>`;
   document.getElementById('simResult').innerHTML = html;
 }
 

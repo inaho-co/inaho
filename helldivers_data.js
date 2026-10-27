@@ -495,8 +495,8 @@ function calcPenResult(weaponPen, partTier) {
 const WEAPON_TIMING = {
   "クエーサーキャノン": { type: "charge", charge: 3.0, cooldown: 15.0 }, // LAS-99：チャージ3.0秒、発射後15秒は再発射不可
   "ノヴァ": { type: "charge", charge: 1.6, cooldown: 3.0 }, // LAS-44：チャージ1.6秒、発射毎に必ずオーバーヒートし3秒再使用不可
-  "レールガン（アンセーフ最大）": { type: "charge", charge: 2.8, cooldown: 0, damage: 1500, pen: 5 }, // RS-422：90%超〜100%手前までチャージ（100%で自爆するため目安値）。ダメージ1500は現行1.007.201で確認済み
-  "レールガン（セーフ）": { type: "charge", charge: 1.2, cooldown: 0, damage: 600, pen: 5 }, // RS-422：60%までの安全チャージ（自爆リスク無し）。チャージ秒数はwikiに明記無く概算のため要実機確認
+  "レールガン（アンセーフ最大）": { type: "charge", charge: 2.8, cooldown: 1.3, damage: 1500, pen: 5 }, // RS-422：90%超〜100%手前までチャージ（100%で自爆するため目安値）＋発射毎に機械的リロード1.3秒。弾薬は無限ではなく装填1発+予備20発（初期10発）、計算上は上限超過を想定しない範囲で使用
+  "レールガン（セーフ）": { type: "charge", charge: 1.2, cooldown: 1.3, damage: 600, pen: 5 }, // RS-422：60%までの安全チャージ（自爆リスク無し）＋発射毎に機械的リロード1.3秒。チャージ秒数はwikiに明記無く概算のため要実機確認
   "無反動ライフル": { type: "mag", magazine: 1, reload: 6.1, lockOn: 0 }, // GR-8：ソロリロード6.1秒（バックパック必須）
   "スピア": { type: "mag", magazine: 1, reload: 4.65, lockOn: 1.0 }, // FAF-14：ロックオン1秒＋ソロリロード4.65秒（バックパック必須）
   "W.A.S.P.ランチャー": { type: "mag", magazine: 7, reload: 4.9, lockOn: 0 }, // StA-X3：マガジン7発、リロード4.9秒（バックパック必須）
