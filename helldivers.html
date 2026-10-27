@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.14.0"></script>
+<script src="helldivers_data.js?v=1.14.1"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -157,7 +157,7 @@
 </div>
 
 <script>
-const VERSION = "v1.14.0";
+const VERSION = "v1.14.1";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -740,6 +740,27 @@ function simDetailTarget(name) {
   return SIM_DETAIL_MAP[name] || { slot: 'stratagem', name };
 }
 
+function showSimDetail(simName) {
+  const dt = simDetailTarget(simName);
+  const item = allPenItems().find(i => i.slot === dt.slot && i.name === dt.name);
+  if (!item) return;
+  const override = WEAPON_TIMING[simName];
+  const effectiveDamage = (override && typeof override.damage === 'number') ? override.damage : item.damage;
+  const chips = fieldChips(Object.assign({}, item, { damage: effectiveDamage }));
+  let html = `<div class="name">${simName}</div>`;
+  if (item.category) html += `<div class="cat">${item.category}</div>`;
+  if (chips.length) {
+    html += `<div class="statrow">`;
+    chips.forEach(c => html += `<span class="stat">${c}</span>`);
+    html += `</div>`;
+  }
+  if (item.traits) html += `<div class="traits">${item.traits.join('・')}</div>`;
+  if (item.desc) html += `<div class="traits">${item.desc}</div>`;
+  html += `<button class="btn" style="margin-top:8px;" onclick="closeItemDetail()">閉じる</button>`;
+  document.getElementById('itemDetailBox').innerHTML = html;
+  document.getElementById('itemDetailOverlay').style.display = 'flex';
+}
+
 const SIM_GROUPS = {
   secondary: { label: 'セカンダリ', names: ['ミサイルピストル', 'ブリーチャー', 'アルティメイタム'] },
   grenade: { label: 'グレネード', names: ['対戦車シーカー', 'メルタマイン', 'テルミット'] },
@@ -808,9 +829,8 @@ function renderSimResult() {
       html += `<td style="padding:5px 4px;">${r.shots}発</td>`;
       html += `<td style="padding:5px 4px; font-weight:bold;">${Math.round(r.time)}秒</td>`;
     }
-    const dt = simDetailTarget(r.name);
     html += `<td style="padding:5px 4px; text-align:right; white-space:nowrap;">`;
-    html += `<button class="smallbtn" onclick="showItemDetail('${dt.slot}', '${dt.name.replace(/'/g,"\\'")}')">ⓘ</button>`;
+    html += `<button class="smallbtn" onclick="showSimDetail('${r.name.replace(/'/g,"\\'")}')">ⓘ</button>`;
     html += `<button class="smallbtn" onclick="excludeSimWeapon('${r.name.replace(/'/g,"\\'")}')">除外</button>`;
     html += `</td>`;
     html += `</tr>`;
