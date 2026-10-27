@@ -400,6 +400,16 @@ function equipFromLookup(slot, name) {
   renderEnemyBody();
 }
 
+function lookupButton(it, partHp, rate, cls) {
+  let hitLabel = '';
+  if (typeof it.damage === 'number' && it.damage > 0) {
+    const eff = it.damage * rate;
+    const hits = Math.ceil(partHp / eff);
+    hitLabel = `（${hits}発目安）`;
+  }
+  return `<button class="lookup-btn ${cls}" onclick="equipFromLookup('${it.slot}', '${it.name.replace(/'/g,"\\'")}')">${it.name}${hitLabel}</button>`;
+}
+
 function renderEnemyBody() {
   const enemy = ENEMIES[activeEnemyIdx];
   if (!enemy) return;
@@ -428,13 +438,13 @@ function renderEnemyBody() {
     html += `<p><b>${enemy.name}「${pname}」</b>（${TIER_LABEL[ptier]}・<span style="color:${pfatal?'var(--danger)':'var(--sub)'}">${pfatal?'破壊で即撃破':'破壊しても倒れない'}</span>）を貫通できる装備</p>`;
     html += `<div class="lookup-group"><p class="lookup-title full">通常ダメージ100%で貫通</p>`;
     if (full.length === 0) html += `<p class="hint">該当なし</p>`;
-    full.forEach(it => { html += `<button class="lookup-btn full" onclick="equipFromLookup('${it.slot}', '${it.name.replace(/'/g,"\\'")}')">${it.name}</button>`; });
+    full.forEach(it => { html += lookupButton(it, php, 1, 'full'); });
     html += `</div>`;
     html += `<div class="lookup-group"><p class="lookup-title half">ダメージ65%に減衰（同格）</p>`;
     if (half.length === 0) html += `<p class="hint">該当なし</p>`;
-    half.forEach(it => { html += `<button class="lookup-btn half" onclick="equipFromLookup('${it.slot}', '${it.name.replace(/'/g,"\\'")}')">${it.name}</button>`; });
+    half.forEach(it => { html += lookupButton(it, php, 0.65, 'half'); });
     html += `</div>`;
-    html += `<p class="hint">クリックで対応スロットに即セットされます（ストラタジェムは空いているスロットに自動配置）。ランク付けは両wikiの記載に基づく近似です。</p>`;
+    html += `<p class="hint">かっこ内は破壊に必要な目安発数（単発ダメージ×有効率でその部位HPを割った概算。連射武器・レーザー系は目安対象外）。クリックで対応スロットに即セットされます（ストラタジェムは空いているスロットに自動配置）。ランク付けは両wikiの記載に基づく近似です。</p>`;
     html += `</div>`;
   } else {
     html += `<p class="hint">部位をクリックすると、その部位を貫通できる装備が表示されます</p>`;
