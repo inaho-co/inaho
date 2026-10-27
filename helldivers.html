@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.13.0"></script>
+<script src="helldivers_data.js?v=1.14.0"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -157,7 +157,7 @@
 </div>
 
 <script>
-const VERSION = "v1.13.0";
+const VERSION = "v1.14.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -726,6 +726,20 @@ function calcWeaponTime(timing, totalShots) {
 
 let simExcluded = new Set();
 
+const SIM_DETAIL_MAP = {
+  'レールガン（アンセーフ最大）': { slot: 'stratagem', name: 'レールガン' },
+  'レールガン（セーフ）': { slot: 'stratagem', name: 'レールガン' },
+  'ミサイルピストル': { slot: 'secondary', name: 'P-33 ミサイルピストル' },
+  'ブリーチャー': { slot: 'secondary', name: 'P-34 ブリーチャー' },
+  'アルティメイタム': { slot: 'secondary', name: 'GP-20 アルティメイタム' },
+  '対戦車シーカー': { slot: 'grenade', name: 'G-60 対戦車シーカー' },
+  'メルタマイン': { slot: 'grenade', name: 'G/40-K メルタマイン' },
+  'テルミット': { slot: 'grenade', name: 'G-123 テルミット' },
+};
+function simDetailTarget(name) {
+  return SIM_DETAIL_MAP[name] || { slot: 'stratagem', name };
+}
+
 const SIM_GROUPS = {
   secondary: { label: 'セカンダリ', names: ['ミサイルピストル', 'ブリーチャー', 'アルティメイタム'] },
   grenade: { label: 'グレネード', names: ['対戦車シーカー', 'メルタマイン', 'テルミット'] },
@@ -794,7 +808,11 @@ function renderSimResult() {
       html += `<td style="padding:5px 4px;">${r.shots}発</td>`;
       html += `<td style="padding:5px 4px; font-weight:bold;">${Math.round(r.time)}秒</td>`;
     }
-    html += `<td style="padding:5px 4px; text-align:right;"><button class="smallbtn" onclick="excludeSimWeapon('${r.name.replace(/'/g,"\\'")}')">除外</button></td>`;
+    const dt = simDetailTarget(r.name);
+    html += `<td style="padding:5px 4px; text-align:right; white-space:nowrap;">`;
+    html += `<button class="smallbtn" onclick="showItemDetail('${dt.slot}', '${dt.name.replace(/'/g,"\\'")}')">ⓘ</button>`;
+    html += `<button class="smallbtn" onclick="excludeSimWeapon('${r.name.replace(/'/g,"\\'")}')">除外</button>`;
+    html += `</td>`;
     html += `</tr>`;
   });
   html += `</table>`;
