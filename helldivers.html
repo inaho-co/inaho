@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.9.3"></script>
+<script src="helldivers_data.js?v=1.10.0"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -128,6 +128,19 @@
     <div class="chips" id="enemyChips" style="margin:10px 0;"></div>
     <div id="enemyBody"></div>
   </div>
+
+  <div class="section" id="simSection">
+    <h2>撃破時間計算（対戦車ランク武器のみ）</h2>
+    <p class="hint" style="margin-top:0;">複数の大型敵・部位を好きな数だけ組み合わせて、対戦車ランク武器ごとの推定撃破時間をランキング表示します。</p>
+    <div class="chips" style="margin-bottom:8px;">
+      <select id="simEnemySelect" style="margin-bottom:0; width:auto;" onchange="onSimEnemyChange()"></select>
+      <select id="simPartSelect" style="margin-bottom:0; width:auto;"></select>
+      <input type="number" id="simQtyInput" min="1" value="1" style="width:60px; margin-bottom:0;">
+      <button class="btn primary" onclick="addSimTarget()">追加</button>
+    </div>
+    <div id="simTargetList" class="chips" style="margin-bottom:10px;"></div>
+    <div id="simResult"></div>
+  </div>
 </div>
 <div class="toast" id="toast"></div>
 <div class="modal-overlay" id="itemDetailOverlay" style="display:none;" onclick="if(event.target===this) closeItemDetail()">
@@ -135,7 +148,7 @@
 </div>
 
 <script>
-const VERSION = "v1.9.3";
+const VERSION = "v1.10.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -606,6 +619,116 @@ function renderEnemyBody() {
   if (lookupDetailKey) renderItemDetailModal();
 }
 
+// ---- 撃破時間計算（対戦車ランク武器） ----
+let simTargets = [];
+
+function populateSimEnemySelect() {
+  const el = document.getElementById('simEnemySelect');
+  el.innerHTML = ENEMIES.map((e, i) => `<option value="${i}">${e.faction}・${e.name}</option>`).join('');
+  onSimEnemyChange();
+}
+
+function onSimEnemyChange() {
+  const idx = Number(document.getElementById('simEnemySelect').value);
+  const el = document.getElementById('simPartSelect');
+  el.innerHTML = ENEMIES[idx].parts.map((p, i) => `<option value="${i}">${p[0]}（HP${p[1]}・${TIER_LABEL[p[2]]}）</option>`).join('');
+}
+
+function addSimTarget() {
+  const eIdx = Number(document.getElementById('simEnemySelect').value);
+  const pIdx = Number(document.getElementById('simPartSelect').value);
+  const qty = Math.max(1, Number(document.getElementById('simQtyInput').value) || 1);
+  const enemy = ENEMIES[eIdx];
+  const part = enemy.parts[pIdx];
+  simTargets.push({ hp: part[1], tier: part[2], qty, label: `${enemy.name}「${part[0]}」×${qty}` });
+  renderSimTargets();
+}
+
+function removeSimTarget(i) {
+  simTargets.splice(i, 1);
+  renderSimTargets();
+}
+
+function renderSimTargets() {
+  const el = document.getElementById('simTargetList');
+  if (simTargets.length === 0) {
+    el.innerHTML = '<p class="hint">対象を追加してください（例：バイルタイタン「頭部」×2、チャージャー「頭部」×3）</p>';
+  } else {
+    el.innerHTML = simTargets.map((t, i) =>
+      `<span class="chip filled"><span class="val">${t.label}</span><button onclick="removeSimTarget(${i})">×</button></span>`
+    ).join('');
+  }
+  renderSimResult();
+}
+
+function simWeaponStats(name) {
+  const timing = WEAPON_TIMING[name];
+  if (typeof timing.damage === 'number' && typeof timing.pen === 'number') {
+    return { pen: timing.pen, damage: timing.damage };
+  }
+  const strat = STRATAGEMS.find(s => s.name === name);
+  if (!strat || typeof strat.damage !== 'number') return null;
+  return { pen: strat.pen, damage: strat.damage };
+}
+
+function calcShotsNeeded(pen, damage, targets) {
+  let total = 0;
+  for (const t of targets) {
+    const r = calcPenResult(pen, t.tier);
+    if (r === 'none') return null;
+    const rate = r === 'full' ? 1 : 0.65;
+    total += Math.ceil(t.hp / (damage * rate)) * t.qty;
+  }
+  return total;
+}
+
+function calcWeaponTime(timing, totalShots) {
+  if (totalShots <= 0) return 0;
+  if (timing.type === 'charge') {
+    return timing.charge * totalShots + timing.cooldown * (totalShots - 1);
+  }
+  if (timing.type === 'mag') {
+    const reloads = Math.floor((totalShots - 1) / timing.magazine);
+    return reloads * timing.reload + (timing.lockOn || 0) * totalShots;
+  }
+  if (timing.type === 'callLimited') {
+    const recalls = Math.floor((totalShots - 1) / timing.freeUses);
+    return recalls * (timing.callInCooldown + timing.callInTime);
+  }
+  return null;
+}
+
+function renderSimResult() {
+  const el = document.getElementById('simResult');
+  if (simTargets.length === 0) { el.innerHTML = ''; return; }
+  const rows = [];
+  Object.keys(WEAPON_TIMING).forEach(name => {
+    const stats = simWeaponStats(name);
+    if (!stats) return;
+    const shots = calcShotsNeeded(stats.pen, stats.damage, simTargets);
+    if (shots === null) { rows.push({ name, na: true }); return; }
+    const time = calcWeaponTime(WEAPON_TIMING[name], shots);
+    rows.push({ name, shots, time });
+  });
+  rows.sort((a, b) => (a.na ? Infinity : a.time) - (b.na ? Infinity : b.time));
+  let html = `<table style="width:100%; border-collapse:collapse; font-size:13px;">`;
+  html += `<tr style="color:var(--sub); text-align:left;"><th>武器</th><th>必要発数</th><th>推定時間</th></tr>`;
+  rows.forEach(r => {
+    html += `<tr style="border-top:1px solid var(--border);">`;
+    html += `<td style="padding:5px 4px;">${r.name}</td>`;
+    if (r.na) {
+      html += `<td colspan="2" style="padding:5px 4px; color:var(--sub);">貫通不可（対象外）</td>`;
+    } else {
+      html += `<td style="padding:5px 4px;">${r.shots}発</td>`;
+      html += `<td style="padding:5px 4px; font-weight:bold;">${Math.round(r.time)}秒</td>`;
+    }
+    html += `</tr>`;
+  });
+  html += `</table>`;
+  html += `<p class="hint">初期携行分（最初の1マガジン/要請分）は「すでに手元にある」前提でカウントせず、弾切れ後の再要請・リロードのみを加算した目安です。チャージ・リロード秒数はソロ運用（アシスト無し）の値。エイペックス・エポックはwiki側の秒数データが不完全なため未収録。</p>`;
+  document.getElementById('simResult').innerHTML = html;
+}
+
 // init
 renderSlotChips();
 renderSavedList();
@@ -615,6 +738,8 @@ renderEnemyBody();
 renderBrowseTypeTabs();
 renderBrowseCatTabs();
 renderBrowseList();
+populateSimEnemySelect();
+renderSimTargets();
 </script>
 </body>
 </html>
