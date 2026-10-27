@@ -65,9 +65,13 @@
   .lookup-group { margin-bottom:10px; }
   .lookup-title.full { color: var(--ok); }
   .lookup-title.half { color: var(--accent); }
-  .lookup-btn { background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:6px 10px; font-size:12px; margin:3px; }
+  .lookup-item { display:inline-flex; align-items:stretch; margin:3px; border-radius:8px; overflow:hidden; }
+  .lookup-btn { background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:0; padding:6px 10px; font-size:12px; margin:0; }
   .lookup-btn.full { border-color: var(--ok); }
   .lookup-btn.half { border-color: var(--accent); }
+  .lookup-detail-btn { background:var(--panel2); border:1px solid var(--border); border-left:none; color:var(--sub); padding:6px 10px; font-size:13px; min-width:34px; }
+  .lookup-btn.full + .lookup-detail-btn { border-color: var(--ok); border-left:none; }
+  .lookup-btn.half + .lookup-detail-btn { border-color: var(--accent); border-left:none; }
   .toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--accent); color:#1b1400; padding:9px 16px; border-radius:8px; font-size:13px; font-weight:bold; opacity:0; transition:opacity .3s; pointer-events:none; }
   .toast.show { opacity:1; }
   .hint { font-size:11px; color:var(--sub); margin-top:8px; }
@@ -120,7 +124,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION = "v1.6.0";
+const VERSION = "v1.7.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -488,7 +492,22 @@ function lookupButton(it, partHp, rate, cls) {
     hitLabel += it.rounds ? `・1回で${it.rounds}／全弾命中は想定せず` : '';
     hitLabel += `）`;
   }
-  return `<button class="lookup-btn ${cls}" onclick="equipFromLookup('${it.slot}', '${it.name.replace(/'/g,"\\'")}')">${it.name}${hitLabel}</button>`;
+  const nameEsc = it.name.replace(/'/g,"\\'");
+  return `<span class="lookup-item">`
+    + `<button class="lookup-btn ${cls}" onclick="equipFromLookup('${it.slot}', '${nameEsc}')">${it.name}${hitLabel}</button>`
+    + `<button class="lookup-detail-btn" aria-label="詳細を見る" onclick="showItemDetail('${it.slot}', '${nameEsc}')">ⓘ</button>`
+    + `</span>`;
+}
+
+function showItemDetail(slotType, name) {
+  let stratIndex;
+  if (slotType === 'stratagem') {
+    const empty = loadout.stratagems.findIndex(s => !s);
+    stratIndex = empty >= 0 ? empty : 0;
+  }
+  openPicker(slotType, stratIndex);
+  pickerState.q = name;
+  renderPicker();
 }
 
 function renderEnemyBody() {
