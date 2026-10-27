@@ -396,6 +396,10 @@ const STRATAGEM_DAMAGE = {
 };
 // 1回の要請で何発/何連射飛んでくるか（helldivers.wiki.ggより）。
 // 「○発目安」は1発のダメージ計算のみで、全弾命中を前提にしていない点の参考情報。
+// 弾薬容量の補足説明（有限弾薬の武器のみ。helldivers.wiki.ggより）
+const STRATAGEM_AMMO = {
+  "レールガン": "装填1+予備20（初期10、補給パック+10／弾薬箱+5）",
+};
 const STRATAGEM_ROUNDS = {
   "イーグル機銃掃射": "100発（内25発が榴弾）",
   "イーグル・クラスター爆弾": "子爆弾64発",
@@ -409,7 +413,7 @@ const STRATAGEM_ROUNDS = {
 const STRATAGEMS = STRATAGEM_RAW.map(r => ({
   category: r[0], name: r[1], command: r[2], uses: r[3], cooldown: r[4], unlockLv: r[5],
   pen: r[6], slot: "stratagem", damage: STRATAGEM_DAMAGE[r[1]] || undefined,
-  rounds: STRATAGEM_ROUNDS[r[1]] || undefined,
+  rounds: STRATAGEM_ROUNDS[r[1]] || undefined, ammo: STRATAGEM_AMMO[r[1]] || undefined,
 }));
 
 // ---- 代表的な大型敵（装甲貫通判定用） ----
