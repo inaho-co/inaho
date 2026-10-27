@@ -72,6 +72,12 @@
   .lookup-detail-btn { background:var(--panel2); border:1px solid var(--border); border-left:none; color:var(--sub); padding:6px 10px; font-size:13px; min-width:34px; }
   .lookup-btn.full + .lookup-detail-btn { border-color: var(--ok); border-left:none; }
   .lookup-btn.half + .lookup-detail-btn { border-color: var(--accent); border-left:none; }
+  .lookup-btn.slot-primary { background:#993556; color:#F4C0D1; }
+  .lookup-btn.slot-secondary { background:#0C447C; color:#B5D4F4; }
+  .lookup-btn.slot-grenade { background:#712B13; color:#F5C4B3; }
+  .lookup-btn.slot-stratagem { background:#085041; color:#9FE1CB; }
+  .lookup-legend { display:flex; gap:10px; flex-wrap:wrap; font-size:11px; color:var(--sub); margin:0 0 8px; }
+  .lookup-legend .dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:-1px; }
   .toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--accent); color:#1b1400; padding:9px 16px; border-radius:8px; font-size:13px; font-weight:bold; opacity:0; transition:opacity .3s; pointer-events:none; }
   .toast.show { opacity:1; }
   .hint { font-size:11px; color:var(--sub); margin-top:8px; }
@@ -124,7 +130,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION = "v1.7.1";
+const VERSION = "v1.8.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -494,9 +500,20 @@ function lookupButton(it, partHp, rate, cls) {
   }
   const nameEsc = it.name.replace(/'/g,"\\'");
   return `<span class="lookup-item">`
-    + `<button class="lookup-btn ${cls}" onclick="equipFromLookup('${it.slot}', '${nameEsc}')">${it.name}${hitLabel}</button>`
+    + `<button class="lookup-btn ${cls} slot-${it.slot}" onclick="equipFromLookup('${it.slot}', '${nameEsc}')">${it.name}${hitLabel}</button>`
     + `<button class="lookup-detail-btn" aria-label="詳細を見る" onclick="showItemDetail('${it.slot}', '${nameEsc}')">ⓘ</button>`
     + `</span>`;
+}
+
+function slotLegend() {
+  const labels = [
+    ['primary', 'プライマリ', '#993556'],
+    ['secondary', 'セカンダリ', '#0C447C'],
+    ['grenade', 'グレネード', '#712B13'],
+    ['stratagem', 'ストラタジェム', '#085041'],
+  ];
+  return `<div class="lookup-legend">` + labels.map(([,label,color]) =>
+    `<span><span class="dot" style="background:${color}"></span>${label}</span>`).join('') + `</div>`;
 }
 
 let lookupDetailKey = null; // "slot|name" の形式。その場で詳細を開閉するためだけに使う
@@ -560,6 +577,7 @@ function renderEnemyBody() {
     html += `<div class="section" style="margin-top:10px;">`;
     html += `<p><b>${enemy.name}「${pname}」</b>（${TIER_LABEL[ptier]}・<span style="color:${pfatal?'var(--danger)':'var(--sub)'}">${pfatal?'破壊で即撃破':'破壊しても倒れない'}</span>）を貫通できる装備</p>`;
     html += lookupDetailCard();
+    html += slotLegend();
     html += `<div class="lookup-group"><p class="lookup-title full">通常ダメージ100%で貫通</p>`;
     if (full.length === 0) html += `<p class="hint">該当なし</p>`;
     full.forEach(it => { html += lookupButton(it, php, 1, 'full'); });
