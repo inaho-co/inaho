@@ -93,12 +93,16 @@
   <div class="section" id="pickerSection" style="display:none;"></div>
 
   <div class="section" id="browseSection">
-    <h2>装備データ一覧（閲覧のみ）</h2>
-    <p class="hint" style="margin-top:0;">ロードアウトには影響しません。全データをここで一覧確認できます。</p>
-    <div class="tabbar" id="browseTypeTabs"></div>
-    <div class="tabbar" id="browseCatTabs" style="margin-top:6px;"></div>
-    <input type="search" id="browseSearch" placeholder="名前で検索" oninput="setBrowseQuery(this.value)">
-    <div id="browseList"></div>
+    <div class="picker-head" onclick="toggleBrowse()" style="cursor:pointer;">
+      <h2 style="margin:0;">装備データ一覧（閲覧のみ） <span id="browseToggleIcon">▶</span></h2>
+    </div>
+    <div id="browseBody" style="display:none;">
+      <p class="hint" style="margin-top:0;">ロードアウトには影響しません。全データをここで一覧確認できます。</p>
+      <div class="tabbar" id="browseTypeTabs"></div>
+      <div class="tabbar" id="browseCatTabs" style="margin-top:6px;"></div>
+      <input type="search" id="browseSearch" placeholder="名前で検索" oninput="setBrowseQuery(this.value)">
+      <div id="browseList"></div>
+    </div>
   </div>
 
   <div class="section" id="savedSection">
@@ -116,7 +120,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION = "v1.3.0";
+const VERSION = "v1.3.1";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -344,6 +348,13 @@ function deleteLoadout(i) {
 }
 
 // ---- 装備データ一覧（閲覧のみ） ----
+let browseOpen = false;
+function toggleBrowse() {
+  browseOpen = !browseOpen;
+  document.getElementById('browseBody').style.display = browseOpen ? 'block' : 'none';
+  document.getElementById('browseToggleIcon').textContent = browseOpen ? '▼' : '▶';
+}
+
 const BROWSE_TYPES = [
   ['primary','プライマリ武器'], ['secondary','セカンダリ武器'], ['grenade','グレネード'],
   ['armor','アーマー'], ['booster','ブースター'], ['stratagem','ストラタジェム'],
