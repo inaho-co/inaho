@@ -75,7 +75,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>ヘルダイバーズ2 装備選択ツール</h1>
+  <h1>ヘルダイバーズ2 装備選択ツール <span id="verTag" style="font-size:11px; color:var(--sub); font-weight:normal;"></span></h1>
   <p class="note">保存したロードアウトはこの端末・このブラウザにのみ保存されます（他の端末とは共有されません）。</p>
 
   <div class="section" id="slotsSection">
@@ -107,6 +107,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
+const VERSION = "v1.1.0";
+document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
 let activePicker = null; // {slotType, stratIndex}
