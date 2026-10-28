@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ヘルダイバーズ2 装備選択ツール</title>
-<script src="helldivers_data.js?v=1.15.1"></script>
+<script src="helldivers_data.js?v=1.16.0"></script>
 <style>
   :root {
     --bg: #11151a; --panel: #1b2128; --panel2: #232b34; --border: #333c47;
@@ -161,7 +161,7 @@
 </div>
 
 <script>
-const VERSION = "v1.15.1";
+const VERSION = "v1.16.0";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -270,6 +270,7 @@ function fieldChips(item) {
   if (item.damage !== undefined) parts.push('ダメージ ' + item.damage);
   if (item.mag !== undefined) parts.push('装弾数 ' + item.mag);
   if (item.initMag !== undefined) parts.push('マガジン携行' + item.initMag + '/最大' + item.maxMag);
+  else if (item.maxMag !== undefined) parts.push('最大携行 ' + item.maxMag);
   if (item.carry !== undefined) parts.push('携行' + item.carry + '/最大' + item.maxCarry);
   if (item.resupply !== undefined) parts.push('補充数 ' + item.resupply);
   if (item.recoil !== undefined) parts.push('反動 ' + item.recoil);
@@ -281,6 +282,7 @@ function fieldChips(item) {
   if (item.cost !== undefined) parts.push('メダル ' + item.cost);
   if (item.rounds !== undefined) parts.push('1回の要請で ' + item.rounds);
   if (item.ammo !== undefined) parts.push('弾薬 ' + item.ammo);
+  if (item.pen !== undefined && item.pen !== null) parts.push('貫通 ' + TIER_LABEL[item.pen]);
   return parts;
 }
 
