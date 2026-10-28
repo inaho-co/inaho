@@ -23,6 +23,8 @@
   .chip.filled { border-color: var(--accent); }
   .chip .lbl { font-size:11px; color: var(--sub); }
   .chip .val { font-size:13px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px; }
+  .chip.target .val { max-width:none; white-space:normal; overflow:visible; text-overflow:clip; }
+  .chip.target .qtyval { font-size:13px; font-weight:bold; min-width:1.5em; text-align:center; display:inline-block; }
   .chip button { background:var(--accent); color:#1b1400; border:none; border-radius:6px; padding:5px 9px; font-size:12px; font-weight:bold; }
   .tabbar { display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; }
   .tab { flex: 0 0 auto; background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:999px; padding:7px 13px; font-size:12px; white-space:nowrap; }
@@ -161,7 +163,7 @@
 </div>
 
 <script>
-const VERSION = "v1.16.1";
+const VERSION = "v1.16.2";
 document.getElementById('verTag').textContent = VERSION;
 const STRAT_SLOTS = 4;
 let loadout = { primary: null, secondary: null, grenade: null, armor: null, stratagems: [null,null,null,null], booster: null };
@@ -674,12 +676,17 @@ function addSimTarget() {
   const qty = simQty;
   const enemy = ENEMIES[eIdx];
   const part = enemy.parts[pIdx];
-  simTargets.push({ hp: part[1], tier: part[2], qty, label: `${enemy.name}「${part[0]}」×${qty}` });
+  simTargets.push({ hp: part[1], tier: part[2], qty, enemyName: enemy.name, partName: part[0] });
   renderSimTargets();
 }
 
 function removeSimTarget(i) {
   simTargets.splice(i, 1);
+  renderSimTargets();
+}
+
+function stepTargetQty(i, delta) {
+  simTargets[i].qty = Math.max(1, Math.min(99, simTargets[i].qty + delta));
   renderSimTargets();
 }
 
@@ -689,7 +696,13 @@ function renderSimTargets() {
     el.innerHTML = '<p class="hint">対象を追加してください（例：バイルタイタン「頭部」×2、チャージャー「頭部」×3）</p>';
   } else {
     el.innerHTML = simTargets.map((t, i) =>
-      `<span class="chip filled"><span class="val">${t.label}</span><button onclick="removeSimTarget(${i})">×</button></span>`
+      `<span class="chip filled target">
+        <span class="val">${t.enemyName}「${t.partName}」</span>
+        <button class="smallbtn" onclick="stepTargetQty(${i},-1)">−</button>
+        <span class="qtyval">${t.qty}</span>
+        <button class="smallbtn" onclick="stepTargetQty(${i},1)">＋</button>
+        <button onclick="removeSimTarget(${i})">×</button>
+      </span>`
     ).join('');
   }
   renderSimResult();
