@@ -399,6 +399,8 @@ const STRATAGEM_DAMAGE = {
 // 弾薬容量の補足説明（有限弾薬の武器のみ。helldivers.wiki.ggより）
 const STRATAGEM_AMMO = {
   "レールガン": "装填1+予備20（初期10、補給パック+10／弾薬箱+5）",
+  // 2026-10-28 helldivers.wiki.gg（v1.007.201）で確認
+  "ブリーチングハマー": "装填1+予備10（初期7、補給パック+7／弾薬箱+3）",
 };
 const STRATAGEM_ROUNDS = {
   "イーグル機銃掃射": "100発（内25発が榴弾）",
